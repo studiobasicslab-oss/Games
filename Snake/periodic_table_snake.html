@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split Screen Stickman Runner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #1a1a2e;
+            font-family: 'Inter', sans-serif;
+            touch-action: none; 
+        }
+        #gameCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .interactive {
+            pointer-events: auto;
+        }
+        .scanlines {
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas"></canvas>
+    <div class="scanlines"></div>
+
+    <div id="ui-layer">
+        <!-- Main Menu / Game Over Screen -->
+        <div id="menu" class="interactive bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/20 text-center transform transition-transform duration-300 max-w-2xl w-full mx-4">
+            <h1 class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2 tracking-tight" id="title">SYNC RUNNER</h1>
+            <p class="text-gray-300 text-lg mb-6" id="subtitle">Control both stickmen to survive.</p>
+            
+            <div class="grid grid-cols-2 gap-4 text-left mb-6 bg-black/30 p-4 rounded-xl border border-white/10">
+                <div>
+                    <h3 class="text-cyan-400 font-bold mb-1 uppercase tracking-wider text-sm">Top Player</h3>
+                    <p class="text-white text-sm"><span class="inline-block bg-gray-800 px-2 py-1 rounded text-xs mr-1">W</span> Up / Outer</p>
+                    <p class="text-white text-sm mt-1"><span class="inline-block bg-gray-800 px-2 py-1 rounded text-xs mr-1">S</span> Down / Inner</p>
+                </div>
+                <div>
+                    <h3 class="text-red-500 font-bold mb-1 uppercase tracking-wider text-sm">Bottom Player</h3>
+                    <p class="text-white text-sm"><span class="inline-block bg-gray-800 px-2 py-1 rounded text-xs mr-1">▲</span> Up / Inner</p>
+                    <p class="text-white text-sm mt-1"><span class="inline-block bg-gray-800 px-2 py-1 rounded text-xs mr-1">▼</span> Down / Outer</p>
+                </div>
+            </div>
+
+            <p id="scoreDisplay" class="text-2xl font-mono text-white mb-6 hidden">Score: <span id="finalScore" class="text-yellow-400 font-bold">0</span></p>
+
+            <!-- Step 1: Direction Choice -->
+            <div class="mb-6 pb-6 border-b border-white/10">
+                <h3 class="text-white text-sm font-bold mb-3 uppercase tracking-wider">Step 1: Choose Run Direction</h3>
+                <div class="flex justify-center gap-4">
+                    <button id="btnDirSame" onclick="setDirection('same')" class="bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg border border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all">
+                        Same ⇉
+                    </button>
+                    <button id="btnDirOpp" onclick="setDirection('opposite')" class="bg-gray-800 text-gray-400 font-bold py-2 px-6 rounded-lg border border-gray-600 transition-all hover:bg-gray-700">
+                        Opposite ⇄
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Mode Choice -->
+            <div>
+                <h3 class="text-white text-sm font-bold mb-3 uppercase tracking-wider">Step 2: Choose Play Style</h3>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center" id="modeButtons">
+                    <button onclick="initGame(1)" class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-xl border border-gray-600 transition-all hover:scale-105">
+                        1. CLASSIC
+                    </button>
+                    <button onclick="initGame(2)" class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-xl border border-gray-600 transition-all hover:scale-105">
+                        2. HANGING
+                    </button>
+                    <button onclick="initGame(3)" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl border border-cyan-400 transition-all hover:scale-105">
+                        3. GRAVITY
+                    </button>
+                </div>
+            </div>
+            
+            <button id="playBtn" class="hidden"></button>
+        </div>
+
+        <!-- In-Game HUD -->
+        <div id="hud" class="absolute top-4 right-6 hidden">
+            <p class="text-2xl font-mono text-white drop-shadow-md">Score: <span id="currentScore">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const menu = document.getElementById('menu');
+        const playBtn = document.getElementById('playBtn');
+        const title = document.getElementById('title');
+        const subtitle = document.getElementById('subtitle');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const finalScoreEl = document.getElementById('finalScore');
+        const hud = document.getElementById('hud');
+        const currentScoreEl = document.getElementById('currentScore');
+
+        // Game State
+        let gameMode = 'menu'; 
+        let directionMode = 'same'; // 'same' or 'opposite'
+        let currentPlayMode = 3; 
+        let animationId;
+        let frames = 0;
+        let score = 0;
+        let gameSpeed = 5;
+        let speedMultiplier = 1;
+
+        // Entities
+        let topPlayer, bottomPlayer;
+        let obstacles = [];
+        let particles = [];
+
+        // Input State
+        const keys = {
+            w: false, s: false,
+            ArrowUp: false, ArrowDown: false
+        };
+
+        // UI Logic
+        function setDirection(dir) {
+            directionMode = dir;
+            const btnSame = document.getElementById('btnDirSame');
+            const btnOpp = document.getElementById('btnDirOpp');
+            
+            if (dir === 'same') {
+                btnSame.className = 'bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg border border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all';
+                btnOpp.className = 'bg-gray-800 text-gray-400 font-bold py-2 px-6 rounded-lg border border-gray-600 transition-all hover:bg-gray-700';
+            } else {
+                btnOpp.className = 'bg-red-600 text-white font-bold py-2 px-6 rounded-lg border border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all';
+                btnSame.className = 'bg-gray-800 text-gray-400 font-bold py-2 px-6 rounded-lg border border-gray-600 transition-all hover:bg-gray-700';
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            if (topPlayer && bottomPlayer) {
+                if (currentPlayMode === 1) {
+                    topPlayer.groundY = canvas.height / 2;
+                    bottomPlayer.groundY = canvas.height;
+                } else if (currentPlayMode === 2) {
+                    topPlayer.groundY = canvas.height / 2;
+                    bottomPlayer.groundY = canvas.height / 2;
+                } else if (currentPlayMode === 3) {
+                    topPlayer.innerY = canvas.height / 2;
+                    topPlayer.outerY = 0;
+                    bottomPlayer.innerY = canvas.height / 2;
+                    bottomPlayer.outerY = canvas.height;
+                }
+                
+                // Adjust position for opposite mode dynamically
+                if (directionMode === 'opposite') {
+                    bottomPlayer.x = canvas.width - 150;
+                } else {
+                    bottomPlayer.x = 150;
+                }
+            }
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.size = Math.random() * 4 + 1;
+                this.speedX = Math.random() * 4 - 2;
+                this.speedY = Math.random() * 4 - 2;
+                this.color = color;
+                this.life = 1.0;
+                this.decay = Math.random() * 0.05 + 0.02;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life -= this.decay;
+            }
+            draw() {
+                ctx.globalAlpha = Math.max(0, this.life);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        function createExplosion(x, y, color) {
+            for(let i=0; i<20; i++) {
+                particles.push(new Particle(x, y, color));
+            }
+        }
+
+        class Stickman {
+            constructor(lane, color) {
+                this.lane = lane;
+                this.color = color;
+                
+                // Set X based on direction mode
+                this.dirModifier = (directionMode === 'opposite' && lane === 'bottom') ? -1 : 1;
+                this.x = this.dirModifier === 1 ? 150 : canvas.width - 150;
+                
+                this.baseHeight = 60;
+                this.width = 30;
+                this.height = this.baseHeight;
+                this.vy = 0;
+                this.runCycle = 0;
+
+                if (currentPlayMode === 1) {
+                    this.groundY = lane === 'top' ? canvas.height / 2 : canvas.height;
+                    this.y = this.groundY;
+                    this.upsideDown = false;
+                    this.controls = lane === 'top' ? {jump: 'w', duck: 's'} : {jump: 'ArrowUp', duck: 'ArrowDown'};
+                    this.gravity = 0.6;
+                    this.jumpForce = -12;
+                    this.duckMultiplier = 2;
+                    this.isJumping = false;
+                    this.isDucking = false;
+                } else if (currentPlayMode === 2) {
+                    this.groundY = canvas.height / 2;
+                    this.y = this.groundY;
+                    this.upsideDown = lane === 'bottom';
+                    this.controls = lane === 'top' ? {jump: 'w', duck: 's'} : {jump: 'ArrowDown', duck: 'ArrowUp'};
+                    this.gravity = 0.6;
+                    this.jumpForce = -12;
+                    this.duckMultiplier = 2;
+                    this.isJumping = false;
+                    this.isDucking = false;
+                } else if (currentPlayMode === 3) {
+                    this.innerY = canvas.height / 2;
+                    this.outerY = lane === 'top' ? 0 : canvas.height;
+                    this.y = this.innerY;
+                    this.gravityDir = lane === 'top' ? 1 : -1; 
+                    this.controls = lane === 'top' ? {outer: 'w', inner: 's'} : {inner: 'ArrowUp', outer: 'ArrowDown'};
+                    this.gravityValue = 0.8;
+                    this.isOnGround = true;
+                }
+            }
+
+            get isUpsideDown() {
+                if (currentPlayMode === 3) return this.gravityDir === -1;
+                return this.upsideDown;
+            }
+
+            update() {
+                if (currentPlayMode === 1 || currentPlayMode === 2) {
+                    if (keys[this.controls.duck]) {
+                        this.isDucking = true;
+                        if (this.isJumping) {
+                            this.vy += (this.isUpsideDown ? -this.gravity : this.gravity) * this.duckMultiplier;
+                        }
+                    } else {
+                        this.isDucking = false;
+                    }
+
+                    if (keys[this.controls.jump] && !this.isJumping && !this.isDucking) {
+                        this.vy = this.isUpsideDown ? -this.jumpForce : this.jumpForce;
+                        this.isJumping = true;
+                        createExplosion(this.x, this.groundY, '#555');
+                    }
+
+                    this.vy += this.isUpsideDown ? -this.gravity : this.gravity;
+                    this.y += this.vy;
+
+                    if (this.isUpsideDown ? this.y <= this.groundY : this.y >= this.groundY) {
+                        this.y = this.groundY;
+                        this.vy = 0;
+                        this.isJumping = false;
+                    }
+
+                    this.height = this.isDucking ? this.baseHeight / 2 : this.baseHeight;
+                    
+                    if (!this.isJumping) this.runCycle += 0.2 * speedMultiplier;
+                    else this.runCycle = 0;
+
+                } else if (currentPlayMode === 3) {
+                    if (keys[this.controls.outer]) this.gravityDir = this.lane === 'top' ? -1 : 1;
+                    if (keys[this.controls.inner]) this.gravityDir = this.lane === 'top' ? 1 : -1;
+
+                    this.vy += this.gravityValue * this.gravityDir;
+                    this.y += this.vy;
+                    this.isOnGround = false;
+
+                    if (this.lane === 'top') {
+                        if (this.y >= this.innerY) { this.y = this.innerY; this.vy = 0; this.isOnGround = true; }
+                        if (this.y <= this.outerY) { this.y = this.outerY; this.vy = 0; this.isOnGround = true; }
+                    } else {
+                        if (this.y <= this.innerY) { this.y = this.innerY; this.vy = 0; this.isOnGround = true; }
+                        if (this.y >= this.outerY) { this.y = this.outerY; this.vy = 0; this.isOnGround = true; }
+                    }
+
+                    if (this.isOnGround) this.runCycle += 0.2 * speedMultiplier;
+                    else this.runCycle = 0;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                // Flip vertically if upside down, flip horizontally if running right-to-left
+                ctx.scale(this.dirModifier, this.isUpsideDown ? -1 : 1);
+                ctx.translate(-this.x, -this.y);
+
+                ctx.strokeStyle = this.color;
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                const isDucking = (currentPlayMode !== 3 && this.isDucking);
+                const basePathY = this.y - (isDucking ? 20 : 0);
+                const headY = basePathY - this.height + 10;
+                const neckY = headY + 10;
+                const pelvisY = basePathY - 20;
+
+                ctx.beginPath();
+                ctx.arc(this.x, headY, 10, 0, Math.PI * 2);
+                
+                ctx.moveTo(this.x, neckY);
+                ctx.lineTo(this.x + (isDucking ? 15 : 0), pelvisY); 
+
+                const centerBodyX = this.x + (isDucking ? 15 : 0);
+
+                if (currentPlayMode === 3 && !this.isOnGround) {
+                    ctx.moveTo(this.x, neckY + 5);
+                    ctx.lineTo(this.x - 15, neckY - 10);
+                    ctx.moveTo(this.x, neckY + 5);
+                    ctx.lineTo(this.x + 15, neckY - 10);
+                    ctx.moveTo(this.x, pelvisY);
+                    ctx.lineTo(this.x - 10, this.y - 10);
+                    ctx.moveTo(this.x, pelvisY);
+                    ctx.lineTo(this.x + 10, this.y - 10);
+                } else if (currentPlayMode !== 3 && this.isJumping) {
+                    ctx.moveTo(this.x, neckY + 5);
+                    ctx.lineTo(this.x - 15, neckY - 10);
+                    ctx.moveTo(this.x, neckY + 5);
+                    ctx.lineTo(this.x + 15, neckY - 10);
+                    ctx.moveTo(centerBodyX, pelvisY);
+                    ctx.lineTo(this.x - 10, this.y - 10);
+                    ctx.lineTo(this.x - 10, this.y);
+                    ctx.moveTo(centerBodyX, pelvisY);
+                    ctx.lineTo(this.x + 15, this.y - 15);
+                    ctx.lineTo(this.x + 20, this.y - 5);
+                } else if (currentPlayMode !== 3 && this.isDucking) {
+                    ctx.moveTo(this.x, neckY + 5);
+                    ctx.lineTo(centerBodyX + 15, pelvisY - 5);
+                    ctx.moveTo(centerBodyX, pelvisY);
+                    ctx.lineTo(this.x - 15, this.y);
+                    ctx.moveTo(centerBodyX, pelvisY);
+                    ctx.lineTo(this.x + 20, this.y);
+                } else {
+                    const swing = Math.sin(this.runCycle) * 20;
+                    ctx.moveTo(this.x, neckY + 5);
+                    ctx.lineTo(this.x - swing, pelvisY - 5);
+                    ctx.moveTo(this.x, neckY + 5);
+                    ctx.lineTo(this.x + swing, pelvisY - 5);
+                    ctx.moveTo(centerBodyX, pelvisY);
+                    ctx.lineTo(this.x + swing, this.y);
+                    ctx.moveTo(centerBodyX, pelvisY);
+                    ctx.lineTo(this.x - swing, this.y);
+                }
+                
+                ctx.stroke();
+                ctx.restore();
+            }
+            
+            getBounds() {
+                return {
+                    x: this.x - this.width/2,
+                    y: this.isUpsideDown ? this.y : this.y - this.height,
+                    width: this.width,
+                    height: this.height
+                };
+            }
+        }
+
+        class Obstacle {
+            constructor(lane) {
+                this.lane = lane;
+                this.width = 30 + Math.random() * 20;
+                this.color = lane === 'top' ? '#06b6d4' : '#ef4444';
+                
+                // Spawn location based on direction
+                this.dirModifier = (directionMode === 'opposite' && lane === 'bottom') ? -1 : 1;
+                this.x = this.dirModifier === 1 ? canvas.width : -this.width;
+                
+                if (currentPlayMode === 1 || currentPlayMode === 2) {
+                    this.type = Math.random() > 0.5 ? 'ground' : 'air';
+                    if (currentPlayMode === 1) {
+                        this.groundY = lane === 'top' ? canvas.height / 2 : canvas.height;
+                        this.upsideDown = false;
+                    } else {
+                        this.groundY = canvas.height / 2;
+                        this.upsideDown = lane === 'bottom';
+                    }
+
+                    if (this.type === 'ground') {
+                        this.height = 30 + Math.random() * 20;
+                        this.y = this.groundY;
+                    } else {
+                        this.height = 20;
+                        let gap = 50 + Math.random() * 10;
+                        this.y = this.upsideDown ? this.groundY + gap : this.groundY - gap; 
+                    }
+                } else if (currentPlayMode === 3) {
+                    this.position = Math.random() > 0.5 ? 'inner' : 'outer';
+                    this.height = 30 + Math.random() * 20;
+                    this.innerY = canvas.height / 2;
+                    this.outerY = lane === 'top' ? 0 : canvas.height;
+                    
+                    this.y = this.position === 'inner' ? this.innerY : this.outerY;
+                    this.type = 'ground'; // Draw as spike
+                    
+                    if (this.lane === 'top' && this.position === 'inner') this.upsideDown = false;
+                    else if (this.lane === 'top' && this.position === 'outer') this.upsideDown = true;
+                    else if (this.lane === 'bottom' && this.position === 'inner') this.upsideDown = true;
+                    else if (this.lane === 'bottom' && this.position === 'outer') this.upsideDown = false;
+                }
+            }
+
+            update() {
+                this.x -= (gameSpeed * speedMultiplier) * this.dirModifier;
+            }
+
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = this.color;
+                
+                if (this.type === 'ground') {
+                    ctx.beginPath();
+                    if (this.upsideDown) {
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.x + this.width/2, this.y + this.height);
+                        ctx.lineTo(this.x + this.width, this.y);
+                    } else {
+                        ctx.moveTo(this.x, this.y);
+                        ctx.lineTo(this.x + this.width/2, this.y - this.height);
+                        ctx.lineTo(this.x + this.width, this.y);
+                    }
+                    ctx.fill();
+                } else {
+                    if (this.upsideDown) ctx.fillRect(this.x, this.y, this.width, this.height);
+                    else ctx.fillRect(this.x, this.y - this.height, this.width, this.height);
+                }
+                
+                ctx.shadowBlur = 0;
+            }
+
+            getBounds() {
+                if (this.type === 'ground') {
+                    return {
+                        x: this.x + 5,
+                        y: this.upsideDown ? this.y + 5 : this.y - this.height + 5,
+                        width: this.width - 10,
+                        height: this.height - 5
+                    };
+                } else {
+                    return {
+                        x: this.x,
+                        y: this.upsideDown ? this.y : this.y - this.height,
+                        width: this.width,
+                        height: this.height
+                    };
+                }
+            }
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (keys.hasOwnProperty(e.key) || e.key === 'w' || e.key === 's' || e.key === 'W' || e.key === 'S') {
+                const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+                if(keys.hasOwnProperty(key)) keys[key] = true;
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+             if (keys.hasOwnProperty(e.key) || e.key === 'w' || e.key === 's' || e.key === 'W' || e.key === 'S') {
+                const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+                if(keys.hasOwnProperty(key)) keys[key] = false;
+            }
+        });
+
+        function checkCollision(rect1, rect2) {
+            return (
+                rect1.x < rect2.x + rect2.width &&
+                rect1.x + rect1.width > rect2.x &&
+                rect1.y < rect2.y + rect2.height &&
+                rect1.y + rect1.height > rect2.y
+            );
+        }
+
+        function initGame(mode) {
+            if (mode) currentPlayMode = mode;
+            
+            topPlayer = new Stickman('top', '#22d3ee'); 
+            bottomPlayer = new Stickman('bottom', '#ef4444'); 
+            obstacles = [];
+            particles = [];
+            score = 0;
+            frames = 0;
+            speedMultiplier = 1;
+            
+            menu.classList.add('scale-0', 'opacity-0');
+            setTimeout(() => menu.classList.add('hidden'), 300);
+            hud.classList.remove('hidden');
+            
+            gameMode = 'playing';
+            animate();
+        }
+
+        function gameOver(crashingPlayer) {
+            gameMode = 'gameover';
+            
+            let centerBodyOffset = crashingPlayer.isUpsideDown ? 30 : -30;
+            createExplosion(crashingPlayer.x, crashingPlayer.y + centerBodyOffset, crashingPlayer.color);
+            createExplosion(crashingPlayer.x, crashingPlayer.y + (centerBodyOffset / 3), '#ffffff');
+
+            setTimeout(() => {
+                hud.classList.add('hidden');
+                menu.classList.remove('hidden');
+                setTimeout(() => menu.classList.remove('scale-0', 'opacity-0'), 10);
+                
+                title.innerText = "CRASHED!";
+                title.classList.remove('from-cyan-400', 'to-blue-500');
+                title.classList.add('from-red-500', 'to-orange-500');
+                
+                subtitle.innerText = "Sync broken. Try again.";
+                
+                scoreDisplay.classList.remove('hidden');
+                finalScoreEl.innerText = Math.floor(score);
+            }, 1000);
+        }
+
+        function spawnObstacles() {
+            let spawnRate = Math.max(50, 100 - Math.floor(score / 50)); 
+            
+            if (frames % spawnRate === 0) {
+                const lane = Math.random() > 0.5 ? 'top' : 'bottom';
+                obstacles.push(new Obstacle(lane));
+                
+                if (Math.random() < 0.3) {
+                    const otherLane = lane === 'top' ? 'bottom' : 'top';
+                    obstacles.push(new Obstacle(otherLane));
+                }
+            }
+        }
+
+        function drawEnvironment() {
+            ctx.fillStyle = '#0f0f1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            const gridSize = 40;
+            
+            // Background flow directions based on selected mode
+            let moveLeftOffset = (frames * gameSpeed * speedMultiplier * 0.5) % gridSize;
+            let moveRightOffset = -(frames * gameSpeed * speedMultiplier * 0.5) % gridSize;
+            if (moveRightOffset < 0) moveRightOffset += gridSize;
+
+            // Vertical lines moving
+            ctx.beginPath();
+            
+            // Top Half
+            for (let x = -moveLeftOffset; x < canvas.width; x += gridSize) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height / 2);
+            }
+            
+            // Bottom Half
+            if (directionMode === 'same') {
+                for (let x = -moveLeftOffset; x < canvas.width; x += gridSize) {
+                    ctx.moveTo(x, canvas.height / 2);
+                    ctx.lineTo(x, canvas.height);
+                }
+            } else {
+                for (let x = -moveRightOffset; x < canvas.width + gridSize; x += gridSize) {
+                    ctx.moveTo(x, canvas.height / 2);
+                    ctx.lineTo(x, canvas.height);
+                }
+            }
+
+            // Horizontal lines static
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+            }
+            ctx.stroke();
+
+            // Center lines
+            ctx.lineWidth = 2;
+            if (currentPlayMode === 1 || currentPlayMode === 2 || currentPlayMode === 3) {
+                ctx.strokeStyle = '#22d3ee'; 
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height / 2 - 1);
+                ctx.lineTo(canvas.width, canvas.height / 2 - 1);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height / 2 + 1);
+                ctx.lineTo(canvas.width, canvas.height / 2 + 1);
+                ctx.stroke();
+            }
+
+            // Floor lines for mode 1 & 3
+            if (currentPlayMode === 1) {
+                ctx.strokeStyle = '#ef4444'; 
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height - 1);
+                ctx.lineTo(canvas.width, canvas.height - 1);
+                ctx.stroke();
+            }
+            
+            if (currentPlayMode === 3) {
+                ctx.strokeStyle = '#22d3ee'; 
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(0, 1);
+                ctx.lineTo(canvas.width, 1);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#ef4444'; 
+                ctx.beginPath();
+                ctx.moveTo(0, canvas.height - 1);
+                ctx.lineTo(canvas.width, canvas.height - 1);
+                ctx.stroke();
+            }
+        }
+
+        function animate() {
+            if (gameMode !== 'playing' && gameMode !== 'gameover') return;
+            
+            drawEnvironment();
+
+            // Handle Particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                particles[i].update();
+                particles[i].draw();
+                if (particles[i].life <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+
+            if (gameMode === 'playing') {
+                // Update difficulty
+                speedMultiplier = 1 + (score / 1000); // Speed increases over time
+                score += 0.1 * speedMultiplier;
+                currentScoreEl.innerText = Math.floor(score);
+                
+                spawnObstacles();
+                frames++;
+
+                topPlayer.update();
+                bottomPlayer.update();
+            }
+
+            if (gameMode === 'playing') {
+                topPlayer.draw();
+                bottomPlayer.draw();
+            }
+
+            // Handle Obstacles
+            for (let i = obstacles.length - 1; i >= 0; i--) {
+                const obs = obstacles[i];
+                
+                if (gameMode === 'playing') {
+                    obs.update();
+                    
+                    const p = obs.lane === 'top' ? topPlayer : bottomPlayer;
+                    if (checkCollision(p.getBounds(), obs.getBounds())) {
+                        gameOver(p);
+                        break;
+                    }
+                }
+                
+                obs.draw();
+
+                // Remove off-screen obstacles based on which direction they are moving
+                if (obs.dirModifier === 1 && obs.x + obs.width < 0) {
+                    obstacles.splice(i, 1);
+                } else if (obs.dirModifier === -1 && obs.x > canvas.width) {
+                    obstacles.splice(i, 1);
+                }
+            }
+
+            if (gameMode === 'playing' || particles.length > 0) {
+                animationId = requestAnimationFrame(animate);
+            }
+        }
+
+        // Draw initial background before play
+        drawEnvironment();
+
+    </script>
+</body>
+</html>
