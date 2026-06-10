@@ -1,730 +1,1526 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Split Screen Stickman Runner</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background-color: #1a1a2e;
-            font-family: 'Inter', sans-serif;
-            touch-action: none; 
-        }
-        #gameCanvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-        #ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .interactive {
-            pointer-events: auto;
-        }
-        .scanlines {
-            background: linear-gradient(
-                to bottom,
-                rgba(255,255,255,0),
-                rgba(255,255,255,0) 50%,
-                rgba(0,0,0,0.1) 50%,
-                rgba(0,0,0,0.1)
-            );
-            background-size: 100% 4px;
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            pointer-events: none;
-            z-index: 10;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Periodic Snake - Elemental Journey</title>
+  <!-- Tailwind CSS for modern layout & design tokens -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+      overflow-x: hidden;
+    }
+    h1, h2, h3, .font-tech {
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    /* Glow highlights */
+    .glow-emerald {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+    }
+    .glow-amber {
+      box-shadow: 0 0 25px rgba(245, 158, 11, 0.35);
+    }
+    .glow-blue {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
+    }
+    /* Hide scrollbar for layout */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Custom game canvas styling */
+    canvas {
+      image-rendering: pixelated;
+      touch-action: none;
+    }
+    /* Periodic grid item hover effect */
+    .periodic-item {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Smooth animated pulsing for target */
+    @keyframes pulse-target {
+      0%, 100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 8px rgba(245,158,11,0.6)); }
+      50% { transform: scale(1.05); opacity: 0.9; filter: drop-shadow(0 0 16px rgba(245,158,11,0.9)); }
+    }
+    .pulse-target-element {
+      animation: pulse-target 2s infinite ease-in-out;
+    }
+  </style>
 </head>
-<body>
+<body class="text-slate-100 min-h-screen flex flex-col justify-between antialiased selection:bg-emerald-500 selection:text-slate-900">
 
-    <canvas id="gameCanvas"></canvas>
-    <div class="scanlines"></div>
-
-    <div id="ui-layer">
-        <!-- Main Menu / Game Over Screen -->
-        <div id="menu" class="interactive bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/20 text-center transform transition-transform duration-300 max-w-2xl w-full mx-4">
-            <h1 class="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2 tracking-tight" id="title">SYNC RUNNER</h1>
-            <p class="text-gray-300 text-lg mb-6" id="subtitle">Control both stickmen to survive.</p>
-            
-            <div class="grid grid-cols-2 gap-4 text-left mb-6 bg-black/30 p-4 rounded-xl border border-white/10">
-                <div>
-                    <h3 class="text-cyan-400 font-bold mb-1 uppercase tracking-wider text-sm">Top Player</h3>
-                    <p class="text-white text-sm"><span class="inline-block bg-gray-800 px-2 py-1 rounded text-xs mr-1">W</span> Up / Outer</p>
-                    <p class="text-white text-sm mt-1"><span class="inline-block bg-gray-800 px-2 py-1 rounded text-xs mr-1">S</span> Down / Inner</p>
-                </div>
-                <div>
-                    <h3 class="text-red-500 font-bold mb-1 uppercase tracking-wider text-sm">Bottom Player</h3>
-                    <p class="text-white text-sm"><span class="inline-block bg-gray-800 px-2 py-1 rounded text-xs mr-1">▲</span> Up / Inner</p>
-                    <p class="text-white text-sm mt-1"><span class="inline-block bg-gray-800 px-2 py-1 rounded text-xs mr-1">▼</span> Down / Outer</p>
-                </div>
-            </div>
-
-            <p id="scoreDisplay" class="text-2xl font-mono text-white mb-6 hidden">Score: <span id="finalScore" class="text-yellow-400 font-bold">0</span></p>
-
-            <!-- Step 1: Direction Choice -->
-            <div class="mb-6 pb-6 border-b border-white/10">
-                <h3 class="text-white text-sm font-bold mb-3 uppercase tracking-wider">Step 1: Choose Run Direction</h3>
-                <div class="flex justify-center gap-4">
-                    <button id="btnDirSame" onclick="setDirection('same')" class="bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg border border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all">
-                        Same ⇉
-                    </button>
-                    <button id="btnDirOpp" onclick="setDirection('opposite')" class="bg-gray-800 text-gray-400 font-bold py-2 px-6 rounded-lg border border-gray-600 transition-all hover:bg-gray-700">
-                        Opposite ⇄
-                    </button>
-                </div>
-            </div>
-
-            <!-- Step 2: Mode Choice -->
-            <div>
-                <h3 class="text-white text-sm font-bold mb-3 uppercase tracking-wider">Step 2: Choose Play Style</h3>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center" id="modeButtons">
-                    <button onclick="initGame(1)" class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-xl border border-gray-600 transition-all hover:scale-105">
-                        1. CLASSIC
-                    </button>
-                    <button onclick="initGame(2)" class="bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-xl border border-gray-600 transition-all hover:scale-105">
-                        2. HANGING
-                    </button>
-                    <button onclick="initGame(3)" class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold py-3 px-4 rounded-xl border border-cyan-400 transition-all hover:scale-105">
-                        3. GRAVITY
-                    </button>
-                </div>
-            </div>
-            
-            <button id="playBtn" class="hidden"></button>
+  <!-- TOP NAV & HEADER -->
+  <header class="border-b border-slate-800/80 bg-slate-950/60 backdrop-blur-md px-4 py-3 relative z-10">
+    <div class="max-w-6xl mx-auto flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+          </svg>
         </div>
-
-        <!-- In-Game HUD -->
-        <div id="hud" class="absolute top-4 right-6 hidden">
-            <p class="text-2xl font-mono text-white drop-shadow-md">Score: <span id="currentScore">0</span></p>
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-200 to-amber-300">
+            PERIODIC SNAKE
+          </h1>
+          <p class="text-xs text-slate-400 font-medium">Synthesize the entire Periodic Table (118 elements) in chronological order.</p>
         </div>
+      </div>
+      
+      <!-- Audio & Reset Controls -->
+      <div class="flex items-center space-x-2">
+        <button id="sound-toggle" class="p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 transition-colors flex items-center justify-center text-slate-300" title="Toggle Synthesizer Sound">
+          <span id="sound-icon" class="mr-1.5 text-emerald-400">🔊</span>
+          <span class="text-xs font-semibold uppercase font-tech">Sound On</span>
+        </button>
+        <button id="btn-rules" class="px-3.5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700/60 transition-colors text-xs font-semibold uppercase font-tech text-slate-300">
+          How to Play
+        </button>
+      </div>
     </div>
+  </header>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const menu = document.getElementById('menu');
-        const playBtn = document.getElementById('playBtn');
-        const title = document.getElementById('title');
-        const subtitle = document.getElementById('subtitle');
-        const scoreDisplay = document.getElementById('scoreDisplay');
-        const finalScoreEl = document.getElementById('finalScore');
-        const hud = document.getElementById('hud');
-        const currentScoreEl = document.getElementById('currentScore');
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-6xl w-full mx-auto p-3 md:p-6 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- LEFT SIDEBAR: PERIODIC SYSTEM HUD TRACKER -->
+    <section class="lg:col-span-4 bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md flex flex-col gap-4 self-stretch justify-between">
+      <div>
+        <div class="flex justify-between items-center mb-1">
+          <h2 class="text-sm font-semibold tracking-wide uppercase text-slate-400 font-tech">Synthesis Timeline</h2>
+          <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-mono font-bold" id="progress-percentage">0% Done</span>
+        </div>
 
-        // Game State
-        let gameMode = 'menu'; 
-        let directionMode = 'same'; // 'same' or 'opposite'
-        let currentPlayMode = 3; 
-        let animationId;
-        let frames = 0;
-        let score = 0;
-        let gameSpeed = 5;
-        let speedMultiplier = 1;
+        <!-- Visual Progress Bar -->
+        <div class="w-full bg-slate-950 rounded-full h-2 mb-3 overflow-hidden border border-slate-800/80">
+          <div id="progress-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full w-0 transition-all duration-300"></div>
+        </div>
+        
+        <!-- Scrollable Elemental Progression Grid (H to Og) -->
+        <div class="max-h-64 overflow-y-auto pr-1 border border-slate-850 bg-slate-950/40 rounded-xl p-2.5 no-scrollbar" id="tracker-scroll-container">
+          <div class="grid grid-cols-5 gap-1.5" id="periodic-tracker">
+            <!-- Dynamically populated 118 elements -->
+          </div>
+        </div>
+      </div>
 
-        // Entities
-        let topPlayer, bottomPlayer;
-        let obstacles = [];
-        let particles = [];
+      <!-- Live Element Info Panel -->
+      <div class="bg-slate-950/60 border border-slate-800/50 rounded-xl p-4 mt-2">
+        <h3 class="text-xs font-semibold uppercase text-slate-500 font-tech tracking-wider mb-2">Target Chemical Specification</h3>
+        <div class="flex items-center space-x-4">
+          <div id="target-spec-tile" class="w-16 h-16 rounded-xl border-2 border-amber-500/80 bg-amber-500/10 flex flex-col justify-between p-2 text-amber-400 shadow-md shadow-amber-500/10 pulse-target-element transition-all duration-300 shrink-0">
+            <span class="text-xs font-bold font-mono text-left" id="target-spec-num">1</span>
+            <span class="text-2xl font-black font-tech text-center tracking-tight" id="target-spec-symbol">H</span>
+            <span class="text-[9px] font-medium text-center" id="target-spec-weight">1.008</span>
+          </div>
+          <div class="flex-grow min-w-0">
+            <div class="text-lg font-bold font-tech text-slate-100 truncate" id="target-spec-name">Hydrogen</div>
+            <div class="text-xs text-slate-400 mt-0.5 leading-relaxed line-clamp-2" id="target-spec-desc">
+              Atomic Number 1. The lightest, most abundant chemical substance in the Universe.
+            </div>
+          </div>
+        </div>
+      </div>
 
-        // Input State
-        const keys = {
-            w: false, s: false,
-            ArrowUp: false, ArrowDown: false
-        };
+      <!-- Game Stats Indicator Dashboard -->
+      <div class="grid grid-cols-3 gap-2 mt-2">
+        <div class="bg-slate-950/40 border border-slate-800/40 rounded-xl p-2.5 text-center">
+          <div class="text-[10px] text-slate-500 uppercase font-tech">Score</div>
+          <div class="text-xl font-black text-emerald-400 mt-1 font-tech tracking-wide" id="stat-score">0</div>
+        </div>
+        <div class="bg-slate-950/40 border border-slate-800/40 rounded-xl p-2.5 text-center">
+          <div class="text-[10px] text-slate-500 uppercase font-tech">Reactor Lives</div>
+          <div class="text-sm font-black text-red-500 mt-1.5 flex justify-center items-center gap-0.5 tracking-wider" id="stat-lives">
+            ❤️❤️❤️
+          </div>
+        </div>
+        <div class="bg-slate-950/40 border border-slate-800/40 rounded-xl p-2.5 text-center">
+          <div class="text-[10px] text-slate-500 uppercase font-tech">Record</div>
+          <div class="text-xl font-black text-blue-400 mt-1 font-tech tracking-wide" id="stat-highscore">000</div>
+        </div>
+      </div>
+    </section>
 
-        // UI Logic
-        function setDirection(dir) {
-            directionMode = dir;
-            const btnSame = document.getElementById('btnDirSame');
-            const btnOpp = document.getElementById('btnDirOpp');
+    <!-- RIGHT CONTENT: THE MAIN GAME BOARD -->
+    <section class="lg:col-span-8 flex flex-col gap-4 items-center justify-center w-full">
+      
+      <!-- Target Display Banner -->
+      <div class="w-full bg-slate-900/60 border border-slate-800/80 rounded-2xl px-5 py-3.5 backdrop-blur-md flex flex-wrap gap-4 items-center justify-between shadow-lg">
+        <div class="flex items-center gap-3">
+          <div class="flex flex-col">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[10px] uppercase font-semibold text-slate-500 font-tech tracking-wider">Active Target</span>
+              <!-- Selected Mode Indicator Pills -->
+              <span id="badge-difficulty" class="text-[9px] px-2 py-0.5 rounded-full border font-bold uppercase font-tech tracking-wide transition-all duration-300 bg-emerald-500/10 border-emerald-500/30 text-emerald-400">
+                EASY MODE
+              </span>
+              <span id="badge-highlight" class="text-[9px] px-2 py-0.5 rounded-full border font-bold uppercase font-tech tracking-wide transition-all duration-300 bg-emerald-500/10 border-emerald-500/30 text-emerald-400">
+                HINTS ENABLED
+              </span>
+            </div>
+            <span class="text-xl font-bold text-slate-100 flex items-center gap-1.5 mt-0.5">
+              Eat element <span class="text-amber-400 underline decoration-amber-500/50 underline-offset-4" id="banner-target-name">Hydrogen (H)</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+          <!-- Live Reactor Timer Badge -->
+          <div class="flex flex-col items-end">
+            <span class="text-[10px] uppercase font-semibold text-slate-500 font-tech tracking-wider">Elapsed Time</span>
+            <span id="stat-timer" class="text-lg font-bold text-cyan-400 font-mono tracking-widest mt-0.5">00:00</span>
+          </div>
+          
+          <!-- Speed Controller -->
+          <div class="flex flex-col items-end">
+            <span class="text-[10px] uppercase font-semibold text-slate-500 font-tech tracking-wider">Speed</span>
+            <select id="select-speed" class="bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-750 px-2 py-1 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 mt-0.5">
+              <option value="170">Chill</option>
+              <option value="120" selected>Normal</option>
+              <option value="85">Hyper</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Canvas Play Box -->
+      <div class="relative w-full aspect-square max-w-[600px] border border-slate-800 bg-slate-950 rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center group">
+        
+        <!-- Main Canvas -->
+        <canvas id="game-canvas" width="600" height="600" class="w-full h-full z-0"></canvas>
+
+        <!-- Dynamic Overlay / State screens -->
+        
+        <!-- 1. Start / Warmup Modal overlay -->
+        <div id="screen-start" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center z-10 transition-all duration-300 overflow-y-auto no-scrollbar">
+          <div class="max-w-md w-full my-auto py-4">
+            <div class="inline-block px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold tracking-wider uppercase mb-3">
+              118-Element Lab Simulator
+            </div>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-2 tracking-tight font-tech">PERIODIC SNAKE</h2>
+            <p class="text-slate-400 text-xs md:text-sm mb-5 leading-relaxed">
+              Navigate your elemental snake. Feed the correct chemicals in sequential order of their Atomic Numbers all the way from Hydrogen (1) to Oganesson (118).
+            </p>
+
+            <!-- Mode Selector Interface Segment -->
+            <div class="mb-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 text-left">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 font-tech mb-2.5 text-center">
+                Step 1: Choose Difficulty Mode
+              </label>
+              <div class="grid grid-cols-2 gap-3">
+                <!-- Easy Mode -->
+                <button type="button" id="btn-diff-easy" class="diff-selector-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 active:scale-95 bg-emerald-500/15 border-emerald-500 text-emerald-400 font-extrabold ring-2 ring-emerald-500/20 shadow-md shadow-emerald-500/10">
+                  <span class="text-sm font-bold font-tech tracking-wide">EASY</span>
+                  <span class="text-[10px] text-emerald-400/80 mt-0.5">Symbol & Atomic Number</span>
+                </button>
+                <!-- Difficult Mode -->
+                <button type="button" id="btn-diff-difficult" class="diff-selector-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 active:scale-95 bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-850 hover:text-slate-200">
+                  <span class="text-sm font-bold font-tech tracking-wide">DIFFICULT</span>
+                  <span class="text-[10px] text-slate-500 mt-0.5">Symbols Only</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Hint Highlights Selector Interface Segment -->
+            <div class="mb-5 bg-slate-900/60 p-4 rounded-xl border border-slate-800/80 text-left">
+              <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 font-tech mb-2.5 text-center">
+                Step 2: Choose Targeting Assistance
+              </label>
+              <div class="grid grid-cols-2 gap-3">
+                <!-- Highlight On -->
+                <button type="button" id="btn-highlight-on" class="highlight-selector-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 active:scale-95 bg-emerald-500/15 border-emerald-500 text-emerald-400 font-extrabold ring-2 ring-emerald-500/20 shadow-md shadow-emerald-500/10">
+                  <span class="text-sm font-bold font-tech tracking-wide font-tech">HIGHLIGHTS</span>
+                  <span class="text-[10px] text-emerald-400/80 mt-0.5">Target glows + specs pre-loaded</span>
+                </button>
+                <!-- Highlight Off -->
+                <button type="button" id="btn-highlight-off" class="highlight-selector-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 active:scale-95 bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-850 hover:text-slate-200">
+                  <span class="text-sm font-bold font-tech tracking-wide font-tech">NO HIGHLIGHTS</span>
+                  <span class="text-[10px] text-slate-500 mt-0.5">Uniform cards + specs hidden</span>
+                </button>
+              </div>
+            </div>
+
+            <button id="btn-start" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-bold text-base rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/20 transform hover:-translate-y-0.5 font-tech tracking-wide">
+              INITIALIZE SYNTHESIS
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Game Over Modal Overlay -->
+        <div id="screen-gameover" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center z-10 hidden transition-all duration-300">
+          <div class="max-w-md w-full">
+            <div class="inline-flex items-center justify-center h-14 w-14 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 mb-3 animate-bounce">
+              <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+              </svg>
+            </div>
+            <h2 class="text-3xl font-extrabold text-red-500 mb-1 tracking-tight font-tech">SYNTHESIS TERMINATED</h2>
+            <p class="text-slate-400 text-xs mb-3" id="gameover-reason">You crashed into a containment wall!</p>
             
-            if (dir === 'same') {
-                btnSame.className = 'bg-cyan-600 text-white font-bold py-2 px-6 rounded-lg border border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.5)] transition-all';
-                btnOpp.className = 'bg-gray-800 text-gray-400 font-bold py-2 px-6 rounded-lg border border-gray-600 transition-all hover:bg-gray-700';
-            } else {
-                btnOpp.className = 'bg-red-600 text-white font-bold py-2 px-6 rounded-lg border border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.5)] transition-all';
-                btnSame.className = 'bg-gray-800 text-gray-400 font-bold py-2 px-6 rounded-lg border border-gray-600 transition-all hover:bg-gray-700';
-            }
-        }
+            <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 mb-5 text-left flex flex-col gap-2">
+              <div class="flex justify-between items-center text-xs border-b border-slate-800 pb-2">
+                <span class="text-slate-400">Synthesis Mode</span>
+                <span class="font-bold text-blue-400 font-tech uppercase" id="go-mode-label">Easy</span>
+              </div>
+              <div class="flex justify-between items-center text-xs border-b border-slate-800 pb-2">
+                <span class="text-slate-400">Targeting Assistance</span>
+                <span class="font-bold text-amber-400 font-tech uppercase" id="go-highlight-label">Standard</span>
+              </div>
+              <div class="flex justify-between items-center text-xs border-b border-slate-800 pb-2">
+                <span class="text-slate-400">Elements Synthesized</span>
+                <span class="font-bold text-slate-100" id="go-elements-count">0 / 118</span>
+              </div>
+              <div class="flex justify-between items-center text-xs border-b border-slate-800 pb-2">
+                <span class="text-slate-400">Synthesis Score</span>
+                <span class="font-bold text-emerald-400" id="go-score">0</span>
+              </div>
+              <div class="flex justify-between items-center text-xs border-b border-slate-800 pb-2">
+                <span class="text-slate-400">Elapsed Time</span>
+                <span class="font-bold text-cyan-400 font-mono" id="go-time">00:00</span>
+              </div>
+              <div class="flex justify-between items-center text-xs">
+                <span class="text-slate-400">Failed At Target</span>
+                <span class="font-bold text-amber-400 font-tech" id="go-failed-target">Hydrogen (H)</span>
+              </div>
+            </div>
 
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            <div class="flex gap-3">
+              <button id="btn-go-to-main" class="flex-1 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition-all duration-200 border border-slate-700/60 uppercase font-tech tracking-wider">
+                Configuration
+              </button>
+              <button id="btn-restart" class="flex-2 w-2/3 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-bold text-xs rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/20 font-tech tracking-wide uppercase">
+                Retry Reaction
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Game Victory Modal Overlay -->
+        <div id="screen-victory" class="absolute inset-0 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center z-10 hidden transition-all duration-300 overflow-y-auto no-scrollbar">
+          <div class="max-w-md w-full my-auto">
+            <div class="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 mb-3 glow-amber">
+              <svg class="w-8 h-8 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+              </svg>
+            </div>
+            <h2 class="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-emerald-300 mb-1 tracking-tight font-tech">CHEMICAL MAESTRO!</h2>
+            <p class="text-emerald-400 text-sm font-bold mb-3">Successfully Synthesized 118 / 118 Elements!</p>
+            <p class="text-slate-400 text-xs mb-5 leading-relaxed">
+              You've completed the legendary elemental marathon, safely linking molecules from Hydrogen (1) down to Oganesson (118).
+            </p>
             
-            if (topPlayer && bottomPlayer) {
-                if (currentPlayMode === 1) {
-                    topPlayer.groundY = canvas.height / 2;
-                    bottomPlayer.groundY = canvas.height;
-                } else if (currentPlayMode === 2) {
-                    topPlayer.groundY = canvas.height / 2;
-                    bottomPlayer.groundY = canvas.height / 2;
-                } else if (currentPlayMode === 3) {
-                    topPlayer.innerY = canvas.height / 2;
-                    topPlayer.outerY = 0;
-                    bottomPlayer.innerY = canvas.height / 2;
-                    bottomPlayer.outerY = canvas.height;
-                }
-                
-                // Adjust position for opposite mode dynamically
-                if (directionMode === 'opposite') {
-                    bottomPlayer.x = canvas.width - 150;
-                } else {
-                    bottomPlayer.x = 150;
-                }
-            }
+            <div class="grid grid-cols-4 gap-2 mb-5">
+              <div class="bg-slate-900 border border-slate-800 p-2 rounded-lg">
+                <span class="block text-[9px] text-slate-400 uppercase">Total Score</span>
+                <span class="text-base font-black text-emerald-400 font-tech" id="vic-score">1180</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-2 rounded-lg">
+                <span class="block text-[9px] text-slate-400 uppercase">Solve Time</span>
+                <span class="text-base font-black text-cyan-400 font-mono" id="vic-time">00:00</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-2 rounded-lg">
+                <span class="block text-[9px] text-slate-400 uppercase">Difficulty</span>
+                <span class="text-xs font-black text-amber-400 font-tech uppercase leading-7 truncate" id="vic-mode-label">Easy</span>
+              </div>
+              <div class="bg-slate-900 border border-slate-800 p-2 rounded-lg">
+                <span class="block text-[9px] text-slate-400 uppercase">Highlights</span>
+                <span class="text-xs font-black text-pink-400 font-tech uppercase leading-7 truncate" id="vic-highlight-label">Standard</span>
+              </div>
+            </div>
+
+            <div class="flex gap-3">
+              <button id="btn-vic-to-main" class="flex-1 py-3.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-xl text-xs transition-all duration-200 border border-slate-700/60 uppercase font-tech tracking-wider">
+                Configuration
+              </button>
+              <button id="btn-victory-restart" class="flex-2 w-2/3 py-3.5 bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-bold text-xs rounded-xl transition-all duration-200 shadow-lg shadow-emerald-500/20 font-tech tracking-wide uppercase">
+                New Synthesis
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TOUCH & MOBILE D-PAD CONTROLS (Toggled/Shown globally) -->
+      <div class="w-full max-w-[600px] bg-slate-900/40 border border-slate-800/80 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 backdrop-blur-sm">
+        <span class="text-[10px] uppercase font-bold text-slate-500 font-tech tracking-wider mb-2 block sm:hidden">Mobile Reaction Controller</span>
+        <span class="text-[10px] uppercase font-bold text-slate-500 font-tech tracking-wider mb-2 hidden sm:block">Keyboard Arrow keys or swipe/tap the d-pad below to guide chemical synthesis</span>
+        
+        <!-- On-Screen D-Pad -->
+        <div class="grid grid-cols-3 gap-2 w-48">
+          <div></div>
+          <button id="pad-up" class="h-12 w-12 rounded-xl bg-slate-800 active:bg-emerald-500/30 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xl select-none mx-auto transform active:scale-95 transition-all">▲</button>
+          <div></div>
+          
+          <button id="pad-left" class="h-12 w-12 rounded-xl bg-slate-800 active:bg-emerald-500/30 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xl select-none mx-auto transform active:scale-95 transition-all">◀</button>
+          <div class="h-12 w-12 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600 font-tech text-xs select-none mx-auto">S</div>
+          <button id="pad-right" class="h-12 w-12 rounded-xl bg-slate-800 active:bg-emerald-500/30 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xl select-none mx-auto transform active:scale-95 transition-all">▶</button>
+          
+          <div></div>
+          <button id="pad-down" class="h-12 w-12 rounded-xl bg-slate-800 active:bg-emerald-500/30 hover:bg-slate-700 border border-slate-700 flex items-center justify-center text-slate-300 font-bold text-xl select-none mx-auto transform active:scale-95 transition-all">▼</button>
+          <div></div>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- RULES POPUP MODAL -->
+  <div id="modal-rules" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 text-slate-300 relative shadow-2xl">
+      <button id="btn-close-rules" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+      
+      <h3 class="text-2xl font-bold text-white mb-3 font-tech tracking-tight border-b border-slate-800 pb-2">Periodic Snake Protocol</h3>
+      <div class="space-y-3 text-sm leading-relaxed max-h-[70vh] overflow-y-auto pr-2 no-scrollbar">
+        <p>Welcome, Researcher! Your task is to safely guide the biochemical snake to consume correct elements from the Periodic Table in order of atomic weight / number (starting with 1-Hydrogen, up to 118-Oganesson).</p>
+        
+        <h4 class="text-white font-semibold font-tech text-xs uppercase tracking-wider text-emerald-400 mt-4">Safe Operations Rules:</h4>
+        <ul class="list-disc list-inside space-y-1.5 text-xs">
+          <li>Watch the <strong class="text-amber-400">Target Element Box</strong> in the dashboard before making a decision.</li>
+          <li>Look for that exact element tile on the canvas.</li>
+          <li>The canvas spawns <strong>1 Correct target</strong> element and <strong>3 random incorrect</strong> elements.</li>
+          <li>If you collide with an incorrect element, it will cause an unstable chemical cascade, and you will lose 1 reactor life.</li>
+          <li>Steer using arrow keys, WASD, swipe gestures, or the onscreen D-Pad interface.</li>
+        </ul>
+      </div>
+      
+      <button id="btn-rules-ok" class="w-full mt-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl transition-all">
+        ACKNOWLEDGED & READY
+      </button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="text-center text-[11px] text-slate-500 py-4 border-t border-slate-850 bg-slate-950/20">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+      <p>© 2026 Periodic Snake Corp. Educational Chemistry Simulator.</p>
+      <div class="flex space-x-3 text-slate-400">
+        <span>No libraries used</span>
+        <span>•</span>
+        <span>HTML5 Canvas Engine</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- GAME SCRIPT -->
+  <script>
+    // --- STREAMING_CHUNK:Defining 118 Chemical elements dataset... ---
+    // --- 1. PERIODIC TABLE DATA CONFIG (FIRST 118 ELEMENTS) ---
+    const elementsData = [
+      { number: 1, symbol: "H", name: "Hydrogen", mass: "1.008", desc: "The lightest, most abundant chemical substance in the Universe." },
+      { number: 2, symbol: "He", name: "Helium", mass: "4.003", desc: "Colorless, inert gas used inside balloons and cryogenics." },
+      { number: 3, symbol: "Li", name: "Lithium", mass: "6.94", desc: "Lightest solid metal, powering modern rechargeable batteries." },
+      { number: 4, symbol: "Be", name: "Beryllium", mass: "9.012", desc: "Lightweight, highly toxic aerospace structural metal." },
+      { number: 5, symbol: "B", name: "Boron", mass: "10.81", desc: "Metalloid used in fiberglass and high-tech ceramics." },
+      { number: 6, symbol: "C", name: "Carbon", mass: "12.011", desc: "The foundational element for all organic life on Earth." },
+      { number: 7, symbol: "N", name: "Nitrogen", mass: "14.007", desc: "Makes up 78% of Earth's atmosphere; key coolant." },
+      { number: 8, symbol: "O", name: "Oxygen", mass: "15.999", desc: "Highly reactive nonmetal vital for respiration." },
+      { number: 9, symbol: "F", name: "Fluorine", mass: "18.998", desc: "Most chemically reactive halogen; pale yellow gas." },
+      { number: 10, symbol: "Ne", name: "Neon", mass: "20.180", desc: "Noble gas glowing bright reddish-orange in signs." },
+      { number: 11, symbol: "Na", name: "Sodium", mass: "22.990", desc: "Highly reactive alkali metal forming table salt with Cl." },
+      { number: 12, symbol: "Mg", name: "Magnesium", mass: "24.305", desc: "Shiny gray solid metal central to chlorophyll." },
+      { number: 13, symbol: "Al", name: "Aluminum", mass: "26.982", desc: "Lightweight, corrosion-resistant aircraft metal." },
+      { number: 14, symbol: "Si", name: "Silicon", mass: "28.085", desc: "Metalloid at the absolute heart of microchip technology." },
+      { number: 15, symbol: "P", name: "Phosphorus", mass: "30.974", desc: "Reactive nonmetal essential in biological DNA structures." },
+      { number: 16, symbol: "S", name: "Sulfur", mass: "32.06", desc: "Yellow crystals emitting strong match-like odor." },
+      { number: 17, symbol: "Cl", name: "Chlorine", mass: "35.45", desc: "Yellow-green toxic halogen gas used as disinfectant." },
+      { number: 18, symbol: "Ar", name: "Argon", mass: "39.948", desc: "Inert noble gas used to shield industrial welds." },
+      { number: 19, symbol: "K", name: "Potassium", mass: "39.098", desc: "Violently water-reactive metal vital for cell charge." },
+      { number: 20, symbol: "Ca", name: "Calcium", mass: "40.078", desc: "Essential bone-building alkaline earth metal." },
+      { number: 21, symbol: "Sc", name: "Scandium", mass: "44.956", desc: "Rare-earth transition metal used in alloy sports gear." },
+      { number: 22, symbol: "Ti", name: "Titanium", mass: "47.867", desc: "Strong, lightweight, corrosion-resistant transition metal." },
+      { number: 23, symbol: "V", name: "Vanadium", mass: "50.942", desc: "Hard, ductile metal used in high-strength steel alloys." },
+      { number: 24, symbol: "Cr", name: "Chromium", mass: "51.996", desc: "Steely gray metal giving stainless steel its shine." },
+      { number: 25, symbol: "Mn", name: "Manganese", mass: "54.938", desc: "Transition metal essential in steelmaking and batteries." },
+      { number: 26, symbol: "Fe", name: "Iron", mass: "55.845", desc: "Highly abundant metal forming Earth's core; carries oxygen in blood." },
+      { number: 27, symbol: "Co", name: "Cobalt", mass: "58.933", desc: "Magnetic blue-tinted metal used in superalloys." },
+      { number: 28, symbol: "Ni", name: "Nickel", mass: "58.693", desc: "Corrosion-resistant metal used heavily in plating and coins." },
+      { number: 29, symbol: "Cu", name: "Copper", mass: "63.546", desc: "Excellent conductor of electricity and heat; red metal." },
+      { number: 30, symbol: "Zn", name: "Zinc", mass: "65.38", desc: "Bluish metal used to galvanize iron against rust." },
+      { number: 31, symbol: "Ga", name: "Gallium", mass: "69.723", desc: "Metal that melts at body temperature; used in semiconductors." },
+      { number: 32, symbol: "Ge", name: "Germanium", mass: "72.63", desc: "Lustrous hard metalloid used in fiber optics and solar cells." },
+      { number: 33, symbol: "As", name: "Arsenic", mass: "74.922", desc: "Famous metalloid poison; used as a semiconductor dopant." },
+      { number: 34, symbol: "Se", name: "Selenium", mass: "78.971", desc: "Light-sensitive nonmetal used in photocells." },
+      { number: 35, symbol: "Br", name: "Bromine", mass: "79.904", desc: "The only nonmetallic element that is liquid at room temp." },
+      { number: 36, symbol: "Kr", name: "Krypton", mass: "83.798", desc: "Noble gas used in high-speed photographic flashes." },
+      { number: 37, symbol: "Rb", name: "Rubidium", mass: "85.468", desc: "Highly soft, water-reactive alkaline metal." },
+      { number: 38, symbol: "Sr", name: "Strontium", mass: "87.62", desc: "Alkaline earth metal that gives fireworks deep red colors." },
+      { number: 39, symbol: "Y", name: "Yttrium", mass: "88.906", desc: "Silvery transition metal used in superconductor alloys." },
+      { number: 40, symbol: "Zr", name: "Zirconium", mass: "91.224", desc: "Highly corrosion-resistant metal used in nuclear reactors." },
+      { number: 41, symbol: "Nb", name: "Niobium", mass: "92.906", desc: "Transition metal used in cryogenic superconducting magnets." },
+      { number: 42, symbol: "Mo", name: "Molybdenum", mass: "95.95", desc: "Refractory metal with incredibly high melting point." },
+      { number: 43, symbol: "Tc", name: "Technetium", mass: "(98)", desc: "The lightest element with only radioactive isotopes." },
+      { number: 44, symbol: "Ru", name: "Ruthenium", mass: "101.07", desc: "Rare transition metal used in electrical contacts." },
+      { number: 45, symbol: "Rh", name: "Rhodium", mass: "102.91", desc: "Highly reflective, rare precious metal; catalytic converter catalyst." },
+      { number: 46, symbol: "Pd", name: "Palladium", mass: "106.42", desc: "Precious metal filtering hydrogen gas and purifying emissions." },
+      { number: 47, symbol: "Ag", name: "Silver", mass: "107.87", desc: "The element with the highest electrical conductivity." },
+      { number: 48, symbol: "Cd", name: "Cadmium", mass: "112.41", desc: "Toxic soft metal used in plastic stabilizers and electroplating." },
+      { number: 49, symbol: "In", name: "Indium", mass: "114.82", desc: "Extremely soft metal; used to make touchscreen displays." },
+      { number: 50, symbol: "Sn", name: "Tin", mass: "118.71", desc: "Silvery-white metal used in solder and bronze alloys." },
+      { number: 51, symbol: "Sb", name: "Antimony", mass: "121.76", desc: "Flaky, crystalline metalloid used in flame retardants." },
+      { number: 52, symbol: "Te", name: "Tellurium", mass: "127.6", desc: "Rare metalloid widely used in solar panels." },
+      { number: 53, symbol: "I", name: "Iodine", mass: "126.9", desc: "Lustrous purple halogen solid vital for thyroid health." },
+      { number: 54, symbol: "Xe", name: "Xenon", mass: "131.29", desc: "Heavy noble gas used in specialized blue-glow lamps." },
+      { number: 55, symbol: "Cs", name: "Cesium", mass: "132.91", desc: "Liquid-gold metal; defines the atomic clock second." },
+      { number: 56, symbol: "Ba", name: "Barium", mass: "137.33", desc: "Reactive earth metal used as a medical contrast agent." },
+      { number: 57, symbol: "La", name: "Lanthanum", mass: "138.91", desc: "Foundational rare-earth metal used in high-index optics." },
+      { number: 58, symbol: "Ce", name: "Cerium", mass: "140.12", desc: "Most abundant lanthanide; used in lighter flints." },
+      { number: 59, symbol: "Pr", name: "Praseodymium", mass: "140.91", desc: "Lanthanide providing high magnetic fields when alloyed." },
+      { number: 60, symbol: "Nd", name: "Neodymium", mass: "144.24", desc: "Extremely powerful rare-earth permanent magnets." },
+      { number: 61, symbol: "Pm", name: "Promethium", mass: "(145)", desc: "Radioactive lanthanide used in micro-atomic batteries." },
+      { number: 62, symbol: "Sm", name: "Samarium", mass: "150.36", desc: "Lanthanide used in super-stable high-temp magnets." },
+      { number: 63, symbol: "Eu", name: "Europium", mass: "151.96", desc: "Lanthanide producing glowing red phosphor inside TVs." },
+      { number: 64, symbol: "Gd", name: "Gadolinium", mass: "157.25", desc: "Metal with high magnetic properties; used in MRI contrast." },
+      { number: 65, symbol: "Tb", name: "Terbium", mass: "158.93", desc: "Doped into solid-state devices and hybrid sonar." },
+      { number: 66, symbol: "Dy", name: "Dysprosium", mass: "162.50", desc: "Excellent neutron-absorber inside nuclear reactors." },
+      { number: 67, symbol: "Ho", name: "Holmium", mass: "164.93", desc: "Has the highest magnetic strength of any element." },
+      { number: 68, symbol: "Er", name: "Erbium", mass: "167.26", desc: "Pink-tinted element amplifying laser optical fibers." },
+      { number: 69, symbol: "Tm", name: "Thulium", mass: "168.93", desc: "Rarest stable lanthanide; used in portable medical X-rays." },
+      { number: 70, symbol: "Yb", name: "Ytterbium", mass: "173.05", desc: "Soft metal used in ultra-precise atomic clocks." },
+      { number: 71, symbol: "Lu", name: "Lutetium", mass: "174.97", desc: "Heavy lanthanide used in cancer radiation therapies." },
+      { number: 72, symbol: "Hf", name: "Hafnium", mass: "178.49", desc: "Transition metal alloyed in jet engine turbine blades." },
+      { number: 73, symbol: "Ta", name: "Tantalum", mass: "180.95", desc: "Highly corrosion-resistant metal used in micro-capacitors." },
+      { number: 74, symbol: "W", name: "Tungsten", mass: "183.84", desc: "Transition metal with the highest melting point of all elements." },
+      { number: 75, symbol: "Re", name: "Rhenium", mass: "186.21", desc: "Extremely dense refractory metal used in aviation components." },
+      { number: 76, symbol: "Os", name: "Osmium", mass: "190.23", desc: "The densest naturally occurring element." },
+      { number: 77, symbol: "Ir", name: "Iridium", mass: "192.22", desc: "Most corrosion-resistant metal; rare in Earth's crust." },
+      { number: 78, symbol: "Pt", name: "Platinum", mass: "195.08", desc: "Highly prized noble precious metal and exhaust catalyst." },
+      { number: 79, symbol: "Au", name: "Gold", mass: "196.97", desc: "Beautiful, highly non-reactive precious coinage metal." },
+      { number: 80, symbol: "Hg", name: "Mercury", mass: "200.59", desc: "Liquid silver-metallic poison; used in barometers." },
+      { number: 81, symbol: "Tl", name: "Thallium", mass: "204.38", desc: "Highly toxic metal used in infrared tracking sensors." },
+      { number: 82, symbol: "Pb", name: "Lead", mass: "207.2", desc: "Heavy, dense toxic shielding metal block." },
+      { number: 83, symbol: "Bi", name: "Bismuth", mass: "208.98", desc: "Crystalline metal with colorful rainbow oxide skin." },
+      { number: 84, symbol: "Po", name: "Polonium", mass: "(209)", desc: "Super-radioactive discovery of Marie Curie." },
+      { number: 85, symbol: "At", name: "Astatine", mass: "(210)", desc: "Rarest element in the earth's crust; decays rapidly." },
+      { number: 86, symbol: "Rn", name: "Radon", mass: "(222)", desc: "Heavy, radioactive gaseous noble hazard." },
+      { number: 87, symbol: "Fr", name: "Francium", mass: "(223)", desc: "Exceedingly unstable alkali metal; vaporizes in air." },
+      { number: 88, symbol: "Ra", name: "Radium", mass: "(226)", desc: "Extremely radioactive metal formerly in glow watches." },
+      { number: 89, symbol: "Ac", name: "Actinium", mass: "(227)", desc: "Glows with a blue light; highly radioactive." },
+      { number: 90, symbol: "Th", name: "Thorium", mass: "232.04", desc: "Energy-dense fuel candidate for safe nuclear power." },
+      { number: 91, symbol: "Pa", name: "Protactinium", mass: "231.04", desc: "Dense radioactive metal forming midway to Uranium." },
+      { number: 92, symbol: "U", name: "Uranium", mass: "238.03", desc: "Naturally occurring heavy metal; fuels nuclear plants." },
+      { number: 93, symbol: "Np", name: "Neptunium", mass: "(237)", desc: "First synthetic transuranic element discovered." },
+      { number: 94, symbol: "Pu", name: "Plutonium", mass: "(244)", desc: "Highly radioactive synthetic fuel for reactor designs." },
+      { number: 95, symbol: "Am", name: "Americium", mass: "(243)", desc: "Synthetic emitter used inside household smoke detectors." },
+      { number: 96, symbol: "Cm", name: "Curium", mass: "(247)", desc: "Synthetic radioactive element named after the Curies." },
+      { number: 97, symbol: "Bk", name: "Berkelium", mass: "(247)", desc: "Created at Berkeley; highly radioactive actinide." },
+      { number: 98, symbol: "Cf", name: "Californium", mass: "(251)", desc: "Synthetic element generating rich neutron emissions." },
+      { number: 99, symbol: "Es", name: "Einsteinium", mass: "(252)", desc: "Discovered in thermonuclear debris; named after Einstein." },
+      { number: 100, symbol: "Fm", name: "Fermium", mass: "(257)", desc: "Heaviest element synthesizable by neutron bombardment." },
+      { number: 101, symbol: "Md", name: "Mendelevium", mass: "(258)", desc: "Named in honor of Dmitri Mendeleev, periodic founder." },
+      { number: 102, symbol: "No", name: "Nobelium", mass: "(259)", desc: "Synthetic actinide named in honor of Alfred Nobel." },
+      { number: 103, symbol: "Lr", name: "Lawrencium", mass: "(266)", desc: "Final member of the synthetic actinide series." },
+      { number: 104, symbol: "Rf", name: "Rutherfordium", mass: "(267)", desc: "Highly unstable superheavy synthetic element." },
+      { number: 105, symbol: "Db", name: "Dubnium", mass: "(268)", desc: "Named after Joint Institute nuclear center in Russia." },
+      { number: 106, symbol: "Sg", name: "Seaborgium", mass: "(269)", desc: "Named in honor of chemist Glenn T. Seaborg." },
+      { number: 107, symbol: "Bh", name: "Bohrium", mass: "(270)", desc: "Named after Danish quantum physicist Niels Bohr." },
+      { number: 108, symbol: "Hs", name: "Hassium", mass: "(277)", desc: "Superheavy element named after German state of Hesse." },
+      { number: 109, symbol: "Mt", name: "Meitnerium", mass: "(278)", desc: "Named in honor of nuclear physicist Lise Meitner." },
+      { number: 110, symbol: "Ds", name: "Darmstadtium", mass: "(281)", desc: "Discovered in Darmstadt, Germany; highly unstable." },
+      { number: 111, symbol: "Rg", name: "Roentgenium", mass: "(282)", desc: "Named after X-ray discoverer Wilhelm Röntgen." },
+      { number: 112, symbol: "Cn", name: "Copernicium", mass: "(285)", desc: "Superheavy element named after Nicolaus Copernicus." },
+      { number: 113, symbol: "Nh", name: "Nihonium", mass: "(286)", desc: "Discovered by RIKEN scientists in Tokyo, Japan." },
+      { number: 114, symbol: "Fl", name: "Flerovium", mass: "(289)", desc: "Named after Flerov Laboratory of Nuclear Reactions." },
+      { number: 115, symbol: "Mc", name: "Moscovium", mass: "(290)", desc: "Superheavy synthetic actinide discovered in Dubna." },
+      { number: 116, symbol: "Lv", name: "Livermorium", mass: "(293)", desc: "Named in honor of Lawrence Livermore Laboratory." },
+      { number: 117, symbol: "Ts", name: "Tennessine", mass: "(294)", desc: "Second-heaviest element, named after Tennessee state." },
+      { number: 118, symbol: "Og", name: "Oganesson", mass: "(294)", desc: "The heaviest element, named after physicist Yuri Oganessian." }
+    ];
+
+    // --- STREAMING_CHUNK:Configuring chemical audio synthesizer... ---
+    // --- 2. SOUND SYNTHESIZER (Web Audio API) ---
+    let soundEnabled = true;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSynthBeep(type) {
+      if (!soundEnabled) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        const now = audioCtx.currentTime;
+
+        if (type === 'correct') {
+          // Energetic ascending futuristic electronic blip
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(880, now + 0.15);
+          gainNode.gain.setValueAtTime(0.2, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+          osc.start(now);
+          osc.stop(now + 0.18);
+        } else if (type === 'wrong' || type === 'crash') {
+          // Low buzzy explosion frequency slide downwards
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(150, now);
+          osc.frequency.linearRampToValueAtTime(40, now + 0.4);
+          gainNode.gain.setValueAtTime(0.3, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.42);
+          osc.start(now);
+          osc.stop(now + 0.42);
+        } else if (type === 'victory') {
+          // Fun chemistry scale fanfare!
+          const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+          notes.forEach((freq, idx) => {
+            const o = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            o.connect(g);
+            g.connect(audioCtx.destination);
+            o.type = 'triangle';
+            o.frequency.setValueAtTime(freq, now + idx * 0.12);
+            g.gain.setValueAtTime(0.15, now + idx * 0.12);
+            g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.25);
+            o.start(now + idx * 0.12);
+            o.stop(now + idx * 0.12 + 0.25);
+          });
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+      } catch (err) {
+        console.warn("Audio synthesis error: ", err);
+      }
+    }
 
-        class Particle {
-            constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.size = Math.random() * 4 + 1;
-                this.speedX = Math.random() * 4 - 2;
-                this.speedY = Math.random() * 4 - 2;
-                this.color = color;
-                this.life = 1.0;
-                this.decay = Math.random() * 0.05 + 0.02;
-            }
-            update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.life -= this.decay;
-            }
-            draw() {
-                ctx.globalAlpha = Math.max(0, this.life);
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.globalAlpha = 1.0;
-            }
+    // --- STREAMING_CHUNK:Initializing state controls... ---
+    // --- 3. UI STATE & INTERACTION DOM ELEMENTS ---
+    const trackerContainer = document.getElementById("periodic-tracker");
+    const trackerScrollContainer = document.getElementById("tracker-scroll-container");
+    const targetSpecTile = document.getElementById("target-spec-tile");
+    const targetSpecNum = document.getElementById("target-spec-num");
+    const targetSpecSymbol = document.getElementById("target-spec-symbol");
+    const targetSpecWeight = document.getElementById("target-spec-weight");
+    const targetSpecName = document.getElementById("target-spec-name");
+    const targetSpecDesc = document.getElementById("target-spec-desc");
+    
+    // Progress Indicators
+    const progressPercentage = document.getElementById("progress-percentage");
+    const progressBar = document.getElementById("progress-bar");
+    
+    const statScore = document.getElementById("stat-score");
+    const statHighScore = document.getElementById("stat-highscore");
+    const statTimer = document.getElementById("stat-timer");
+    const bannerTargetName = document.getElementById("banner-target-name");
+    const selectSpeed = document.getElementById("select-speed");
+
+    // Overlay Screens
+    const screenStart = document.getElementById("screen-start");
+    const screenGameOver = document.getElementById("screen-gameover");
+    const screenVictory = document.getElementById("screen-victory");
+    
+    // Buttons
+    const btnStart = document.getElementById("btn-start");
+    const btnRestart = document.getElementById("btn-restart");
+    const btnVictoryRestart = document.getElementById("btn-victory-restart");
+    const btnRules = document.getElementById("btn-rules");
+    const btnRulesOk = document.getElementById("btn-rules-ok");
+    const btnCloseRules = document.getElementById("btn-close-rules");
+    const modalRules = document.getElementById("modal-rules");
+    const soundToggle = document.getElementById("sound-toggle");
+    const soundIcon = document.getElementById("sound-icon");
+    const btnGoToMain = document.getElementById("btn-go-to-main");
+    const btnVicToMain = document.getElementById("btn-vic-to-main");
+
+    // Game stats
+    const gameOverReason = document.getElementById("gameover-reason");
+    const goElementsCount = document.getElementById("go-elements-count");
+    const goScore = document.getElementById("go-score");
+    const goTime = document.getElementById("go-time");
+    const goFailedTarget = document.getElementById("go-failed-target");
+    const vicScore = document.getElementById("vic-score");
+    const vicTime = document.getElementById("vic-time");
+
+    // --- STREAMING_CHUNK:Configuring variables for targeting configurations... ---
+    // --- 4. GAME ENGINE VARIABLES ---
+    const canvas = document.getElementById("game-canvas");
+    const ctx = canvas.getContext("2d");
+
+    const GRID_SIZE = 20; // 20 x 20 cells
+    const CELL_PIXELS = canvas.width / GRID_SIZE; // Each block is 30x30 pixels (for 600 width)
+
+    let snake = [];
+    let currentDirection = 'right';
+    let nextDirection = 'right';
+    let score = 0;
+    let lives = 3; // Starting structural lives for the synthesis reactor
+    let highscore = parseInt(localStorage.getItem("periodic_snake_highscore") || "0");
+    let targetIndex = 0; // Current atomic index being sought (0-117 corresponds to H - Og)
+    let spawnedOptions = []; // Array of 4 spawned element nodes on grid
+    let particles = []; // Particle explosion pool
+    let gameLoopIntervalId = null;
+    let clockIntervalId = null;
+    let isGameRunning = false;
+    let gameSeconds = 0;
+    
+    // Game Options State
+    let difficultyMode = 'easy'; // 'easy' (symbol & atomic number), 'difficult' (symbols only)
+    let highlightMode = 'on'; // 'on' (correct card glows & specs shown), 'off' (no board highlight & specs hidden until eaten)
+
+    // Save Highscore on startup
+    statHighScore.textContent = highscore;
+
+    // Updates structural lives UI counter using animated chemical indicators
+    function updateLivesUI() {
+      const statLives = document.getElementById("stat-lives");
+      if (statLives) {
+        statLives.innerHTML = '❤️'.repeat(lives) || '<span class="text-xs text-red-500 font-bold font-tech">MELTDOWN</span>';
+      }
+    }
+
+    // Initialize Periodic Table progress tracker in UI sidebar
+    function buildPeriodicHUD() {
+      trackerContainer.innerHTML = '';
+      elementsData.forEach((element, i) => {
+        const item = document.createElement("div");
+        item.className = `periodic-item flex flex-col justify-between p-1.5 border rounded-lg text-center select-none ${
+          i === 0 ? 'bg-amber-500/10 border-amber-500/80 text-amber-400 font-extrabold pulse-target-element shadow-sm' : 'bg-slate-950/40 border-slate-800/80 text-slate-500'
+        }`;
+        item.id = `tracker-${i}`;
+        item.innerHTML = `
+          <span class="text-[8px] font-mono font-bold leading-none">${element.number}</span>
+          <span class="text-sm font-tech leading-tight font-black">${element.symbol}</span>
+        `;
+        trackerContainer.appendChild(item);
+      });
+    }
+    buildPeriodicHUD();
+
+    // --- STREAMING_CHUNK:Adapting hud readouts for highlight configuration... ---
+    // Updates HUD styles relative to active targetIndex & triggers auto-scrolling
+    function updatePeriodicHUD() {
+      elementsData.forEach((element, i) => {
+        const item = document.getElementById(`tracker-${i}`);
+        if (!item) return;
+
+        // Reset class defaults
+        item.className = "periodic-item flex flex-col justify-between p-1.5 border rounded-lg text-center select-none";
+        item.classList.remove("pulse-target-element", "glow-amber", "shadow-sm");
+
+        let numberText = element.number;
+        let symbolText = element.symbol;
+
+        if (highlightMode === 'on') {
+          if (i < targetIndex) {
+            // Successfully synthesized elements
+            item.classList.add("bg-emerald-500/15", "border-emerald-500/60", "text-emerald-400", "font-bold");
+          } else if (i === targetIndex) {
+            // Current target element
+            item.classList.add("bg-amber-500/10", "border-amber-500/80", "text-amber-400", "font-extrabold", "pulse-target-element", "shadow-md");
+          } else {
+            // Future locked elements
+            item.classList.add("bg-slate-950/40", "border-slate-800/80", "text-slate-500");
+          }
+        } else {
+          // No Highlight Mode (Blind Protocol) - hide current & future elements
+          if (i < targetIndex) {
+            // Revealed after being successfully synthesized
+            item.classList.add("bg-emerald-500/15", "border-emerald-500/60", "text-emerald-400", "font-bold");
+          } else {
+            // Kept masked & hidden
+            item.classList.add("bg-slate-950/40", "border-slate-800/80", "text-slate-755");
+            numberText = "?";
+            symbolText = "?";
+          }
         }
 
-        function createExplosion(x, y, color) {
-            for(let i=0; i<20; i++) {
-                particles.push(new Particle(x, y, color));
-            }
-        }
+        item.innerHTML = `
+          <span class="text-[8px] font-mono font-bold leading-none">${numberText}</span>
+          <span class="text-sm font-tech leading-tight font-black">${symbolText}</span>
+        `;
+      });
 
-        class Stickman {
-            constructor(lane, color) {
-                this.lane = lane;
-                this.color = color;
-                
-                // Set X based on direction mode
-                this.dirModifier = (directionMode === 'opposite' && lane === 'bottom') ? -1 : 1;
-                this.x = this.dirModifier === 1 ? 150 : canvas.width - 150;
-                
-                this.baseHeight = 60;
-                this.width = 30;
-                this.height = this.baseHeight;
-                this.vy = 0;
-                this.runCycle = 0;
-
-                if (currentPlayMode === 1) {
-                    this.groundY = lane === 'top' ? canvas.height / 2 : canvas.height;
-                    this.y = this.groundY;
-                    this.upsideDown = false;
-                    this.controls = lane === 'top' ? {jump: 'w', duck: 's'} : {jump: 'ArrowUp', duck: 'ArrowDown'};
-                    this.gravity = 0.6;
-                    this.jumpForce = -12;
-                    this.duckMultiplier = 2;
-                    this.isJumping = false;
-                    this.isDucking = false;
-                } else if (currentPlayMode === 2) {
-                    this.groundY = canvas.height / 2;
-                    this.y = this.groundY;
-                    this.upsideDown = lane === 'bottom';
-                    this.controls = lane === 'top' ? {jump: 'w', duck: 's'} : {jump: 'ArrowDown', duck: 'ArrowUp'};
-                    this.gravity = 0.6;
-                    this.jumpForce = -12;
-                    this.duckMultiplier = 2;
-                    this.isJumping = false;
-                    this.isDucking = false;
-                } else if (currentPlayMode === 3) {
-                    this.innerY = canvas.height / 2;
-                    this.outerY = lane === 'top' ? 0 : canvas.height;
-                    this.y = this.innerY;
-                    this.gravityDir = lane === 'top' ? 1 : -1; 
-                    this.controls = lane === 'top' ? {outer: 'w', inner: 's'} : {inner: 'ArrowUp', outer: 'ArrowDown'};
-                    this.gravityValue = 0.8;
-                    this.isOnGround = true;
-                }
-            }
-
-            get isUpsideDown() {
-                if (currentPlayMode === 3) return this.gravityDir === -1;
-                return this.upsideDown;
-            }
-
-            update() {
-                if (currentPlayMode === 1 || currentPlayMode === 2) {
-                    if (keys[this.controls.duck]) {
-                        this.isDucking = true;
-                        if (this.isJumping) {
-                            this.vy += (this.isUpsideDown ? -this.gravity : this.gravity) * this.duckMultiplier;
-                        }
-                    } else {
-                        this.isDucking = false;
-                    }
-
-                    if (keys[this.controls.jump] && !this.isJumping && !this.isDucking) {
-                        this.vy = this.isUpsideDown ? -this.jumpForce : this.jumpForce;
-                        this.isJumping = true;
-                        createExplosion(this.x, this.groundY, '#555');
-                    }
-
-                    this.vy += this.isUpsideDown ? -this.gravity : this.gravity;
-                    this.y += this.vy;
-
-                    if (this.isUpsideDown ? this.y <= this.groundY : this.y >= this.groundY) {
-                        this.y = this.groundY;
-                        this.vy = 0;
-                        this.isJumping = false;
-                    }
-
-                    this.height = this.isDucking ? this.baseHeight / 2 : this.baseHeight;
-                    
-                    if (!this.isJumping) this.runCycle += 0.2 * speedMultiplier;
-                    else this.runCycle = 0;
-
-                } else if (currentPlayMode === 3) {
-                    if (keys[this.controls.outer]) this.gravityDir = this.lane === 'top' ? -1 : 1;
-                    if (keys[this.controls.inner]) this.gravityDir = this.lane === 'top' ? 1 : -1;
-
-                    this.vy += this.gravityValue * this.gravityDir;
-                    this.y += this.vy;
-                    this.isOnGround = false;
-
-                    if (this.lane === 'top') {
-                        if (this.y >= this.innerY) { this.y = this.innerY; this.vy = 0; this.isOnGround = true; }
-                        if (this.y <= this.outerY) { this.y = this.outerY; this.vy = 0; this.isOnGround = true; }
-                    } else {
-                        if (this.y <= this.innerY) { this.y = this.innerY; this.vy = 0; this.isOnGround = true; }
-                        if (this.y >= this.outerY) { this.y = this.outerY; this.vy = 0; this.isOnGround = true; }
-                    }
-
-                    if (this.isOnGround) this.runCycle += 0.2 * speedMultiplier;
-                    else this.runCycle = 0;
-                }
-            }
-
-            draw() {
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                // Flip vertically if upside down, flip horizontally if running right-to-left
-                ctx.scale(this.dirModifier, this.isUpsideDown ? -1 : 1);
-                ctx.translate(-this.x, -this.y);
-
-                ctx.strokeStyle = this.color;
-                ctx.lineWidth = 4;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-
-                const isDucking = (currentPlayMode !== 3 && this.isDucking);
-                const basePathY = this.y - (isDucking ? 20 : 0);
-                const headY = basePathY - this.height + 10;
-                const neckY = headY + 10;
-                const pelvisY = basePathY - 20;
-
-                ctx.beginPath();
-                ctx.arc(this.x, headY, 10, 0, Math.PI * 2);
-                
-                ctx.moveTo(this.x, neckY);
-                ctx.lineTo(this.x + (isDucking ? 15 : 0), pelvisY); 
-
-                const centerBodyX = this.x + (isDucking ? 15 : 0);
-
-                if (currentPlayMode === 3 && !this.isOnGround) {
-                    ctx.moveTo(this.x, neckY + 5);
-                    ctx.lineTo(this.x - 15, neckY - 10);
-                    ctx.moveTo(this.x, neckY + 5);
-                    ctx.lineTo(this.x + 15, neckY - 10);
-                    ctx.moveTo(this.x, pelvisY);
-                    ctx.lineTo(this.x - 10, this.y - 10);
-                    ctx.moveTo(this.x, pelvisY);
-                    ctx.lineTo(this.x + 10, this.y - 10);
-                } else if (currentPlayMode !== 3 && this.isJumping) {
-                    ctx.moveTo(this.x, neckY + 5);
-                    ctx.lineTo(this.x - 15, neckY - 10);
-                    ctx.moveTo(this.x, neckY + 5);
-                    ctx.lineTo(this.x + 15, neckY - 10);
-                    ctx.moveTo(centerBodyX, pelvisY);
-                    ctx.lineTo(this.x - 10, this.y - 10);
-                    ctx.lineTo(this.x - 10, this.y);
-                    ctx.moveTo(centerBodyX, pelvisY);
-                    ctx.lineTo(this.x + 15, this.y - 15);
-                    ctx.lineTo(this.x + 20, this.y - 5);
-                } else if (currentPlayMode !== 3 && this.isDucking) {
-                    ctx.moveTo(this.x, neckY + 5);
-                    ctx.lineTo(centerBodyX + 15, pelvisY - 5);
-                    ctx.moveTo(centerBodyX, pelvisY);
-                    ctx.lineTo(this.x - 15, this.y);
-                    ctx.moveTo(centerBodyX, pelvisY);
-                    ctx.lineTo(this.x + 20, this.y);
-                } else {
-                    const swing = Math.sin(this.runCycle) * 20;
-                    ctx.moveTo(this.x, neckY + 5);
-                    ctx.lineTo(this.x - swing, pelvisY - 5);
-                    ctx.moveTo(this.x, neckY + 5);
-                    ctx.lineTo(this.x + swing, pelvisY - 5);
-                    ctx.moveTo(centerBodyX, pelvisY);
-                    ctx.lineTo(this.x + swing, this.y);
-                    ctx.moveTo(centerBodyX, pelvisY);
-                    ctx.lineTo(this.x - swing, this.y);
-                }
-                
-                ctx.stroke();
-                ctx.restore();
-            }
-            
-            getBounds() {
-                return {
-                    x: this.x - this.width/2,
-                    y: this.isUpsideDown ? this.y : this.y - this.height,
-                    width: this.width,
-                    height: this.height
-                };
-            }
-        }
-
-        class Obstacle {
-            constructor(lane) {
-                this.lane = lane;
-                this.width = 30 + Math.random() * 20;
-                this.color = lane === 'top' ? '#06b6d4' : '#ef4444';
-                
-                // Spawn location based on direction
-                this.dirModifier = (directionMode === 'opposite' && lane === 'bottom') ? -1 : 1;
-                this.x = this.dirModifier === 1 ? canvas.width : -this.width;
-                
-                if (currentPlayMode === 1 || currentPlayMode === 2) {
-                    this.type = Math.random() > 0.5 ? 'ground' : 'air';
-                    if (currentPlayMode === 1) {
-                        this.groundY = lane === 'top' ? canvas.height / 2 : canvas.height;
-                        this.upsideDown = false;
-                    } else {
-                        this.groundY = canvas.height / 2;
-                        this.upsideDown = lane === 'bottom';
-                    }
-
-                    if (this.type === 'ground') {
-                        this.height = 30 + Math.random() * 20;
-                        this.y = this.groundY;
-                    } else {
-                        this.height = 20;
-                        let gap = 50 + Math.random() * 10;
-                        this.y = this.upsideDown ? this.groundY + gap : this.groundY - gap; 
-                    }
-                } else if (currentPlayMode === 3) {
-                    this.position = Math.random() > 0.5 ? 'inner' : 'outer';
-                    this.height = 30 + Math.random() * 20;
-                    this.innerY = canvas.height / 2;
-                    this.outerY = lane === 'top' ? 0 : canvas.height;
-                    
-                    this.y = this.position === 'inner' ? this.innerY : this.outerY;
-                    this.type = 'ground'; // Draw as spike
-                    
-                    if (this.lane === 'top' && this.position === 'inner') this.upsideDown = false;
-                    else if (this.lane === 'top' && this.position === 'outer') this.upsideDown = true;
-                    else if (this.lane === 'bottom' && this.position === 'inner') this.upsideDown = true;
-                    else if (this.lane === 'bottom' && this.position === 'outer') this.upsideDown = false;
-                }
-            }
-
-            update() {
-                this.x -= (gameSpeed * speedMultiplier) * this.dirModifier;
-            }
-
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = this.color;
-                
-                if (this.type === 'ground') {
-                    ctx.beginPath();
-                    if (this.upsideDown) {
-                        ctx.moveTo(this.x, this.y);
-                        ctx.lineTo(this.x + this.width/2, this.y + this.height);
-                        ctx.lineTo(this.x + this.width, this.y);
-                    } else {
-                        ctx.moveTo(this.x, this.y);
-                        ctx.lineTo(this.x + this.width/2, this.y - this.height);
-                        ctx.lineTo(this.x + this.width, this.y);
-                    }
-                    ctx.fill();
-                } else {
-                    if (this.upsideDown) ctx.fillRect(this.x, this.y, this.width, this.height);
-                    else ctx.fillRect(this.x, this.y - this.height, this.width, this.height);
-                }
-                
-                ctx.shadowBlur = 0;
-            }
-
-            getBounds() {
-                if (this.type === 'ground') {
-                    return {
-                        x: this.x + 5,
-                        y: this.upsideDown ? this.y + 5 : this.y - this.height + 5,
-                        width: this.width - 10,
-                        height: this.height - 5
-                    };
-                } else {
-                    return {
-                        x: this.x,
-                        y: this.upsideDown ? this.y : this.y - this.height,
-                        width: this.width,
-                        height: this.height
-                    };
-                }
-            }
-        }
-
-        window.addEventListener('keydown', (e) => {
-            if (keys.hasOwnProperty(e.key) || e.key === 'w' || e.key === 's' || e.key === 'W' || e.key === 'S') {
-                const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-                if(keys.hasOwnProperty(key)) keys[key] = true;
-            }
+      // Smooth Auto-Scrolling Timeline Viewport Logic
+      const activeItem = document.getElementById(`tracker-${targetIndex}`);
+      if (activeItem && trackerScrollContainer) {
+        const containerHeight = trackerScrollContainer.clientHeight;
+        const itemTop = activeItem.offsetTop;
+        const itemHeight = activeItem.clientHeight;
+        // Scroll targetIndex directly to center focus of the HUD window
+        trackerScrollContainer.scrollTo({
+          top: itemTop - (containerHeight / 2) + (itemHeight / 2),
+          behavior: 'smooth'
         });
+      }
 
-        window.addEventListener('keyup', (e) => {
-             if (keys.hasOwnProperty(e.key) || e.key === 'w' || e.key === 's' || e.key === 'W' || e.key === 'S') {
-                const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-                if(keys.hasOwnProperty(key)) keys[key] = false;
-            }
+      // Configure specification details with conditional reveal in no-highlight mode
+      const target = elementsData[targetIndex] || elementsData[0];
+      const prevTarget = targetIndex > 0 ? elementsData[targetIndex - 1] : null;
+      const specTitleHeader = targetSpecTile.parentElement.previousElementSibling;
+
+      if (highlightMode === 'on') {
+        // Standard Behavior: target specs shown in advance
+        if (specTitleHeader) specTitleHeader.textContent = "Target Chemical Specification";
+        targetSpecTile.className = "w-16 h-16 rounded-xl border-2 border-amber-500/80 bg-amber-500/10 flex flex-col justify-between p-2 text-amber-400 shadow-md shadow-amber-500/10 pulse-target-element transition-all duration-300 shrink-0";
+        
+        targetSpecNum.textContent = target.number;
+        targetSpecSymbol.textContent = target.symbol;
+        targetSpecWeight.textContent = target.mass;
+        targetSpecName.textContent = target.name;
+        targetSpecDesc.textContent = target.desc;
+        
+        if (difficultyMode === 'easy') {
+          bannerTargetName.textContent = `${target.name} (${target.symbol}) - #${target.number}`;
+        } else {
+          bannerTargetName.textContent = `${target.name} (${target.symbol})`;
+        }
+      } else {
+        // Blind Behavior: spec reveals what was JUST synthesized and next target is redacted
+        if (specTitleHeader) specTitleHeader.textContent = "Synthesized Chemical Specification";
+        
+        if (prevTarget) {
+          // Reveal the element that was successfully eaten!
+          targetSpecTile.className = "w-16 h-16 rounded-xl border-2 border-emerald-500/80 bg-emerald-500/10 flex flex-col justify-between p-2 text-emerald-400 shadow-md shadow-emerald-500/10 transition-all duration-300 shrink-0";
+          targetSpecNum.textContent = prevTarget.number;
+          targetSpecSymbol.textContent = prevTarget.symbol;
+          targetSpecWeight.textContent = prevTarget.mass;
+          targetSpecName.textContent = prevTarget.name;
+          targetSpecDesc.textContent = prevTarget.desc;
+        } else {
+          // Redacted initial state
+          targetSpecTile.className = "w-16 h-16 rounded-xl border-2 border-slate-700 bg-slate-800/20 flex flex-col justify-between p-2 text-slate-500 transition-all duration-300 shrink-0";
+          targetSpecNum.textContent = "?";
+          targetSpecSymbol.textContent = "?";
+          targetSpecWeight.textContent = "?.???";
+          targetSpecName.textContent = "Data Link Locked";
+          targetSpecDesc.textContent = "Next chemical parameters are concealed. Ingest the correct tile to map sequence data.";
+        }
+
+        // Conceal upcoming target metrics on the banner
+        bannerTargetName.textContent = `Atomic Number #${targetIndex + 1}`;
+      }
+
+      // Smooth progress metrics updating
+      const pct = Math.round((targetIndex / elementsData.length) * 100);
+      progressPercentage.textContent = `${pct}% Done`;
+      if (progressBar) {
+        progressBar.style.width = `${pct}%`;
+      }
+    }
+
+    // Formats seconds into a high-tech timer readout (MM:SS)
+    function formatTime(totalSeconds) {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // --- STREAMING_CHUNK:Configuring grid and coordinates logic... ---
+    // --- 5. GAME LOGIC HANDLERS ---
+
+    // Initialize snake body
+    function resetSnake() {
+      snake = [
+        {x: 5, y: 10}, // Head
+        {x: 4, y: 10},
+        {x: 3, y: 10}  // Tail
+      ];
+      currentDirection = 'right';
+      nextDirection = 'right';
+    }
+
+    // Pick 4 coordinates on canvas without overlapping snake or each other
+    function generateFreeCoordinates() {
+      const forbiddenCoords = new Set();
+      // Add snake positions to forbidden
+      snake.forEach(seg => forbiddenCoords.add(`${seg.x},${seg.y}`));
+      
+      const picks = [];
+      while (picks.length < 4) {
+        const rx = Math.floor(Math.random() * GRID_SIZE);
+        const ry = Math.floor(Math.random() * GRID_SIZE);
+        const key = `${rx},${ry}`;
+        
+        // Ensure not on snake or already picked
+        if (!forbiddenCoords.has(key)) {
+          picks.push({x: rx, y: ry});
+          forbiddenCoords.add(key); // prevent duplicates
+        }
+      }
+      return picks;
+    }
+
+    // Populate the 4 interactive chemical tiles using nearby elements for higher educational value
+    function spawnElements() {
+      const coords = generateFreeCoordinates();
+      const currentTarget = elementsData[targetIndex];
+
+      // Generate distractors from elements that are physically near the target in the periodic sequence
+      let candidateIndices = [];
+      let delta = 3; // Standard window of +/- 3 atomic numbers
+      
+      // Expand search window dynamically if boundary constraints prevent finding 3 unique distractors
+      while (candidateIndices.length < 3) {
+        candidateIndices = [];
+        for (let d = -delta; d <= delta; d++) {
+          if (d === 0) continue; // Skip the target element itself
+          const idx = targetIndex + d;
+          if (idx >= 0 && idx < elementsData.length) {
+            candidateIndices.push(idx);
+          }
+        }
+        if (candidateIndices.length < 3) {
+          delta++;
+        } else {
+          break;
+        }
+      }
+
+      // Shuffle the nearby candidates and select exactly 3 distractors
+      const shuffledCandidates = candidateIndices.sort(() => 0.5 - Math.random());
+      const selectedIncorrect = [
+        elementsData[shuffledCandidates[0]],
+        elementsData[shuffledCandidates[1]],
+        elementsData[shuffledCandidates[2]]
+      ];
+
+      const draftOptions = [
+        { ...currentTarget, isCorrect: true, x: coords[0].x, y: coords[0].y },
+        { ...selectedIncorrect[0], isCorrect: false, x: coords[1].x, y: coords[1].y },
+        { ...selectedIncorrect[1], isCorrect: false, x: coords[2].x, y: coords[2].y },
+        { ...selectedIncorrect[2], isCorrect: false, x: coords[3].x, y: coords[3].y }
+      ];
+
+      // Randomize correct element position on the game grid
+      spawnedOptions = draftOptions.sort(() => 0.5 - Math.random());
+    }
+
+    // Spawn colorful visual particles around a location
+    function spawnExplosion(cx, cy, color) {
+      const canvasX = cx * CELL_PIXELS + CELL_PIXELS / 2;
+      const canvasY = cy * CELL_PIXELS + CELL_PIXELS / 2;
+      for (let i = 0; i < 20; i++) {
+        particles.push({
+          x: canvasX,
+          y: canvasY,
+          vx: (Math.random() - 0.5) * 8,
+          vy: (Math.random() - 0.5) * 8,
+          radius: Math.random() * 4 + 2,
+          color: color,
+          alpha: 1,
+          life: 30 + Math.random() * 20
         });
+      }
+    }
 
-        function checkCollision(rect1, rect2) {
-            return (
-                rect1.x < rect2.x + rect2.width &&
-                rect1.x + rect1.width > rect2.x &&
-                rect1.y < rect2.y + rect2.height &&
-                rect1.y + rect1.height > rect2.y
-            );
+    // --- STREAMING_CHUNK:Refining mistake and loop tick actions... ---
+    // Game loop ticks
+    function updateGame() {
+      // Buffer input locks
+      currentDirection = nextDirection;
+
+      // Calculate next head position
+      const head = snake[0];
+      let newHead = { x: head.x, y: head.y };
+
+      switch (currentDirection) {
+        case 'up':    newHead.y -= 1; break;
+        case 'down':  newHead.y += 1; break;
+        case 'left':  newHead.x -= 1; break;
+        case 'right': newHead.x += 1; break;
+      }
+
+      // Check containment walls collision
+      if (newHead.x < 0 || newHead.x >= GRID_SIZE || newHead.y < 0 || newHead.y >= GRID_SIZE) {
+        triggerGameOver("Wall impact containment breach!");
+        return;
+      }
+
+      // Check self-collision
+      for (let i = 0; i < snake.length; i++) {
+        if (snake[i].x === newHead.x && snake[i].y === newHead.y) {
+          triggerGameOver("The biochemical chain collapsed in self-collision!");
+          return;
+        }
+      }
+
+      // Add head to the front
+      snake.unshift(newHead);
+
+      // Check interaction with elements
+      let eatenElement = null;
+      let eatenIndex = -1;
+
+      for (let i = 0; i < spawnedOptions.length; i++) {
+        if (spawnedOptions[i].x === newHead.x && spawnedOptions[i].y === newHead.y) {
+          eatenElement = spawnedOptions[i];
+          eatenIndex = i;
+          break;
+        }
+      }
+
+      if (eatenElement) {
+        if (eatenElement.isCorrect) {
+          // Success sequence
+          score += 10;
+          statScore.textContent = score;
+
+          // Sound trigger
+          playSynthBeep('correct');
+
+          // Trigger neat visuals
+          spawnExplosion(eatenElement.x, eatenElement.y, "#10b981");
+
+          // Advance to next target element
+          targetIndex++;
+
+          // Check for complete victory (Reaching Og (118) and completing it)
+          if (targetIndex >= elementsData.length) {
+            triggerVictory();
+            return;
+          }
+
+          // Update HUD & spawn new ones
+          updatePeriodicHUD();
+          spawnElements();
+        } else {
+          // Deduct a life instead of immediate game over
+          lives--;
+          updateLivesUI();
+          
+          if (lives <= 0) {
+            // Fatal reaction sequence
+            let mistakeName = difficultyMode === 'difficult' ? `Atomic #${eatenElement.number}` : `"${eatenElement.name}" (${eatenElement.symbol})`;
+            triggerGameOver(`Reactor core collapsed! Ingested radioactive ${mistakeName} instead of target element sequence #${targetIndex + 1}.`);
+            return;
+          } else {
+            // Unstable chemical reaction but reaction containment dampers held!
+            playSynthBeep('wrong');
+            spawnExplosion(eatenElement.x, eatenElement.y, "#ef4444");
+            
+            // Snake does not grow on mistake: offset head placement by trimming tail
+            snake.pop();
+            
+            // Respawn element options safely away from current coordinates
+            spawnElements();
+          }
+        }
+      } else {
+        // Just move naturally: pop tail
+        snake.pop();
+      }
+
+      // Progress active visual particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 1 / p.life;
+        if (p.alpha <= 0) {
+          particles.splice(i, 1);
+        }
+      }
+
+      // Clear & Redraw Board
+      drawBoard();
+    }
+
+    // --- STREAMING_CHUNK:Rendering canvas and scaling text elements... ---
+    // Text autoscaling utility to guarantee long names fit perfectly inside grid blocks
+    function drawAutoscaledText(text, cx, cy, maxW, baseSize, fontStyle, color) {
+      ctx.save();
+      let size = baseSize;
+      ctx.font = `${fontStyle} ${size}px 'Space Grotesk', sans-serif`;
+      // Constrain font-size to fit inside horizontal bound bounds
+      while (ctx.measureText(text).width > maxW && size > 5) {
+        size -= 0.5;
+        ctx.font = `${fontStyle} ${size}px 'Space Grotesk', sans-serif`;
+      }
+      ctx.fillStyle = color;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(text, cx, cy);
+      ctx.restore();
+    }
+
+    // --- STREAMING_CHUNK:Drawing canvas elements with highlight filters... ---
+    // --- 6. CANVAS RENDERING ENGINE ---
+    function drawBoard() {
+      // Background Grid Drawing (High Tech Laboratory appearance)
+      ctx.fillStyle = "#020617";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Subtle Grid lines
+      ctx.strokeStyle = "rgba(30, 41, 59, 0.4)";
+      ctx.lineWidth = 0.5;
+      for (let i = 0; i < GRID_SIZE; i++) {
+        // Vertical lines
+        ctx.beginPath();
+        ctx.moveTo(i * CELL_PIXELS, 0);
+        ctx.lineTo(i * CELL_PIXELS, canvas.height);
+        ctx.stroke();
+
+        // Horizontal lines
+        ctx.beginPath();
+        ctx.moveTo(0, i * CELL_PIXELS);
+        ctx.lineTo(canvas.width, i * CELL_PIXELS);
+        ctx.stroke();
+      }
+
+      // Draw active elements on board
+      spawnedOptions.forEach(opt => {
+        const px = opt.x * CELL_PIXELS;
+        const py = opt.y * CELL_PIXELS;
+
+        // Custom styling based on correctness and highlight mode
+        ctx.save();
+        
+        if (opt.isCorrect && highlightMode === 'on') {
+          // Standard: Draw glowing amber target card
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = "rgba(245, 158, 11, 0.8)";
+          ctx.fillStyle = "rgba(245, 158, 11, 0.15)";
+          ctx.strokeStyle = "rgba(245, 158, 11, 1)";
+        } else {
+          // Uniform Slate Style: No highlighted core (all tiles appear identical on blind mode)
+          ctx.shadowBlur = 4;
+          ctx.shadowColor = "rgba(59, 130, 246, 0.3)";
+          ctx.fillStyle = "rgba(15, 23, 42, 0.8)";
+          ctx.strokeStyle = "rgba(51, 65, 85, 0.8)";
         }
 
-        function initGame(mode) {
-            if (mode) currentPlayMode = mode;
-            
-            topPlayer = new Stickman('top', '#22d3ee'); 
-            bottomPlayer = new Stickman('bottom', '#ef4444'); 
-            obstacles = [];
-            particles = [];
-            score = 0;
-            frames = 0;
-            speedMultiplier = 1;
-            
-            menu.classList.add('scale-0', 'opacity-0');
-            setTimeout(() => menu.classList.add('hidden'), 300);
-            hud.classList.remove('hidden');
-            
-            gameMode = 'playing';
-            animate();
+        ctx.lineWidth = 2.5;
+        // Rounded box
+        const radius = 8;
+        ctx.beginPath();
+        ctx.moveTo(px + radius, py);
+        ctx.lineTo(px + CELL_PIXELS - radius, py);
+        ctx.quadraticCurveTo(px + CELL_PIXELS, py, px + CELL_PIXELS, py + radius);
+        ctx.lineTo(px + CELL_PIXELS, py + CELL_PIXELS - radius);
+        ctx.quadraticCurveTo(px + CELL_PIXELS, py + CELL_PIXELS, px + CELL_PIXELS - radius, py + CELL_PIXELS);
+        ctx.lineTo(px + radius, py + CELL_PIXELS);
+        ctx.quadraticCurveTo(px, py + CELL_PIXELS, px, py + CELL_PIXELS - radius);
+        ctx.lineTo(px, py + radius);
+        ctx.quadraticCurveTo(px, py, px + radius, py);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Element details inside tile (Easy mode only shows corner atomic number)
+        if (difficultyMode === 'easy') {
+          ctx.shadowBlur = 0; // Reset text blur
+          ctx.font = "bold 9px 'Space Grotesk', sans-serif";
+          ctx.fillStyle = (opt.isCorrect && highlightMode === 'on') ? "rgba(245,158,11,0.8)" : "rgba(148,163,184,0.6)";
+          ctx.textAlign = "left";
+          ctx.fillText(opt.number, px + 5, py + 12);
         }
 
-        function gameOver(crashingPlayer) {
-            gameMode = 'gameover';
-            
-            let centerBodyOffset = crashingPlayer.isUpsideDown ? 30 : -30;
-            createExplosion(crashingPlayer.x, crashingPlayer.y + centerBodyOffset, crashingPlayer.color);
-            createExplosion(crashingPlayer.x, crashingPlayer.y + (centerBodyOffset / 3), '#ffffff');
+        ctx.restore();
 
-            setTimeout(() => {
-                hud.classList.add('hidden');
-                menu.classList.remove('hidden');
-                setTimeout(() => menu.classList.remove('scale-0', 'opacity-0'), 10);
-                
-                title.innerText = "CRASHED!";
-                title.classList.remove('from-cyan-400', 'to-blue-500');
-                title.classList.add('from-red-500', 'to-orange-500');
-                
-                subtitle.innerText = "Sync broken. Try again.";
-                
-                scoreDisplay.classList.remove('hidden');
-                finalScoreEl.innerText = Math.floor(score);
-            }, 1000);
+        // Central Text Core Labels
+        const centerColor = (opt.isCorrect && highlightMode === 'on') ? "#ffffff" : "#cbd5e1";
+        const maxW = CELL_PIXELS - 4; 
+
+        drawAutoscaledText(opt.symbol, px + CELL_PIXELS / 2, py + CELL_PIXELS / 2 + 1, maxW, 12, "bold", centerColor);
+      });
+
+      // Draw Snake body
+      snake.forEach((segment, idx) => {
+        const px = segment.x * CELL_PIXELS;
+        const py = segment.y * CELL_PIXELS;
+        const isHead = idx === 0;
+
+        ctx.save();
+        if (isHead) {
+          // Snake head is radiant glowing emerald green
+          ctx.shadowBlur = 12;
+          ctx.shadowColor = "rgba(16, 185, 129, 0.9)";
+          ctx.fillStyle = "#10b981";
+        } else {
+          // Intersecting gradients for body chain link
+          ctx.fillStyle = `rgba(13, 148, 136, ${1 - idx / (snake.length + 3)})`;
+          ctx.strokeStyle = "rgba(2, 6, 23, 0.5)";
+          ctx.lineWidth = 1;
         }
 
-        function spawnObstacles() {
-            let spawnRate = Math.max(50, 100 - Math.floor(score / 50)); 
-            
-            if (frames % spawnRate === 0) {
-                const lane = Math.random() > 0.5 ? 'top' : 'bottom';
-                obstacles.push(new Obstacle(lane));
-                
-                if (Math.random() < 0.3) {
-                    const otherLane = lane === 'top' ? 'bottom' : 'top';
-                    obstacles.push(new Obstacle(otherLane));
-                }
-            }
+        // Draw individual snake segment as high tech rounded molecule capsules
+        const pad = 1.5;
+        const width = CELL_PIXELS - pad * 2;
+        const r = isHead ? 10 : 6; // Rounded corner radius
+
+        ctx.beginPath();
+        ctx.moveTo(px + pad + r, py + pad);
+        ctx.lineTo(px + pad + width - r, py + pad);
+        ctx.quadraticCurveTo(px + pad + width, py + pad, px + pad + width, py + pad + r);
+        ctx.lineTo(px + pad + width, py + pad + width - r);
+        ctx.quadraticCurveTo(px + pad + width, py + pad + width, px + pad + width - r, py + pad + width);
+        ctx.lineTo(px + pad + r, py + pad + width);
+        ctx.quadraticCurveTo(px + pad, py + pad + width, px + pad, py + pad + width - r);
+        ctx.lineTo(px + pad, py + pad + r);
+        ctx.quadraticCurveTo(px + pad, py + pad, px + pad + r, py + pad);
+        ctx.closePath();
+        ctx.fill();
+        if (!isHead) ctx.stroke();
+
+        // Draw snake's laboratory safety visor (eyes) on head segment
+        if (isHead) {
+          ctx.shadowBlur = 0;
+          ctx.fillStyle = "#020617";
+          
+          // Position visor according to direction
+          let rx1 = 0, ry1 = 0, rx2 = 0, ry2 = 0;
+          const eyeSize = 3.5;
+          const spacing = 7;
+
+          if (currentDirection === 'right') {
+            rx1 = px + 20; ry1 = py + 10 - eyeSize/2 - spacing/2;
+            rx2 = px + 20; ry2 = py + 10 - eyeSize/2 + spacing/2;
+          } else if (currentDirection === 'left') {
+            rx1 = px + 6;  ry1 = py + 10 - eyeSize/2 - spacing/2;
+            rx2 = px + 6;  ry2 = py + 10 - eyeSize/2 + spacing/2;
+          } else if (currentDirection === 'up') {
+            rx1 = px + 10 - eyeSize/2 - spacing/2; ry1 = py + 6;
+            rx2 = px + 10 - eyeSize/2 + spacing/2; ry2 = py + 6;
+          } else if (currentDirection === 'down') {
+            rx1 = px + 10 - eyeSize/2 - spacing/2; ry1 = py + 20;
+            rx2 = px + 10 - eyeSize/2 + spacing/2; ry2 = py + 20;
+          }
+
+          ctx.fillRect(rx1, ry1 + 2, eyeSize, eyeSize);
+          ctx.fillRect(rx2, ry2 + 2, eyeSize, eyeSize);
         }
 
-        function drawEnvironment() {
-            ctx.fillStyle = '#0f0f1a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.restore();
+      });
 
-            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-            ctx.lineWidth = 1;
-            const gridSize = 40;
-            
-            // Background flow directions based on selected mode
-            let moveLeftOffset = (frames * gameSpeed * speedMultiplier * 0.5) % gridSize;
-            let moveRightOffset = -(frames * gameSpeed * speedMultiplier * 0.5) % gridSize;
-            if (moveRightOffset < 0) moveRightOffset += gridSize;
+      // Draw chemical sparks/particles
+      particles.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      });
+    }
 
-            // Vertical lines moving
-            ctx.beginPath();
-            
-            // Top Half
-            for (let x = -moveLeftOffset; x < canvas.width; x += gridSize) {
-                ctx.moveTo(x, 0);
-                ctx.lineTo(x, canvas.height / 2);
-            }
-            
-            // Bottom Half
-            if (directionMode === 'same') {
-                for (let x = -moveLeftOffset; x < canvas.width; x += gridSize) {
-                    ctx.moveTo(x, canvas.height / 2);
-                    ctx.lineTo(x, canvas.height);
-                }
-            } else {
-                for (let x = -moveRightOffset; x < canvas.width + gridSize; x += gridSize) {
-                    ctx.moveTo(x, canvas.height / 2);
-                    ctx.lineTo(x, canvas.height);
-                }
-            }
+    // --- STREAMING_CHUNK:Configuring state transition system... ---
+    // --- 7. STATE TRANSITION SYSTEM ---
+    function initializeSynthesis() {
+      // Ensure audio context is running (browser protection workaround)
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
 
-            // Horizontal lines static
-            for (let y = 0; y < canvas.height; y += gridSize) {
-                ctx.moveTo(0, y);
-                ctx.lineTo(canvas.width, y);
-            }
-            ctx.stroke();
+      score = 0;
+      lives = 3; 
+      targetIndex = 0;
+      gameSeconds = 0;
+      statScore.textContent = "0";
+      statTimer.textContent = "00:00";
+      particles = [];
 
-            // Center lines
-            ctx.lineWidth = 2;
-            if (currentPlayMode === 1 || currentPlayMode === 2 || currentPlayMode === 3) {
-                ctx.strokeStyle = '#22d3ee'; 
-                ctx.beginPath();
-                ctx.moveTo(0, canvas.height / 2 - 1);
-                ctx.lineTo(canvas.width, canvas.height / 2 - 1);
-                ctx.stroke();
+      // Reset controls & UI
+      updateLivesUI();
+      resetSnake();
+      updatePeriodicHUD();
+      spawnElements();
 
-                ctx.strokeStyle = '#ef4444';
-                ctx.beginPath();
-                ctx.moveTo(0, canvas.height / 2 + 1);
-                ctx.lineTo(canvas.width, canvas.height / 2 + 1);
-                ctx.stroke();
-            }
+      // UI screen swapping
+      screenStart.classList.add("hidden");
+      screenGameOver.classList.add("hidden");
+      screenVictory.classList.add("hidden");
 
-            // Floor lines for mode 1 & 3
-            if (currentPlayMode === 1) {
-                ctx.strokeStyle = '#ef4444'; 
-                ctx.beginPath();
-                ctx.moveTo(0, canvas.height - 1);
-                ctx.lineTo(canvas.width, canvas.height - 1);
-                ctx.stroke();
-            }
-            
-            if (currentPlayMode === 3) {
-                ctx.strokeStyle = '#22d3ee'; 
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.moveTo(0, 1);
-                ctx.lineTo(canvas.width, 1);
-                ctx.stroke();
+      // Start active loop tick interval
+      const selectedMs = parseInt(selectSpeed.value);
+      if (gameLoopIntervalId) clearInterval(gameLoopIntervalId);
+      gameLoopIntervalId = setInterval(updateGame, selectedMs);
+      
+      // Start real-time Clock counter interval
+      if (clockIntervalId) clearInterval(clockIntervalId);
+      clockIntervalId = setInterval(() => {
+        gameSeconds++;
+        statTimer.textContent = formatTime(gameSeconds);
+      }, 1000);
 
-                ctx.strokeStyle = '#ef4444'; 
-                ctx.beginPath();
-                ctx.moveTo(0, canvas.height - 1);
-                ctx.lineTo(canvas.width, canvas.height - 1);
-                ctx.stroke();
-            }
+      isGameRunning = true;
+
+      // Draw initial state
+      drawBoard();
+    }
+
+    function triggerGameOver(reason) {
+      isGameRunning = false;
+      clearInterval(gameLoopIntervalId);
+      clearInterval(clockIntervalId);
+      playSynthBeep('crash');
+
+      // Update Highscore record
+      if (score > highscore) {
+        highscore = score;
+        localStorage.setItem("periodic_snake_highscore", highscore);
+        statHighScore.textContent = highscore;
+      }
+
+      // Load Game Over screen values
+      gameOverReason.textContent = reason;
+      goElementsCount.textContent = `${targetIndex} / 118`;
+      goScore.textContent = score;
+      goTime.textContent = formatTime(gameSeconds);
+      document.getElementById("go-mode-label").textContent = difficultyMode;
+      document.getElementById("go-highlight-label").textContent = highlightMode === 'on' ? "Standard" : "Blind Mode";
+      
+      const targetElement = elementsData[targetIndex] || elementsData[0];
+      goFailedTarget.textContent = `${targetElement.name} (${targetElement.symbol}) - Atomic #${targetElement.number}`;
+
+      screenGameOver.classList.remove("hidden");
+    }
+
+    function triggerVictory() {
+      isGameRunning = false;
+      clearInterval(gameLoopIntervalId);
+      clearInterval(clockIntervalId);
+      playSynthBeep('victory');
+
+      if (score > highscore) {
+        highscore = score;
+        localStorage.setItem("periodic_snake_highscore", highscore);
+        statHighScore.textContent = highscore;
+      }
+
+      vicScore.textContent = score;
+      vicTime.textContent = formatTime(gameSeconds);
+      document.getElementById("vic-mode-label").textContent = difficultyMode;
+      document.getElementById("vic-highlight-label").textContent = highlightMode === 'on' ? "Standard" : "Blind Mode";
+      
+      screenVictory.classList.remove("hidden");
+    }
+
+    // --- STREAMING_CHUNK:Configuring input controls... ---
+    // --- 8. INPUT CONTROL LISTENERS (KEYBOARD & SWIPE) ---
+
+    function handleDirectionInput(inputDirection) {
+      if (!isGameRunning) return;
+
+      switch (inputDirection) {
+        case 'up':
+          if (currentDirection !== 'down') nextDirection = 'up';
+          break;
+        case 'down':
+          if (currentDirection !== 'up') nextDirection = 'down';
+          break;
+        case 'left':
+          if (currentDirection !== 'right') nextDirection = 'left';
+          break;
+        case 'right':
+          if (currentDirection !== 'left') nextDirection = 'right';
+          break;
+      }
+    }
+
+    window.addEventListener('keydown', e => {
+      // Prevent page scrolling on arrow key navigation
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+        e.preventDefault();
+      }
+
+      switch (e.key) {
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          handleDirectionInput('up');
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          handleDirectionInput('down');
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          handleDirectionInput('left');
+          break;
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          handleDirectionInput('right');
+          break;
+      }
+    });
+
+    // Touch Swipe Mechanics on Canvas
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    canvas.addEventListener('touchstart', e => {
+      touchStartX = e.changedTouches[0].clientX;
+      touchStartY = e.changedTouches[0].clientY;
+    }, { passive: true });
+
+    canvas.addEventListener('touchend', e => {
+      if (!isGameRunning) return;
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = e.changedTouches[0].clientY;
+
+      const diffX = touchEndX - touchStartX;
+      const diffY = touchEndY - touchStartY;
+
+      const threshold = 30;
+
+      if (Math.abs(diffX) > Math.abs(diffY)) {
+        if (Math.abs(diffX) > threshold) {
+          if (diffX > 0) handleDirectionInput('right');
+          else handleDirectionInput('left');
         }
-
-        function animate() {
-            if (gameMode !== 'playing' && gameMode !== 'gameover') return;
-            
-            drawEnvironment();
-
-            // Handle Particles
-            for (let i = particles.length - 1; i >= 0; i--) {
-                particles[i].update();
-                particles[i].draw();
-                if (particles[i].life <= 0) {
-                    particles.splice(i, 1);
-                }
-            }
-
-            if (gameMode === 'playing') {
-                // Update difficulty
-                speedMultiplier = 1 + (score / 1000); // Speed increases over time
-                score += 0.1 * speedMultiplier;
-                currentScoreEl.innerText = Math.floor(score);
-                
-                spawnObstacles();
-                frames++;
-
-                topPlayer.update();
-                bottomPlayer.update();
-            }
-
-            if (gameMode === 'playing') {
-                topPlayer.draw();
-                bottomPlayer.draw();
-            }
-
-            // Handle Obstacles
-            for (let i = obstacles.length - 1; i >= 0; i--) {
-                const obs = obstacles[i];
-                
-                if (gameMode === 'playing') {
-                    obs.update();
-                    
-                    const p = obs.lane === 'top' ? topPlayer : bottomPlayer;
-                    if (checkCollision(p.getBounds(), obs.getBounds())) {
-                        gameOver(p);
-                        break;
-                    }
-                }
-                
-                obs.draw();
-
-                // Remove off-screen obstacles based on which direction they are moving
-                if (obs.dirModifier === 1 && obs.x + obs.width < 0) {
-                    obstacles.splice(i, 1);
-                } else if (obs.dirModifier === -1 && obs.x > canvas.width) {
-                    obstacles.splice(i, 1);
-                }
-            }
-
-            if (gameMode === 'playing' || particles.length > 0) {
-                animationId = requestAnimationFrame(animate);
-            }
+      } else {
+        if (Math.abs(diffY) > threshold) {
+          if (diffY > 0) handleDirectionInput('down');
+          else handleDirectionInput('up');
         }
+      }
+    }, { passive: true });
 
-        // Draw initial background before play
-        drawEnvironment();
+    // Desktop/Mobile D-Pad button handlers
+    document.getElementById("pad-up").addEventListener("click", () => handleDirectionInput('up'));
+    document.getElementById("pad-down").addEventListener("click", () => handleDirectionInput('down'));
+    document.getElementById("pad-left").addEventListener("click", () => handleDirectionInput('left'));
+    document.getElementById("pad-right").addEventListener("click", () => handleDirectionInput('right'));
 
-    </script>
+    // --- STREAMING_CHUNK:Configuring system options toggles... ---
+    // --- 9. MODAL POPUP & SETTINGS HANDLERS ---
+    btnRules.addEventListener("click", () => {
+      modalRules.classList.remove("hidden");
+    });
+    btnRulesOk.addEventListener("click", () => {
+      modalRules.classList.add("hidden");
+    });
+    btnCloseRules.addEventListener("click", () => {
+      modalRules.classList.add("hidden");
+    });
+
+    soundToggle.addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      if (soundEnabled) {
+        soundIcon.textContent = "🔊";
+        soundToggle.querySelector('span:last-child').textContent = "Sound On";
+      } else {
+        soundIcon.textContent = "🔇";
+        soundToggle.querySelector('span:last-child').textContent = "Muted";
+      }
+    });
+
+    // --- STREAMING_CHUNK:Updating button layout styles for active options... ---
+    // Difficulty selection functionality and UI styling logic
+    const diffButtons = {
+      easy: document.getElementById('btn-diff-easy'),
+      difficult: document.getElementById('btn-diff-difficult')
+    };
+
+    function setDifficultyMode(mode) {
+      difficultyMode = mode;
+      
+      // Reset all buttons to default look
+      Object.keys(diffButtons).forEach(key => {
+        const btn = diffButtons[key];
+        if (!btn) return;
+        btn.className = "diff-selector-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 active:scale-95 bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-850 hover:text-slate-200";
+        const labelSpan = btn.querySelector('span:last-child');
+        if (labelSpan) labelSpan.className = "text-[10px] text-slate-500 mt-0.5";
+      });
+
+      // Highlight active mode button with custom color schemes
+      const activeBtn = diffButtons[mode];
+      if (activeBtn) {
+        if (mode === 'easy') {
+          activeBtn.className = "diff-selector-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 active:scale-95 bg-emerald-500/15 border-emerald-500 text-emerald-400 font-extrabold ring-2 ring-emerald-500/20 shadow-md shadow-emerald-500/10";
+          activeBtn.querySelector('span:last-child').className = "text-[10px] text-emerald-400/80 mt-0.5";
+        } else if (mode === 'difficult') {
+          activeBtn.className = "diff-selector-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 active:scale-95 bg-rose-500/15 border-rose-500 text-rose-400 font-extrabold ring-2 ring-rose-500/20 shadow-md shadow-rose-500/10";
+          activeBtn.querySelector('span:last-child').className = "text-[10px] text-rose-400/80 mt-0.5";
+        }
+      }
+
+      // Update game's difficulty display pill
+      const badge = document.getElementById("badge-difficulty");
+      if (badge) {
+        badge.textContent = `${mode.toUpperCase()} MODE`;
+        badge.className = "text-[9px] px-2.5 py-0.5 rounded-full border font-bold uppercase font-tech tracking-wide transition-all duration-300";
+        if (mode === 'easy') badge.className += " bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+        if (mode === 'difficult') badge.className += " bg-rose-500/10 border-rose-500/30 text-rose-400";
+      }
+    }
+
+    // Hint and targeting highlight configuration logic
+    const highlightButtons = {
+      on: document.getElementById('btn-highlight-on'),
+      off: document.getElementById('btn-highlight-off')
+    };
+
+    function setHighlightMode(mode) {
+      highlightMode = mode;
+      
+      // Reset all buttons to default look
+      Object.keys(highlightButtons).forEach(key => {
+        const btn = highlightButtons[key];
+        if (!btn) return;
+        btn.className = "highlight-selector-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 active:scale-95 bg-slate-900 border-slate-800 text-slate-400 hover:bg-slate-850 hover:text-slate-200";
+        const labelSpan = btn.querySelector('span:last-child');
+        if (labelSpan) labelSpan.className = "text-[10px] text-slate-500 mt-0.5";
+      });
+
+      // Highlight active button with responsive custom schemes
+      const activeBtn = highlightButtons[mode];
+      if (activeBtn) {
+        if (mode === 'on') {
+          activeBtn.className = "highlight-selector-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 active:scale-95 bg-emerald-500/15 border-emerald-500 text-emerald-400 font-extrabold ring-2 ring-emerald-500/20 shadow-md shadow-emerald-500/10";
+          activeBtn.querySelector('span:last-child').className = "text-[10px] text-emerald-400/80 mt-0.5";
+        } else if (mode === 'off') {
+          activeBtn.className = "highlight-selector-btn flex flex-col items-center justify-center p-3 rounded-xl border transition-all duration-200 active:scale-95 bg-rose-500/15 border-rose-500 text-rose-400 font-extrabold ring-2 ring-rose-500/20 shadow-md shadow-rose-500/10";
+          activeBtn.querySelector('span:last-child').className = "text-[10px] text-rose-400/80 mt-0.5";
+        }
+      }
+
+      // Update game's assistance indicator badge
+      const badge = document.getElementById("badge-highlight");
+      if (badge) {
+        badge.textContent = mode === 'on' ? 'HINTS ENABLED' : 'BLIND PROTOCOL';
+        badge.className = "text-[9px] px-2.5 py-0.5 rounded-full border font-bold uppercase font-tech tracking-wide transition-all duration-300 ml-1.5";
+        if (mode === 'on') badge.className += " bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
+        if (mode === 'off') badge.className += " bg-rose-500/10 border-rose-500/30 text-rose-400";
+      }
+    }
+
+    // Attach click events to difficulty and assistance selectors
+    if (diffButtons.easy) diffButtons.easy.addEventListener("click", () => setDifficultyMode('easy'));
+    if (diffButtons.difficult) diffButtons.difficult.addEventListener("click", () => setDifficultyMode('difficult'));
+    if (highlightButtons.on) highlightButtons.on.addEventListener("click", () => setHighlightMode('on'));
+    if (highlightButtons.off) highlightButtons.off.addEventListener("click", () => setHighlightMode('off'));
+
+    // Initialize/Restart buttons
+    btnStart.addEventListener("click", initializeSynthesis);
+    btnRestart.addEventListener("click", initializeSynthesis);
+    btnVictoryRestart.addEventListener("click", initializeSynthesis);
+
+    // Change difficulty routing triggers
+    btnGoToMain.addEventListener("click", () => {
+      screenGameOver.classList.add("hidden");
+      screenStart.classList.remove("hidden");
+    });
+    btnVicToMain.addEventListener("click", () => {
+      screenVictory.classList.add("hidden");
+      screenStart.classList.remove("hidden");
+    });
+
+    // Speed slider changes active loop interval dynamically
+    selectSpeed.addEventListener("change", () => {
+      if (isGameRunning) {
+        clearInterval(gameLoopIntervalId);
+        const selectedMs = parseInt(selectSpeed.value);
+        gameLoopIntervalId = setInterval(updateGame, selectedMs);
+      }
+    });
+
+    // Handle initial scale of canvas
+    drawBoard();
+  </script>
 </body>
 </html>
