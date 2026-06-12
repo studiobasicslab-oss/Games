@@ -55,6 +55,37 @@
     .pulse-target-element {
       animation: pulse-target 2s infinite ease-in-out;
     }
+
+    /* Custom high-contrast styling for the speed dropdown to bypass default browser themes */
+    #select-speed {
+      background-color: rgba(15, 23, 42, 0.6); /* Translucent dark slate */
+      color: #f8fafc; /* Crisp white text color */
+      border: 1.5px solid rgba(255, 255, 255, 0.95); /* Sharp crisp white border */
+      border-radius: 10px; /* Rounded-lg matching the UI */
+      padding: 4px 28px 4px 10px; /* Custom padding for arrow offset */
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      /* Inline custom white SVG chevron arrow */
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' fill='none' stroke='%23f8fafc' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 12px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #select-speed:hover {
+      background-color: rgba(30, 41, 59, 0.8);
+      border-color: #ffffff;
+    }
+    #select-speed:focus {
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.5);
+    }
+    #select-speed option {
+      background-color: #0f172a;
+      color: #f8fafc;
+    }
   </style>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col justify-between antialiased selection:bg-emerald-500 selection:text-slate-900">
@@ -93,7 +124,9 @@
   <main class="max-w-6xl w-full mx-auto p-3 md:p-6 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
     
     <!-- LEFT SIDEBAR: PERIODIC SYSTEM HUD TRACKER -->
-    <section class="lg:col-span-4 bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md flex flex-col gap-4 self-stretch justify-between">
+    <section class="lg:col-span-4 bg-slate-900/80 border border-slate-800/80 rounded-2xl p-4 backdrop-blur-md flex flex-col gap-4 h-fit justify-start">
+      
+      <!-- 1. Synthesis Timeline (Elements Table) -->
       <div>
         <div class="flex justify-between items-center mb-1">
           <h2 class="text-sm font-semibold tracking-wide uppercase text-slate-400 font-tech">Synthesis Timeline</h2>
@@ -106,15 +139,33 @@
         </div>
         
         <!-- Scrollable Elemental Progression Grid (H to Og) -->
-        <div class="max-h-64 overflow-y-auto pr-1 border border-slate-850 bg-slate-950/40 rounded-xl p-2.5 no-scrollbar" id="tracker-scroll-container">
+        <div class="max-h-60 overflow-y-auto pr-1 border border-slate-850 bg-slate-950/40 rounded-xl p-2.5 no-scrollbar" id="tracker-scroll-container">
           <div class="grid grid-cols-5 gap-1.5" id="periodic-tracker">
             <!-- Dynamically populated 118 elements -->
           </div>
         </div>
       </div>
 
-      <!-- Live Element Info Panel -->
-      <div class="bg-slate-950/60 border border-slate-800/50 rounded-xl p-4 mt-2">
+      <!-- 2. Game Stats Indicator Dashboard (Score, Lives, Record) -->
+      <div class="grid grid-cols-3 gap-2">
+        <div class="bg-slate-950/40 border border-slate-800/40 rounded-xl p-2.5 text-center">
+          <div class="text-[10px] text-slate-500 uppercase font-tech">Score</div>
+          <div class="text-xl font-black text-emerald-400 mt-1 font-tech tracking-wide" id="stat-score">0</div>
+        </div>
+        <div class="bg-slate-950/40 border border-slate-800/40 rounded-xl p-2.5 text-center">
+          <div class="text-[10px] text-slate-500 uppercase font-tech">Reactor Lives</div>
+          <div class="text-sm font-black text-red-500 mt-1.5 flex justify-center items-center gap-0.5 tracking-wider" id="stat-lives">
+            ❤️❤️❤️
+          </div>
+        </div>
+        <div class="bg-slate-950/40 border border-slate-800/40 rounded-xl p-2.5 text-center">
+          <div class="text-[10px] text-slate-500 uppercase font-tech">Record</div>
+          <div class="text-xl font-black text-blue-400 mt-1 font-tech tracking-wide" id="stat-highscore">000</div>
+        </div>
+      </div>
+
+      <!-- 3. Live Element Info Panel (Chemical Specification) -->
+      <div class="bg-slate-950/60 border border-slate-800/50 rounded-xl p-4">
         <h3 class="text-xs font-semibold uppercase text-slate-500 font-tech tracking-wider mb-2">Target Chemical Specification</h3>
         <div class="flex items-center space-x-4">
           <div id="target-spec-tile" class="w-16 h-16 rounded-xl border-2 border-amber-500/80 bg-amber-500/10 flex flex-col justify-between p-2 text-amber-400 shadow-md shadow-amber-500/10 pulse-target-element transition-all duration-300 shrink-0">
@@ -131,23 +182,6 @@
         </div>
       </div>
 
-      <!-- Game Stats Indicator Dashboard -->
-      <div class="grid grid-cols-3 gap-2 mt-2">
-        <div class="bg-slate-950/40 border border-slate-800/40 rounded-xl p-2.5 text-center">
-          <div class="text-[10px] text-slate-500 uppercase font-tech">Score</div>
-          <div class="text-xl font-black text-emerald-400 mt-1 font-tech tracking-wide" id="stat-score">0</div>
-        </div>
-        <div class="bg-slate-950/40 border border-slate-800/40 rounded-xl p-2.5 text-center">
-          <div class="text-[10px] text-slate-500 uppercase font-tech">Reactor Lives</div>
-          <div class="text-sm font-black text-red-500 mt-1.5 flex justify-center items-center gap-0.5 tracking-wider" id="stat-lives">
-            ❤️❤️❤️
-          </div>
-        </div>
-        <div class="bg-slate-950/40 border border-slate-800/40 rounded-xl p-2.5 text-center">
-          <div class="text-[10px] text-slate-500 uppercase font-tech">Record</div>
-          <div class="text-xl font-black text-blue-400 mt-1 font-tech tracking-wide" id="stat-highscore">000</div>
-        </div>
-      </div>
     </section>
 
     <!-- RIGHT CONTENT: THE MAIN GAME BOARD -->
@@ -180,10 +214,10 @@
             <span id="stat-timer" class="text-lg font-bold text-cyan-400 font-mono tracking-widest mt-0.5">00:00</span>
           </div>
           
-          <!-- Speed Controller -->
+          <!-- Speed Controller (Styled exactly as requested with custom border + clear chevron) -->
           <div class="flex flex-col items-end">
             <span class="text-[10px] uppercase font-semibold text-slate-500 font-tech tracking-wider">Speed</span>
-            <select id="select-speed" class="bg-slate-850 hover:bg-slate-800 text-slate-200 border border-slate-750 px-2 py-1 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 mt-0.5">
+            <select id="select-speed" class="mt-0.5 text-xs font-semibold">
               <option value="170">Chill</option>
               <option value="120" selected>Normal</option>
               <option value="85">Hyper</option>
@@ -414,7 +448,6 @@
 
   <!-- GAME SCRIPT -->
   <script>
-    // --- STREAMING_CHUNK:Defining 118 Chemical elements dataset... ---
     // --- 1. PERIODIC TABLE DATA CONFIG (FIRST 118 ELEMENTS) ---
     const elementsData = [
       { number: 1, symbol: "H", name: "Hydrogen", mass: "1.008", desc: "The lightest, most abundant chemical substance in the Universe." },
@@ -537,7 +570,6 @@
       { number: 118, symbol: "Og", name: "Oganesson", mass: "(294)", desc: "The heaviest element, named after physicist Yuri Oganessian." }
     ];
 
-    // --- STREAMING_CHUNK:Configuring chemical audio synthesizer... ---
     // --- 2. SOUND SYNTHESIZER (Web Audio API) ---
     let soundEnabled = true;
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -591,7 +623,6 @@
       }
     }
 
-    // --- STREAMING_CHUNK:Initializing state controls... ---
     // --- 3. UI STATE & INTERACTION DOM ELEMENTS ---
     const trackerContainer = document.getElementById("periodic-tracker");
     const trackerScrollContainer = document.getElementById("tracker-scroll-container");
@@ -639,7 +670,6 @@
     const vicScore = document.getElementById("vic-score");
     const vicTime = document.getElementById("vic-time");
 
-    // --- STREAMING_CHUNK:Configuring variables for targeting configurations... ---
     // --- 4. GAME ENGINE VARIABLES ---
     const canvas = document.getElementById("game-canvas");
     const ctx = canvas.getContext("2d");
@@ -694,7 +724,6 @@
     }
     buildPeriodicHUD();
 
-    // --- STREAMING_CHUNK:Adapting hud readouts for highlight configuration... ---
     // Updates HUD styles relative to active targetIndex & triggers auto-scrolling
     function updatePeriodicHUD() {
       elementsData.forEach((element, i) => {
@@ -813,7 +842,6 @@
       return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    // --- STREAMING_CHUNK:Configuring grid and coordinates logic... ---
     // --- 5. GAME LOGIC HANDLERS ---
 
     // Initialize snake body
@@ -911,7 +939,6 @@
       }
     }
 
-    // --- STREAMING_CHUNK:Refining mistake and loop tick actions... ---
     // Game loop ticks
     function updateGame() {
       // Buffer input locks
@@ -989,7 +1016,7 @@
           if (lives <= 0) {
             // Fatal reaction sequence
             let mistakeName = difficultyMode === 'difficult' ? `Atomic #${eatenElement.number}` : `"${eatenElement.name}" (${eatenElement.symbol})`;
-            triggerGameOver(`Reactor core collapsed! Ingested radioactive ${mistakeName} instead of target element sequence #${targetIndex + 1}.`);
+            triggerGameOver("Reactor core collapsed! Ingested radioactive " + mistakeName + " instead of target element sequence #" + (targetIndex + 1) + ".");
             return;
           } else {
             // Unstable chemical reaction but reaction containment dampers held!
@@ -1023,7 +1050,6 @@
       drawBoard();
     }
 
-    // --- STREAMING_CHUNK:Rendering canvas and scaling text elements... ---
     // Text autoscaling utility to guarantee long names fit perfectly inside grid blocks
     function drawAutoscaledText(text, cx, cy, maxW, baseSize, fontStyle, color) {
       ctx.save();
@@ -1041,7 +1067,6 @@
       ctx.restore();
     }
 
-    // --- STREAMING_CHUNK:Drawing canvas elements with highlight filters... ---
     // --- 6. CANVAS RENDERING ENGINE ---
     function drawBoard() {
       // Background Grid Drawing (High Tech Laboratory appearance)
@@ -1203,7 +1228,6 @@
       });
     }
 
-    // --- STREAMING_CHUNK:Configuring state transition system... ---
     // --- 7. STATE TRANSITION SYSTEM ---
     function initializeSynthesis() {
       // Ensure audio context is running (browser protection workaround)
@@ -1295,7 +1319,6 @@
       screenVictory.classList.remove("hidden");
     }
 
-    // --- STREAMING_CHUNK:Configuring input controls... ---
     // --- 8. INPUT CONTROL LISTENERS (KEYBOARD & SWIPE) ---
 
     function handleDirectionInput(inputDirection) {
@@ -1385,7 +1408,6 @@
     document.getElementById("pad-left").addEventListener("click", () => handleDirectionInput('left'));
     document.getElementById("pad-right").addEventListener("click", () => handleDirectionInput('right'));
 
-    // --- STREAMING_CHUNK:Configuring system options toggles... ---
     // --- 9. MODAL POPUP & SETTINGS HANDLERS ---
     btnRules.addEventListener("click", () => {
       modalRules.classList.remove("hidden");
@@ -1408,7 +1430,6 @@
       }
     });
 
-    // --- STREAMING_CHUNK:Updating button layout styles for active options... ---
     // Difficulty selection functionality and UI styling logic
     const diffButtons = {
       easy: document.getElementById('btn-diff-easy'),
