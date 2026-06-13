@@ -214,7 +214,7 @@
             <span id="stat-timer" class="text-lg font-bold text-cyan-400 font-mono tracking-widest mt-0.5">00:00</span>
           </div>
           
-          <!-- Speed Controller (Styled exactly as requested with custom border + clear chevron) -->
+          <!-- Speed Controller -->
           <div class="flex flex-col items-end">
             <span class="text-[10px] uppercase font-semibold text-slate-500 font-tech tracking-wider">Speed</span>
             <select id="select-speed" class="mt-0.5 text-xs font-semibold">
@@ -623,6 +623,37 @@
       }
     }
 
+    // Play visual countdown tick sounds
+    function playCountdownBeep(val) {
+      if (!soundEnabled) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+
+        osc.type = 'sine';
+        if (val === 0) {
+          // Energetic high pitch for GO!
+          osc.frequency.setValueAtTime(880, now);
+          gainNode.gain.setValueAtTime(0.15, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.start(now);
+          osc.stop(now + 0.3);
+        } else {
+          // Standard clicking countdown tone
+          osc.frequency.setValueAtTime(440, now);
+          gainNode.gain.setValueAtTime(0.1, now);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+          osc.start(now);
+          osc.stop(now + 0.15);
+        }
+      } catch (err) {
+        console.warn(err);
+      }
+    }
+
     // --- 3. UI STATE & INTERACTION DOM ELEMENTS ---
     const trackerContainer = document.getElementById("periodic-tracker");
     const trackerScrollContainer = document.getElementById("tracker-scroll-container");
@@ -688,6 +719,7 @@
     let particles = []; // Particle explosion pool
     let gameLoopIntervalId = null;
     let clockIntervalId = null;
+    let countdownIntervalId = null; // Countdown Timer tracking ID
     let isGameRunning = false;
     let gameSeconds = 0;
     
@@ -1228,12 +1260,64 @@
       });
     }
 
+    // Draws a highly engaging translucent modal box directly on canvas during the 3 seconds countdown
+    function drawCountdownOverlay(seconds) {
+      ctx.save();
+      // Extremely subtle tint overlay so the snake, starting position, and items remain completely visible underneath!
+      ctx.fillStyle = "rgba(2, 6, 23, 0.3)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Center modal bounding parameters
+      const boxW = 340;
+      const boxH = 120;
+      const boxX = (canvas.width - boxW) / 2;
+      const boxY = (canvas.height - boxH) / 2;
+      const radius = 12;
+
+      // Draw the beautiful translucent glassmorphic container for countdown
+      ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+      ctx.strokeStyle = "rgba(16, 185, 129, 0.9)";
+      ctx.lineWidth = 2.5;
+      
+      ctx.beginPath();
+      ctx.moveTo(boxX + radius, boxY);
+      ctx.lineTo(boxX + boxW - radius, boxY);
+      ctx.quadraticCurveTo(boxX + boxW, boxY, boxX + boxW, boxY + radius);
+      ctx.lineTo(boxX + boxW, boxY + boxH - radius);
+      ctx.quadraticCurveTo(boxX + boxW, boxY + boxH, boxX + boxW - radius, boxY + boxH);
+      ctx.lineTo(boxX + radius, boxY + boxH);
+      ctx.quadraticCurveTo(boxX, boxY + boxH, boxX, boxY + boxH - radius);
+      ctx.lineTo(boxX, boxY + radius);
+      ctx.quadraticCurveTo(boxX, boxY, boxX + radius, boxY);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Text Header: Setup reactor state
+      ctx.font = "bold 13px 'Space Grotesk', sans-serif";
+      ctx.fillStyle = "#e2e8f0";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("PREPARING REACTOR CONTAMINANTS", canvas.width / 2, boxY + 38);
+      
+      // Countdown Numbers Content
+      ctx.font = "bold 24px 'Space Grotesk', sans-serif";
+      ctx.fillStyle = "#fbbf24"; // Radiant golden amber
+      ctx.fillText(`......... in ${seconds}....`, canvas.width / 2, boxY + 75);
+      ctx.restore();
+    }
+
     // --- 7. STATE TRANSITION SYSTEM ---
     function initializeSynthesis() {
       // Ensure audio context is running (browser protection workaround)
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
+
+      // Clear all active simulation and timeline interval clocks beforehand to prevent duplicates
+      if (gameLoopIntervalId) clearInterval(gameLoopIntervalId);
+      if (clockIntervalId) clearInterval(clockIntervalId);
+      if (countdownIntervalId) clearInterval(countdownIntervalId);
 
       score = 0;
       lives = 3; 
@@ -1242,6 +1326,7 @@
       statScore.textContent = "0";
       statTimer.textContent = "00:00";
       particles = [];
+      isGameRunning = false; // Restrict inputs and freeze movements during the warm-up countdown
 
       // Reset controls & UI
       updateLivesUI();
@@ -1254,28 +1339,45 @@
       screenGameOver.classList.add("hidden");
       screenVictory.classList.add("hidden");
 
-      // Start active loop tick interval
-      const selectedMs = parseInt(selectSpeed.value);
-      if (gameLoopIntervalId) clearInterval(gameLoopIntervalId);
-      gameLoopIntervalId = setInterval(updateGame, selectedMs);
-      
-      // Start real-time Clock counter interval
-      if (clockIntervalId) clearInterval(clockIntervalId);
-      clockIntervalId = setInterval(() => {
-        gameSeconds++;
-        statTimer.textContent = formatTime(gameSeconds);
-      }, 1000);
-
-      isGameRunning = true;
-
-      // Draw initial state
+      // Draw initial static elements to canvas before launching countdown
+      let countdownValue = 3;
       drawBoard();
+      drawCountdownOverlay(countdownValue);
+      playCountdownBeep(countdownValue);
+
+      // Trigger standard 3-second ticker countdown
+      countdownIntervalId = setInterval(() => {
+        countdownValue--;
+        if (countdownValue > 0) {
+          drawBoard();
+          drawCountdownOverlay(countdownValue);
+          playCountdownBeep(countdownValue);
+        } else {
+          // Finish countdown warm-up and launch synthesis simulation loops
+          clearInterval(countdownIntervalId);
+          playCountdownBeep(0); // Trigger a distinct start pitch sound
+
+          // Start active game loop tick interval
+          const selectedMs = parseInt(selectSpeed.value);
+          gameLoopIntervalId = setInterval(updateGame, selectedMs);
+          
+          // Start real-time Clock counter interval
+          clockIntervalId = setInterval(() => {
+            gameSeconds++;
+            statTimer.textContent = formatTime(gameSeconds);
+          }, 1000);
+
+          isGameRunning = true; // Release key bindings lock
+          drawBoard(); // Clear countdown overlay box from canvas
+        }
+      }, 1000);
     }
 
     function triggerGameOver(reason) {
       isGameRunning = false;
       clearInterval(gameLoopIntervalId);
       clearInterval(clockIntervalId);
+      clearInterval(countdownIntervalId);
       playSynthBeep('crash');
 
       // Update Highscore record
@@ -1303,6 +1405,7 @@
       isGameRunning = false;
       clearInterval(gameLoopIntervalId);
       clearInterval(clockIntervalId);
+      clearInterval(countdownIntervalId);
       playSynthBeep('victory');
 
       if (score > highscore) {
