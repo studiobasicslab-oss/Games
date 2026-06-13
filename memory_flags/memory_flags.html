@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Explorer: Passport Match</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Canvas Confetti CDN for gorgeous particle effects -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Montserrat', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body {
+      background-attachment: fixed;
+    }
+    
+    .card-perspective {
+      perspective: 1000px;
+      -webkit-perspective: 1000px;
+    }
+    
+    .card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+      cursor: pointer;
+    }
+    
+    .card-inner.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    /* Force matched cards to stay permanently open and fully visible on the board */
+    .card-inner.matched {
+      transform: rotateY(180deg) !important;
+      pointer-events: none !important;
+      cursor: default;
+    }
+    
+    .card-front, .card-back {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .card-back {
+      background: radial-gradient(circle, #1e3a8a 0%, #1e1b4b 100%);
+      border: 3px solid #f59e0b;
+      transform: rotateY(0deg);
+    }
+    
+    .card-front {
+      background: #ffffff;
+      border: 3px solid #e2e8f0;
+      transform: rotateY(180deg);
+    }
+
+    /* Prevent text selection and subelements from intercepting parent card-inner clicks */
+    .card-front *, .card-back * {
+      pointer-events: none !important;
+      user-select: none !important;
+    }
+
+    /* Shaking animation on mismatch */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    
+    .mismatch-shake {
+      animation: shake 0.4s ease-in-out;
+    }
+
+    /* Custom scrollbar for Passport */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Clean navigation bars by hiding desktop scroll overlays */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none !important;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none !important;  /* IE/Edge */
+      scrollbar-width: none !important;  /* Firefox */
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen overflow-x-hidden transition-all duration-500">
+
+  <script>
+    const SoundEffects = {
+      ctx: null,
+      muted: false,
+      
+      init() {
+        if (!this.ctx) {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+      },
+      
+      toggleMute() {
+        this.muted = !this.muted;
+        const btn = document.getElementById('muteBtn');
+        if (this.muted) {
+          btn.innerHTML = `
+            <svg class="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
+          `;
+        } else {
+          btn.innerHTML = `
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /></svg>
+          `;
+        }
+      },
+
+      playFlip() {
+        if (this.muted) return;
+        this.init();
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(350, this.ctx.currentTime + 0.15);
+        
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+      },
+
+      playMatch() {
+        if (this.muted) return;
+        this.init();
+        let now = this.ctx.currentTime;
+        
+        const notes = [523.25, 659.25, 783.99];
+        notes.forEach((freq, idx) => {
+          let osc = this.ctx.createOscillator();
+          let gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          
+          osc.frequency.setValueAtTime(freq, now + (idx * 0.05));
+          gain.gain.setValueAtTime(0.12, now + (idx * 0.05));
+          gain.gain.exponentialRampToValueAtTime(0.01, now + (idx * 0.05) + 0.4);
+          
+          osc.start(now + (idx * 0.05));
+          osc.stop(now + (idx * 0.05) + 0.4);
+        });
+      },
+
+      playMismatch() {
+        if (this.muted) return;
+        this.init();
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(110, this.ctx.currentTime + 0.25);
+        
+        gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.25);
+      },
+
+      playWin() {
+        if (this.muted) return;
+        this.init();
+        let now = this.ctx.currentTime;
+        const melody = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50];
+        melody.forEach((freq, idx) => {
+          let osc = this.ctx.createOscillator();
+          let gain = this.ctx.createGain();
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          
+          osc.frequency.setValueAtTime(freq, now + (idx * 0.08));
+          gain.gain.setValueAtTime(0.1, now + (idx * 0.08));
+          gain.gain.exponentialRampToValueAtTime(0.01, now + (idx * 0.08) + 0.5);
+          
+          osc.start(now + (idx * 0.08));
+          osc.stop(now + (idx * 0.08) + 0.5);
+        });
+      }
+    };
+  </script>
+
+  <div class="relative min-h-screen flex flex-col justify-between">
+    
+    <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-4 py-3">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-amber-500/20">
+            ✈️
+          </div>
+          <div>
+            <h1 class="font-display font-black text-lg tracking-wider text-amber-400">GLOBAL EXPLORER</h1>
+            <p class="text-xs text-slate-400">The 197 Country Passport Stamp Journey</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button id="muteBtn" onclick="SoundEffects.toggleMute()" class="p-2.5 bg-slate-800 rounded-xl hover:bg-slate-700 transition" title="Toggle Sound">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+            </svg>
+          </button>
+          
+          <button onclick="togglePassport(true)" class="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold rounded-xl transition shadow-lg shadow-amber-500/10">
+            <span>📔 View Passport</span>
+            <span id="passportCountBadge" class="bg-slate-950 text-amber-400 text-xs px-2 py-0.5 rounded-full font-black">0/197</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 flex flex-col lg:flex-row gap-6 relative">
+      
+      <section class="w-full lg:w-1/4 flex flex-col gap-4">
+        
+        <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-5 shadow-xl relative overflow-hidden">
+          <div class="absolute -top-10 -right-10 w-24 h-24 bg-blue-600/10 rounded-full blur-xl"></div>
+          
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-amber-500 uppercase tracking-widest">Adventure Mode</span>
+            <span class="text-xs bg-slate-900 text-slate-300 px-2 py-0.5 rounded-md font-mono" id="timeRecord">Best: --:--</span>
+          </div>
+          
+          <h2 id="levelTitle" class="font-display font-black text-2xl text-white mb-3">Level 1: Novice</h2>
+
+          <!-- Difficulty Switcher Widget inside Dashboard -->
+          <div class="mb-3 bg-slate-900/60 p-2 rounded-xl border border-slate-700/50">
+            <span class="text-slate-400 text-[9px] block font-bold uppercase tracking-wider mb-1">Game Difficulty</span>
+            <div class="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
+              <button id="easyModeBtn" onclick="toggleModeSelection('easy')" class="flex-1 text-center py-1 rounded-md text-[10px] font-black transition-all">
+                EASY
+              </button>
+              <button id="difficultModeBtn" onclick="toggleModeSelection('difficult')" class="flex-1 text-center py-1 rounded-md text-[10px] font-black transition-all">
+                DIFFICULT
+              </button>
+            </div>
+          </div>
+
+          <!-- Mutually Exclusive Combo selector in Sidebar -->
+          <div class="mb-3 bg-slate-900/60 p-2 rounded-xl border border-slate-700/50">
+            <span class="text-slate-400 text-[9px] block font-bold uppercase tracking-wider mb-1.5">Match Combinations</span>
+            <div class="flex flex-col gap-1.5">
+              <button onclick="setGameCombination('flag-name')" id="sidebarCombo_flag-name" class="w-full text-left py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between border">
+                <span>🚩 Flag & Country</span>
+                <span class="status-indicator text-[9px] font-bold"></span>
+              </button>
+              <button onclick="setGameCombination('flag-capital')" id="sidebarCombo_flag-capital" class="w-full text-left py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between border">
+                <span>🚩 Flag & Capital</span>
+                <span class="status-indicator text-[9px] font-bold"></span>
+              </button>
+              <button onclick="setGameCombination('name-capital')" id="sidebarCombo_name-capital" class="w-full text-left py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between border">
+                <span>🏷️ Country & Capital</span>
+                <span class="status-indicator text-[9px] font-bold"></span>
+              </button>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50">
+              <span class="text-slate-400 text-xs block">Pairs Found</span>
+              <span id="pairsLeft" class="font-mono text-xl font-black text-amber-400">0 / 0</span>
+            </div>
+            <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700/50">
+              <span class="text-slate-400 text-xs block">Flips Made</span>
+              <span id="flipCount" class="font-mono text-xl font-black text-blue-400">0</span>
+            </div>
+          </div>
+          
+          <div class="bg-slate-900/80 rounded-xl p-3 flex items-center justify-between border border-slate-700 mb-3">
+            <span class="text-slate-300 text-sm flex items-center gap-2">
+              <span class="animate-pulse text-red-500 text-lg">⏱️</span> Active Time:
+            </span>
+            <span id="gameTimer" class="font-mono text-2xl font-bold text-white">00:00</span>
+          </div>
+
+          <div>
+            <div class="flex justify-between text-xs font-semibold mb-1">
+              <span class="text-slate-300">Global Stamps Progress</span>
+              <span id="progressPercent" class="text-amber-400 font-bold">0%</span>
+            </div>
+            <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800">
+              <div id="progressBar" class="bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-500 h-full w-0 transition-all duration-500"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-800/50 border border-slate-800 rounded-2xl p-4 flex-grow flex flex-col justify-between">
+          <div>
+            <h3 class="font-display font-bold text-sm text-slate-300 mb-3 uppercase tracking-wider">Discovered This Level</h3>
+            <div id="discoveryList" class="flex flex-col gap-2 max-h-40 overflow-y-auto pr-1">
+              <p class="text-xs text-slate-500 italic">No discoveries yet this level. Flip cards to match them!</p>
+            </div>
+          </div>
+          
+          <div class="pt-4 border-t border-slate-800 mt-4">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl">🥇</span>
+              <div>
+                <p class="text-xs text-slate-400">Adventure Reward</p>
+                <p class="text-sm font-bold text-white">"Globe Trotter" Stamp Book</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+      </section>
+
+      <section class="w-full lg:w-3/4 flex flex-col gap-4">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-800/30 p-3 rounded-xl border border-slate-800 gap-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-ping"></span>
+            <span class="text-xs text-slate-300" id="gridInstruction">Match Flag Cards with their Country Name Cards!</span>
+          </div>
+          <button id="restartBtn" onclick="restartLevel()" class="text-xs text-amber-500 font-bold hover:underline flex items-center gap-1 self-start sm:self-auto">
+            🔄 Restart Level
+          </button>
+        </div>
+
+        <div class="flex-grow flex items-center justify-center bg-slate-950/40 rounded-2xl p-4 min-h-[500px] border border-slate-800/80">
+          <div id="cardsGrid" class="grid gap-3 w-full h-full max-w-5xl justify-center items-center">
+            <!-- Cards generated dynamically via JavaScript -->
+          </div>
+        </div>
+        
+      </section>
+
+    </main>
+
+    <!-- Passport Modal -->
+    <div id="passportModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-slate-900 border-2 border-slate-700 rounded-3xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden shadow-2xl relative">
+        
+        <div class="absolute -bottom-32 -left-32 w-80 h-80 bg-amber-500/5 rounded-full pointer-events-none border border-amber-500/10"></div>
+        <div class="absolute -top-32 -right-32 w-80 h-80 bg-blue-500/5 rounded-full pointer-events-none border border-blue-500/10"></div>
+
+        <div class="p-6 border-b border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-950/50">
+          <div class="flex items-center gap-3">
+            <span class="text-4xl">📔</span>
+            <div>
+              <h2 class="font-display font-black text-2xl text-amber-400 tracking-wide">TRAVEL PASSPORT</h2>
+              <p class="text-xs text-slate-400">Unlock stamps for all 197 sovereign countries</p>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-3 w-full sm:w-auto">
+            <div class="relative w-full sm:w-64">
+              <input type="text" id="passportSearch" oninput="filterPassport()" placeholder="Search countries / capitals..." class="w-full bg-slate-800 text-slate-100 text-sm px-4 py-2 pl-9 rounded-xl border border-slate-700 focus:outline-none focus:border-amber-400">
+              <span class="absolute left-3 top-2.5 text-slate-400">🔍</span>
+            </div>
+            <button onclick="togglePassport(false)" class="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition">
+              ❌
+            </button>
+          </div>
+        </div>
+
+        <!-- Continent Filter Tabs - Clippings Fixed! -->
+        <div class="px-6 py-4 border-b border-slate-800 bg-slate-900/80 flex items-center gap-3 overflow-x-auto no-scrollbar">
+          <button onclick="setPassportFilter('All')" class="tab-btn px-4 py-2 rounded-xl text-xs font-black transition whitespace-nowrap bg-amber-500 text-slate-950 shadow-md shadow-amber-500/25" data-continent="All">All 🌎</button>
+          <button onclick="setPassportFilter('Europe')" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700/40" data-continent="Europe">Europe 🏰</button>
+          <button onclick="setPassportFilter('Asia')" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700/40" data-continent="Asia">Asia 🏯</button>
+          <button onclick="setPassportFilter('Africa')" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700/40" data-continent="Africa">Africa 🦁</button>
+          <button onclick="setPassportFilter('Americas')" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700/40" data-continent="Americas">Americas 🍁</button>
+          <button onclick="setPassportFilter('Oceania')" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700/40" data-continent="Oceania">Oceania 🌊</button>
+        </div>
+
+        <div class="flex-grow overflow-y-auto p-6" id="passportGrid">
+          <!-- Stamps populated programmatically -->
+        </div>
+
+        <div class="p-4 border-t border-slate-800 bg-slate-950/40 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-2">
+          <div>
+            <span>* Flag images dynamically loaded from open-source FlagCDN. Check-mark indicates passport verified.</span>
+          </div>
+          <div class="font-bold text-amber-400">
+            Keep playing matches to stamp your blank booklet!
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Victory Modal -->
+    <div id="victoryModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+      <div class="bg-gradient-to-b from-slate-900 to-indigo-950 border border-slate-700 rounded-3xl w-full max-w-md p-6 text-center shadow-2xl relative overflow-hidden">
+        <div class="absolute -top-12 -left-12 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl"></div>
+        
+        <div class="w-20 h-20 bg-amber-500 rounded-full mx-auto flex items-center justify-center text-4xl mb-4 shadow-xl shadow-amber-500/30">
+          🏆
+        </div>
+        
+        <h2 class="font-display font-black text-3xl text-amber-400 mb-1">LEVEL CLEARED!</h2>
+        <p class="text-sm text-slate-300 mb-6">Excellent matching skills explorer!</p>
+        
+        <div class="bg-slate-950/50 border border-slate-800 rounded-2xl p-4 mb-6">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <span class="text-xs text-slate-400 block">Flips Played</span>
+              <span id="victoryFlips" class="text-lg font-bold text-white">0</span>
+            </div>
+            <div>
+              <span class="text-xs text-slate-400 block">Completion Time</span>
+              <span id="victoryTime" class="text-lg font-bold text-white">00:00</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-800/30 border border-amber-500/20 rounded-xl p-3 mb-6 text-left">
+          <p class="text-xs text-slate-400 uppercase font-black tracking-wider mb-2">🛂 Stamped in Passport:</p>
+          <div id="victoryStamps" class="flex flex-wrap gap-2">
+            <!-- List of countries unlocked -->
+          </div>
+        </div>
+
+        <button onclick="advanceLevel()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-lg py-3.5 px-6 rounded-xl transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
+          <span>Fly to Next Level</span> ✈️
+        </button>
+      </div>
+    </div>
+
+    <!-- Start Screen Modal -->
+    <div id="startModal" class="fixed inset-0 bg-slate-950/95 z-50 flex items-center justify-center p-4">
+      <div class="bg-slate-900 border-2 border-slate-800 rounded-3xl w-full max-w-xl p-8 text-center shadow-2xl relative overflow-hidden">
+        
+        <div class="absolute -top-32 -left-32 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-32 -right-32 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl"></div>
+        
+        <div class="w-16 h-16 bg-blue-500 rounded-2xl mx-auto flex items-center justify-center text-3xl mb-4 shadow-lg shadow-blue-500/20">
+          🌎
+        </div>
+        
+        <h2 class="font-display font-black text-3xl text-white mb-2">GLOBAL EXPLORER</h2>
+        <p class="text-sm text-slate-400 mb-5">Complete card matching challenges to travel across all 197 countries and stamp your travel booklet!</p>
+        
+        <!-- Interactive Start-Screen Difficulty Toggle -->
+        <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 mb-5 text-left">
+          <label class="text-amber-400 text-xs font-black uppercase tracking-wider block mb-2">Choose Challenge Mode:</label>
+          <div class="grid grid-cols-2 gap-3">
+            <button id="modalEasyBtn" onclick="toggleModeSelection('easy')" class="py-3 px-4 rounded-xl border border-amber-500 bg-amber-500/10 text-amber-300 font-bold text-sm transition-all focus:outline-none">
+              <span class="block text-white text-base">🟢 Easy Mode</span>
+              <span class="text-[10px] font-normal text-slate-400 block mt-0.5">All cards face up. Direct visual match scanning.</span>
+            </button>
+            <button id="modalDifficultBtn" onclick="toggleModeSelection('difficult')" class="py-3 px-4 rounded-xl border border-slate-800 bg-slate-900/40 text-slate-400 font-bold text-sm transition-all focus:outline-none">
+              <span class="block text-slate-300 text-base">🔴 Difficult Mode</span>
+              <span class="text-[10px] font-normal text-slate-400 block mt-0.5">Cards shown for 5 seconds, then flip closed.</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Match Combination Selector -->
+        <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800 mb-5 text-left">
+          <label class="text-amber-400 text-xs font-black uppercase tracking-wider block mb-2">Select Properties to Match:</label>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <button onclick="setGameCombination('flag-name')" id="modalCombo_flag-name" class="py-3 px-3 rounded-xl border font-bold text-xs transition-all flex flex-col items-center gap-1.5 focus:outline-none">
+              <span class="text-lg">🚩 ↔️ 🏷️</span>
+              <span class="text-center font-bold">Flag & Country</span>
+            </button>
+            <button onclick="setGameCombination('flag-capital')" id="modalCombo_flag-capital" class="py-3 px-3 rounded-xl border font-bold text-xs transition-all flex flex-col items-center gap-1.5 focus:outline-none">
+              <span class="text-lg">🚩 ↔️ 🏛️</span>
+              <span class="text-center font-bold">Flag & Capital</span>
+            </button>
+            <button onclick="setGameCombination('name-capital')" id="modalCombo_name-capital" class="py-3 px-3 rounded-xl border font-bold text-xs transition-all flex flex-col items-center gap-1.5 focus:outline-none">
+              <span class="text-lg">🏷️ ↔️ 🏛️</span>
+              <span class="text-center font-bold">Country & Capital</span>
+            </button>
+          </div>
+        </div>
+
+        <button onclick="startGame()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black text-lg py-4 px-8 rounded-xl transition shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2">
+          <span>Start Expedition</span> 🗺️
+        </button>
+      </div>
+    </div>
+
+    <footer class="border-t border-slate-800/80 bg-slate-950/40 py-3 text-center text-xs text-slate-500">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between px-4 gap-2">
+        <span>© 2026 Global Explorer - The Premium Geography Matching Adventure.</span>
+        <span>Made with ❤️ for Geography enthusiasts.</span>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    const ALL_COUNTRIES = [
+      // Europe (45 countries)
+      { code: "ad", name: "Andorra", capital: "Andorra la Vella", continent: "Europe" },
+      { code: "al", name: "Albania", capital: "Tirana", continent: "Europe" },
+      { code: "at", name: "Austria", capital: "Vienna", continent: "Europe" },
+      { code: "ba", name: "Bosnia & Herzegovina", capital: "Sarajevo", continent: "Europe" },
+      { code: "be", name: "Belgium", capital: "Brussels", continent: "Europe" },
+      { code: "bg", name: "Bulgaria", capital: "Sofia", continent: "Europe" },
+      { code: "by", name: "Belarus", capital: "Minsk", continent: "Europe" },
+      { code: "ch", name: "Switzerland", capital: "Bern", continent: "Europe" },
+      { code: "cy", name: "Cyprus", capital: "Nicosia", continent: "Europe" },
+      { code: "cz", name: "Czechia", capital: "Prague", continent: "Europe" },
+      { code: "de", name: "Germany", capital: "Berlin", continent: "Europe" },
+      { code: "dk", name: "Denmark", capital: "Copenhagen", continent: "Europe" },
+      { code: "ee", name: "Estonia", capital: "Tallinn", continent: "Europe" },
+      { code: "es", name: "Spain", capital: "Madrid", continent: "Europe" },
+      { code: "fi", name: "Finland", capital: "Helsinki", continent: "Europe" },
+      { code: "fr", name: "France", capital: "Paris", continent: "Europe" },
+      { code: "gb", name: "United Kingdom", capital: "London", continent: "Europe" },
+      { code: "ge", name: "Georgia", capital: "Tbilisi", continent: "Europe" },
+      { code: "gr", name: "Greece", capital: "Athens", continent: "Europe" },
+      { code: "hr", name: "Croatia", capital: "Zagreb", continent: "Europe" },
+      { code: "hu", name: "Hungary", capital: "Budapest", continent: "Europe" },
+      { code: "ie", name: "Ireland", capital: "Dublin", continent: "Europe" },
+      { code: "is", name: "Iceland", capital: "Reykjavik", continent: "Europe" },
+      { code: "it", name: "Italy", capital: "Rome", continent: "Europe" },
+      { code: "li", name: "Liechtenstein", capital: "Vaduz", continent: "Europe" },
+      { code: "lt", name: "Lithuania", capital: "Vilnius", continent: "Europe" },
+      { code: "lu", name: "Luxembourg", capital: "Luxembourg City", continent: "Europe" },
+      { code: "lv", name: "Latvia", capital: "Riga", continent: "Europe" },
+      { code: "mc", name: "Monaco", capital: "Monaco", continent: "Europe" },
+      { code: "md", name: "Moldova", capital: "Chisinau", continent: "Europe" },
+      { code: "me", name: "Montenegro", capital: "Podgorica", continent: "Europe" },
+      { code: "mk", name: "North Macedonia", capital: "Skopje", continent: "Europe" },
+      { code: "mt", name: "Malta", capital: "Valletta", continent: "Europe" },
+      { code: "nl", name: "Netherlands", capital: "Amsterdam", continent: "Europe" },
+      { code: "no", name: "Norway", capital: "Oslo", continent: "Europe" },
+      { code: "pl", name: "Poland", capital: "Warsaw", continent: "Europe" },
+      { code: "pt", name: "Portugal", capital: "Lisbon", continent: "Europe" },
+      { code: "ro", name: "Romania", capital: "Bucharest", continent: "Europe" },
+      { code: "rs", name: "Serbia", capital: "Belgrade", continent: "Europe" },
+      { code: "ru", name: "Russia", capital: "Moscow", continent: "Europe" },
+      { code: "se", name: "Sweden", capital: "Stockholm", continent: "Europe" },
+      { code: "si", name: "Slovenia", capital: "Ljubljana", continent: "Europe" },
+      { code: "sk", name: "Slovakia", capital: "Bratislava", continent: "Europe" },
+      { code: "sm", name: "San Marino", capital: "San Marino", continent: "Europe" },
+      { code: "ua", name: "Ukraine", capital: "Kyiv", continent: "Europe" },
+      { code: "va", name: "Vatican City", capital: "Vatican City", continent: "Europe" },
+      { code: "xk", name: "Kosovo", capital: "Pristina", continent: "Europe" },
+
+      // Asia (45 countries)
+      { code: "ae", name: "United Arab Emirates", capital: "Abu Dhabi", continent: "Asia" },
+      { code: "af", name: "Afghanistan", capital: "Kabul", continent: "Asia" },
+      { code: "am", name: "Armenia", capital: "Yerevan", continent: "Asia" },
+      { code: "az", name: "Azerbaijan", capital: "Baku", continent: "Asia" },
+      { code: "bd", name: "Bangladesh", capital: "Dhaka", continent: "Asia" },
+      { code: "bh", name: "Bahrain", capital: "Manama", continent: "Asia" },
+      { code: "bn", name: "Brunei", capital: "Bandar Seri Begawan", continent: "Asia" },
+      { code: "bt", name: "Bhutan", capital: "Thimphu", continent: "Asia" },
+      { code: "cn", name: "China", capital: "Beijing", continent: "Asia" },
+      { code: "id", name: "Indonesia", capital: "Jakarta", continent: "Asia" },
+      { code: "il", name: "Israel", capital: "Jerusalem", continent: "Asia" },
+      { code: "in", name: "India", capital: "New Delhi", continent: "Asia" },
+      { code: "iq", name: "Iraq", capital: "Baghdad", continent: "Asia" },
+      { code: "ir", name: "Iran", capital: "Tehran", continent: "Asia" },
+      { code: "jo", name: "Jordan", capital: "Amman", continent: "Asia" },
+      { code: "jp", name: "Japan", capital: "Tokyo", continent: "Asia" },
+      { code: "kg", name: "Kyrgyzstan", capital: "Bishkek", continent: "Asia" },
+      { code: "kh", name: "Cambodia", capital: "Phnom Penh", continent: "Asia" },
+      { code: "kp", name: "North Korea", capital: "Pyongyang", continent: "Asia" },
+      { code: "kr", name: "South Korea", capital: "Seoul", continent: "Asia" },
+      { code: "kw", name: "Kuwait", capital: "Kuwait City", continent: "Asia" },
+      { code: "kz", name: "Kazakhstan", capital: "Astana", continent: "Asia" },
+      { code: "la", name: "Laos", capital: "Vientiane", continent: "Asia" },
+      { code: "lb", name: "Lebanon", capital: "Beirut", continent: "Asia" },
+      { code: "lk", name: "Sri Lanka", capital: "Sri Jayawardenepura Kotte", continent: "Asia" },
+      { code: "mm", name: "Myanmar", capital: "Naypyidaw", continent: "Asia" },
+      { code: "mn", name: "Mongolia", capital: "Ulaanbaatar", continent: "Asia" },
+      { code: "mv", name: "Maldives", capital: "Malé", continent: "Asia" },
+      { code: "my", name: "Malaysia", capital: "Kuala Lumpur", continent: "Asia" },
+      { code: "np", name: "Nepal", capital: "Kathmandu", continent: "Asia" },
+      { code: "om", name: "Oman", capital: "Muscat", continent: "Asia" },
+      { code: "ph", name: "Philippines", capital: "Manila", continent: "Asia" },
+      { code: "pk", name: "Pakistan", capital: "Islamabad", continent: "Asia" },
+      { code: "ps", name: "Palestine", capital: "East Jerusalem", continent: "Asia" },
+      { code: "qa", name: "Qatar", capital: "Doha", continent: "Asia" },
+      { code: "sa", name: "Saudi Arabia", capital: "Riyadh", continent: "Asia" },
+      { code: "sg", name: "Singapore", capital: "Singapore", continent: "Asia" },
+      { code: "sy", name: "Syria", capital: "Damascus", continent: "Asia" },
+      { code: "th", name: "Thailand", capital: "Bangkok", continent: "Asia" },
+      { code: "tj", name: "Tajikistan", capital: "Dushanbe", continent: "Asia" },
+      { code: "tl", name: "Timor-Leste", capital: "Dili", continent: "Asia" },
+      { code: "tm", name: "Turkmenistan", capital: "Ashgabat", continent: "Asia" },
+      { code: "tr", name: "Turkey", capital: "Ankara", continent: "Asia" },
+      { code: "tw", name: "Taiwan", capital: "Taipei", continent: "Asia" },
+      { code: "uz", name: "Uzbekistan", capital: "Tashkent", continent: "Asia" },
+      { code: "vn", name: "Vietnam", capital: "Hanoi", continent: "Asia" },
+      { code: "ye", name: "Yemen", capital: "Sana'a", continent: "Asia" },
+
+      // Americas (35 countries)
+      { code: "ag", name: "Antigua & Barbuda", capital: "St. John's", continent: "Americas" },
+      { code: "ar", name: "Argentina", capital: "Buenos Aires", continent: "Americas" },
+      { code: "bs", name: "Bahamas", capital: "Nassau", continent: "Americas" },
+      { code: "bb", name: "Barbados", capital: "Bridgetown", continent: "Americas" },
+      { code: "bz", name: "Belize", capital: "Belmopan", continent: "Americas" },
+      { code: "bo", name: "Bolivia", capital: "Sucre", continent: "Americas" },
+      { code: "br", name: "Brazil", capital: "Brasília", continent: "Americas" },
+      { code: "ca", name: "Canada", capital: "Ottawa", continent: "Americas" },
+      { code: "cl", name: "Chile", capital: "Santiago", continent: "Americas" },
+      { code: "co", name: "Colombia", capital: "Bogotá", continent: "Americas" },
+      { code: "cr", name: "Costa Rica", capital: "San José", continent: "Americas" },
+      { code: "cu", name: "Cuba", capital: "Havana", continent: "Americas" },
+      { code: "dm", name: "Dominica", capital: "Roseau", continent: "Americas" },
+      { code: "do", name: "Dominican Republic", capital: "Santo Domingo", continent: "Americas" },
+      { code: "ec", name: "Ecuador", capital: "Quito", continent: "Americas" },
+      { code: "sv", name: "El Salvador", capital: "San Salvador", continent: "Americas" },
+      { code: "gd", name: "Grenada", capital: "St. George's", continent: "Americas" },
+      { code: "gt", name: "Guatemala", capital: "Guatemala City", continent: "Americas" },
+      { code: "gy", name: "Guyana", capital: "Georgetown", continent: "Americas" },
+      { code: "ht", name: "Haiti", capital: "Port-au-Prince", continent: "Americas" },
+      { code: "hn", name: "Honduras", capital: "Tegucigalpa", continent: "Americas" },
+      { code: "jm", name: "Jamaica", capital: "Kingston", continent: "Americas" },
+      { code: "mx", name: "Mexico", capital: "Mexico City", continent: "Americas" },
+      { code: "ni", name: "Nicaragua", capital: "Managua", continent: "Americas" },
+      { code: "pa", name: "Panama", capital: "Panama City", continent: "Americas" },
+      { code: "py", name: "Paraguay", capital: "Asunción", continent: "Americas" },
+      { code: "pe", name: "Peru", capital: "Lima", continent: "Americas" },
+      { code: "kn", name: "Saint Kitts & Nevis", capital: "Basseterre", continent: "Americas" },
+      { code: "lc", name: "Saint Lucia", capital: "Castries", continent: "Americas" },
+      { code: "vc", name: "Saint Vincent", capital: "Kingstown", continent: "Americas" },
+      { code: "sr", name: "Suriname", capital: "Paramaribo", continent: "Americas" },
+      { code: "tt", name: "Trinidad & Tobago", capital: "Port of Spain", continent: "Americas" },
+      { code: "us", name: "United States", capital: "Washington, D.C.", continent: "Americas" },
+      { code: "uy", name: "Uruguay", capital: "Montevideo", continent: "Americas" },
+      { code: "ve", name: "Venezuela", capital: "Caracas", continent: "Americas" },
+
+      // Africa (54 countries)
+      { code: "ao", name: "Angola", capital: "Luanda", continent: "Africa" },
+      { code: "bi", name: "Burundi", capital: "Gitega", continent: "Africa" },
+      { code: "bj", name: "Benin", capital: "Porto-Novo", continent: "Africa" },
+      { code: "bf", name: "Burkina Faso", capital: "Ouagadougou", continent: "Africa" },
+      { code: "bw", name: "Botswana", capital: "Gaborone", continent: "Africa" },
+      { code: "cf", name: "Central African Republic", capital: "Bangui", continent: "Africa" },
+      { code: "td", name: "Chad", capital: "N'Djamena", continent: "Africa" },
+      { code: "km", name: "Comoros", capital: "Moroni", continent: "Africa" },
+      { code: "cg", name: "Congo (Brazzaville)", capital: "Brazzaville", continent: "Africa" },
+      { code: "cd", name: "DR Congo", capital: "Kinshasa", continent: "Africa" },
+      { code: "ci", name: "Ivory Coast", capital: "Yamoussoukro", continent: "Africa" },
+      { code: "dj", name: "Djibouti", capital: "Djibouti", continent: "Africa" },
+      { code: "dz", name: "Algeria", capital: "Algiers", continent: "Africa" },
+      { code: "eg", name: "Egypt", capital: "Cairo", continent: "Africa" },
+      { code: "er", name: "Eritrea", capital: "Asmara", continent: "Africa" },
+      { code: "et", name: "Ethiopia", capital: "Addis Ababa", continent: "Africa" },
+      { code: "ga", name: "Gabon", capital: "Libreville", continent: "Africa" },
+      { code: "gh", name: "Ghana", capital: "Accra", continent: "Africa" },
+      { code: "gm", name: "Gambia", capital: "Banjul", continent: "Africa" },
+      { code: "gn", name: "Guinea", capital: "Conakry", continent: "Africa" },
+      { code: "gq", name: "Equatorial Guinea", capital: "Malabo", continent: "Africa" },
+      { code: "gw", name: "Guinea-Bissau", capital: "Bissau", continent: "Africa" },
+      { code: "ke", name: "Kenya", capital: "Nairobi", continent: "Africa" },
+      { code: "lr", name: "Liberia", capital: "Monrovia", continent: "Africa" },
+      { code: "ly", name: "Libya", capital: "Tripoli", continent: "Africa" },
+      { code: "ls", name: "Lesotho", capital: "Maseru", continent: "Africa" },
+      { code: "ma", name: "Morocco", capital: "Rabat", continent: "Africa" },
+      { code: "mg", name: "Madagascar", capital: "Antananarivo", continent: "Africa" },
+      { code: "ml", name: "Mali", capital: "Bamako", continent: "Africa" },
+      { code: "mr", name: "Mauritania", capital: "Nouakchott", continent: "Africa" },
+      { code: "mu", name: "Mauritius", capital: "Port Louis", continent: "Africa" },
+      { code: "mw", name: "Malawi", capital: "Lilongwe", continent: "Africa" },
+      { code: "mz", name: "Mozambique", capital: "Maputo", continent: "Africa" },
+      { code: "na", name: "Namibia", capital: "Windhoek", continent: "Africa" },
+      { code: "ne", name: "Niger", capital: "Niamey", continent: "Africa" },
+      { code: "ng", name: "Nigeria", capital: "Abuja", continent: "Africa" },
+      { code: "rw", name: "Rwanda", capital: "Kigali", continent: "Africa" },
+      { code: "sd", name: "Sudan", capital: "Khartoum", continent: "Africa" },
+      { code: "sn", name: "Senegal", capital: "Dakar", continent: "Africa" },
+      { code: "so", name: "Somalia", capital: "Mogadishu", continent: "Africa" },
+      { code: "ss", name: "South Sudan", capital: "Juba", continent: "Africa" },
+      { code: "st", name: "São Tomé & Príncipe", capital: "São Tomé", continent: "Africa" },
+      { code: "sz", name: "Eswatini", capital: "Mbabane", continent: "Africa" },
+      { code: "sc", name: "Seychelles", capital: "Victoria", continent: "Africa" },
+      { code: "tg", name: "Togo", capital: "Lomé", continent: "Africa" },
+      { code: "tn", name: "Tunisia", capital: "Tunis", continent: "Africa" },
+      { code: "tz", name: "Tanzania", capital: "Dodoma", continent: "Africa" },
+      { code: "ug", name: "Uganda", capital: "Kampala", continent: "Africa" },
+      { code: "za", name: "South Africa", capital: "Pretoria", continent: "Africa" },
+      { code: "zm", name: "Zambia", capital: "Lusaka", continent: "Africa" },
+      { code: "zw", name: "Zimbabwe", capital: "Harare", continent: "Africa" },
+      { code: "cv", name: "Cape Verde", capital: "Praia", continent: "Africa" },
+
+      // Oceania (14 countries)
+      { code: "au", name: "Australia", capital: "Canberra", continent: "Oceania" },
+      { code: "fj", name: "Fiji", capital: "Suva", continent: "Oceania" },
+      { code: "fm", name: "Micronesia", capital: "Palikir", continent: "Oceania" },
+      { code: "ki", name: "Kiribati", capital: "Tarawa", continent: "Oceania" },
+      { code: "mh", name: "Marshall Islands", capital: "Majuro", continent: "Oceania" },
+      { code: "nz", name: "New Zealand", capital: "Wellington", continent: "Oceania" },
+      { code: "pg", name: "Papua New Guinea", capital: "Port Moresby", continent: "Oceania" },
+      { code: "pw", name: "Palau", capital: "Ngerulmud", continent: "Oceania" },
+      { code: "sb", name: "Solomon Islands", capital: "Honiara", continent: "Oceania" },
+      { code: "to", name: "Tonga", capital: "Nuku'alofa", continent: "Oceania" },
+      { code: "tv", name: "Tuvalu", capital: "Funafuti", continent: "Oceania" },
+      { code: "vu", name: "Vanuatu", capital: "Port Vila", continent: "Oceania" },
+      { code: "ws", name: "Samoa", capital: "Apia", continent: "Oceania" },
+      { code: "nr", name: "Nauru", capital: "Yaren", continent: "Oceania" }
+    ];
+
+    const LEVEL_CONFIGS = [
+      { level: 1, label: "Novice", pairs: 2, cols: 2 },         // 4 Cards
+      { level: 2, label: "Beginner", pairs: 6, cols: 4 },       // 12 Cards
+      { level: 3, label: "Rookie", pairs: 8, cols: 4 },         // 16 Cards
+      { level: 4, label: "Explorer", pairs: 12, cols: 6 },      // 24 Cards
+      { level: 5, label: "Specialist", pairs: 16, cols: 8 },    // 32 Cards
+      { level: 6, label: "Professional", pairs: 20, cols: 8 },  // 40 Cards
+      { level: 7, label: "Grandmaster", pairs: 24, cols: 8 },   // 48 Cards
+      { level: 8, label: "Elite Ambassador", pairs: 30, cols: 10 }, // 60 Cards
+      { level: 9, label: "World Sovereign", pairs: 36, cols: 12 }   // 72 Cards
+    ];
+
+    let currentLevel = 1;
+    let unlockedCountries = JSON.parse(localStorage.getItem('explorer_unlocked_countries')) || [];
+    let discoveredThisLevel = [];
+    let bestTimeRecord = JSON.parse(localStorage.getItem('explorer_best_time')) || {};
+    let gameMode = localStorage.getItem('explorer_game_mode') || 'easy'; // Default is easy
+    
+    // Track mutually exclusive active pair combinations
+    let activeCombo = localStorage.getItem('explorer_combo') || 'flag-name'; 
+    let selectedAttributes = getAttributesForCombo(activeCombo);
+    
+    let activeCards = [];
+    let matchedPairsCount = 0;
+    let flipCount = 0;
+    let isLocked = false;
+    
+    let timerInterval = null;
+    let secondsElapsed = 0;
+    let previewInterval = null; 
+
+    let activePassportFilter = 'All';
+
+    function getAttributesForCombo(combo) {
+      if (combo === 'flag-capital') return ['flag', 'capital'];
+      if (combo === 'name-capital') return ['name', 'capital'];
+      return ['flag', 'name']; // Fallback
+    }
+
+    function setGameCombination(combo) {
+      activeCombo = combo;
+      localStorage.setItem('explorer_combo', combo);
+      selectedAttributes = getAttributesForCombo(combo);
+      
+      updateComboSelectors();
+      
+      // Instantly restart active level with new rules
+      if (document.getElementById('startModal').classList.contains('hidden')) {
+        restartLevel();
+      }
+    }
+
+    function updateComboSelectors() {
+      const combos = ['flag-name', 'flag-capital', 'name-capital'];
+      combos.forEach(c => {
+        const isSelected = activeCombo === c;
+        
+        // Start Modal selector styling
+        const modalBtn = document.getElementById(`modalCombo_${c}`);
+        if (modalBtn) {
+          if (isSelected) {
+            modalBtn.className = "py-3 px-3 rounded-xl border border-amber-500 bg-amber-500/10 text-amber-300 font-bold text-xs transition-all flex flex-col items-center gap-1.5 focus:outline-none";
+          } else {
+            modalBtn.className = "py-3 px-3 rounded-xl border border-slate-800 bg-slate-900/40 text-slate-500 font-bold text-xs transition-all flex flex-col items-center gap-1.5 focus:outline-none hover:text-slate-300 hover:border-slate-700";
+          }
+        }
+
+        // Sidebar selector styling
+        const sidebarBtn = document.getElementById(`sidebarCombo_${c}`);
+        if (sidebarBtn) {
+          const indicator = sidebarBtn.querySelector('.status-indicator');
+          if (isSelected) {
+            sidebarBtn.className = "w-full text-left py-2 px-3 rounded-lg text-xs font-black transition flex items-center justify-between bg-amber-500/10 text-amber-400 border border-amber-500/30";
+            indicator.textContent = "ACTIVE";
+          } else {
+            sidebarBtn.className = "w-full text-left py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between bg-slate-900/40 text-slate-500 border border-slate-800 hover:bg-slate-950 hover:text-slate-300";
+            indicator.textContent = "SELECT";
+          }
+        }
+      });
+    }
+
+    function toggleModeSelection(selectedMode) {
+      gameMode = selectedMode;
+      localStorage.setItem('explorer_game_mode', gameMode);
+      
+      // Update sidebar toggles
+      const easyBtn = document.getElementById('easyModeBtn');
+      const diffBtn = document.getElementById('difficultModeBtn');
+      if (gameMode === 'easy') {
+        easyBtn.className = "flex-1 text-center py-1.5 rounded-md text-xs font-black transition-all bg-amber-500 text-slate-950";
+        diffBtn.className = "flex-1 text-center py-1.5 rounded-md text-xs font-black transition-all text-slate-400 hover:text-slate-100";
+      } else {
+        easyBtn.className = "flex-1 text-center py-1.5 rounded-md text-xs font-black transition-all text-slate-400 hover:text-slate-100";
+        diffBtn.className = "flex-1 text-center py-1.5 rounded-md text-xs font-black transition-all bg-amber-500 text-slate-950";
+      }
+
+      // Update start modal highlights
+      const modalEasy = document.getElementById('modalEasyBtn');
+      const modalDiff = document.getElementById('modalDifficultBtn');
+      if (modalEasy && modalDiff) {
+        if (gameMode === 'easy') {
+          modalEasy.className = "py-3 px-4 rounded-xl border border-amber-500 bg-amber-500/10 text-amber-300 font-bold text-sm transition-all focus:outline-none";
+          modalDiff.className = "py-3 px-4 rounded-xl border border-slate-800 bg-slate-900/40 text-slate-400 font-bold text-sm transition-all focus:outline-none";
+        } else {
+          modalEasy.className = "py-3 px-4 rounded-xl border border-slate-800 bg-slate-900/40 text-slate-400 font-bold text-sm transition-all focus:outline-none";
+          modalDiff.className = "py-3 px-4 rounded-xl border border-amber-500 bg-amber-500/10 text-amber-300 font-bold text-sm transition-all focus:outline-none";
+        }
+      }
+
+      // If level is already running, dynamically restart to apply mode change immediately
+      if (document.getElementById('startModal').classList.contains('hidden')) {
+        restartLevel();
+      }
+    }
+
+    // Dynamic grid math keeping boards cleanly structured on mobile and tablets
+    function getResponsiveCols(totalCards, targetCols) {
+      const width = window.innerWidth;
+      if (width < 640) { // mobile
+        if (totalCards % 4 === 0) return 4;
+        if (totalCards % 3 === 0) return 3;
+        return 2;
+      } else if (width < 1024) { // tablet
+        if (totalCards % 6 === 0) return 6;
+        if (totalCards % 5 === 0) return 5;
+        if (totalCards % 4 === 0) return 4;
+        return 3;
+      }
+      return targetCols; // desktop
+    }
+
+    function startGame() {
+      // Hide modal
+      document.getElementById('startModal').classList.add('hidden');
+      
+      // Initialize full UI
+      updateGlobalProgress();
+      initLevel(currentLevel);
+      setupPassportUI();
+    }
+
+    function initLevel(levelNum) {
+      currentLevel = levelNum;
+      
+      let config = LEVEL_CONFIGS.find(c => c.level === currentLevel);
+      if (!config) {
+        config = {
+          level: currentLevel,
+          label: "Expedition Master",
+          pairs: 18, 
+          cols: 6
+        };
+      }
+
+      updateComboSelectors();
+      resetTimer();
+      if (previewInterval) clearInterval(previewInterval);
+
+      matchedPairsCount = 0;
+      flipCount = 0;
+      activeCards = [];
+      discoveredThisLevel = [];
+
+      document.getElementById('flipCount').textContent = flipCount;
+      document.getElementById('pairsLeft').textContent = `0 / ${config.pairs}`;
+      document.getElementById('levelTitle').textContent = `Level ${config.level}: ${config.label}`;
+      document.getElementById('discoveryList').innerHTML = `
+        <p class="text-xs text-slate-500 italic">No discoveries yet this level. Flip cards to match them!</p>
+      `;
+
+      const best = bestTimeRecord[currentLevel];
+      document.getElementById('timeRecord').textContent = best ? `Best: ${formatTime(best)}` : `Best: --:--`;
+
+      const selectedCountries = selectCountriesForLevel(config.pairs);
+      
+      let cards = [];
+      selectedCountries.forEach(country => {
+        if (selectedAttributes.includes('flag')) {
+          cards.push({
+            id: `${country.code}_flag`,
+            countryCode: country.code,
+            countryName: country.name,
+            type: 'flag',
+            content: country.code
+          });
+        }
+        if (selectedAttributes.includes('name')) {
+          cards.push({
+            id: `${country.code}_name`,
+            countryCode: country.code,
+            countryName: country.name,
+            type: 'name',
+            content: country.name
+          });
+        }
+        if (selectedAttributes.includes('capital')) {
+          cards.push({
+            id: `${country.code}_capital`,
+            countryCode: country.code,
+            countryName: country.name,
+            type: 'capital',
+            content: country.capital
+          });
+        }
+      });
+
+      cards = shuffleArray(cards);
+
+      // Render grid based on chosen difficulty mode
+      if (gameMode === 'easy') {
+        isLocked = false;
+        renderCardsGrid(cards, config.cols, true); // Keep face-up from start
+        document.getElementById('gridInstruction').textContent = "Easy Mode: Match properties directly!";
+        startTimer();
+      } else {
+        // Difficult mode with 5-sec preview countdown
+        isLocked = true;
+        renderCardsGrid(cards, config.cols, true); // Render face up initially
+        
+        const restartBtn = document.getElementById('restartBtn');
+        restartBtn.disabled = true;
+        restartBtn.classList.add('opacity-40', 'cursor-not-allowed');
+
+        let previewSecondsLeft = 5;
+        const instructionEl = document.getElementById('gridInstruction');
+        instructionEl.innerHTML = `⏱️ Memorize the cards! Flipping shut in <span class="text-amber-400 font-black">${previewSecondsLeft}s</span>...`;
+
+        previewInterval = setInterval(() => {
+          previewSecondsLeft--;
+          if (previewSecondsLeft > 0) {
+            instructionEl.innerHTML = `⏱️ Memorize the cards! Flipping shut in <span class="text-amber-400 font-black">${previewSecondsLeft}s</span>...`;
+            SoundEffects.playFlip();
+          } else {
+            clearInterval(previewInterval);
+            
+            // Shut cards back down
+            const cardInners = document.querySelectorAll('.card-inner');
+            cardInners.forEach(inner => {
+              inner.classList.remove('is-flipped');
+            });
+
+            isLocked = false;
+            restartBtn.disabled = false;
+            restartBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+            instructionEl.textContent = "Match the country properties together!";
+            startTimer();
+          }
+        }, 1000);
+      }
+    }
+
+    function selectCountriesForLevel(pairCount) {
+      let lockedCountries = ALL_COUNTRIES.filter(c => !unlockedCountries.includes(c.code));
+      let pool = [...lockedCountries];
+      
+      if (pool.length < pairCount) {
+        const remainingNeeded = pairCount - pool.length;
+        const availableUnlocked = ALL_COUNTRIES.filter(c => unlockedCountries.includes(c.code));
+        const shuffledUnlocked = shuffleArray([...availableUnlocked]);
+        pool = pool.concat(shuffledUnlocked.slice(0, remainingNeeded));
+      } else {
+        pool = shuffleArray(pool).slice(0, pairCount);
+      }
+      
+      return pool.slice(0, pairCount);
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function getDynamicFontSizeClass(text, cardCount) {
+      const len = text.length;
+      if (cardCount > 60) {
+        if (len > 18) return "text-[8px] leading-[1.1]";
+        if (len > 12) return "text-[9px] leading-[1.1]";
+        return "text-[10px] leading-tight";
+      } else if (cardCount > 32) {
+        if (len > 18) return "text-[9px] sm:text-[10px] leading-tight";
+        if (len > 12) return "text-[10px] sm:text-[11px] leading-tight";
+        return "text-[11px] sm:text-[12px] leading-normal";
+      } else {
+        if (len > 18) return "text-[11px] sm:text-[12px] leading-normal";
+        if (len > 12) return "text-[12px] sm:text-[14px] leading-normal";
+        return "text-[13px] sm:text-[15px] leading-relaxed font-bold";
+      }
+    }
+
+    function renderCardsGrid(cards, columns, startFlipped = false) {
+      const grid = document.getElementById('cardsGrid');
+      grid.innerHTML = '';
+      
+      const responsiveCols = getResponsiveCols(cards.length, columns);
+      grid.style.gridTemplateColumns = `repeat(${responsiveCols}, minmax(0, 1fr))`;
+      
+      // Auto-scaling card parameters
+      let cardHeightClass = "h-28 sm:h-36";
+      if (cards.length > 30) {
+        cardHeightClass = "h-24 sm:h-28";
+      }
+      if (cards.length > 55) {
+        cardHeightClass = "h-20 sm:h-24";
+      }
+      if (cards.length > 85) {
+        cardHeightClass = "h-16 sm:h-18";
+      }
+
+      // Hide headers on very dense board configurations to prevent text overlap clipping
+      const isDense = cards.length > 24;
+
+      cards.forEach(card => {
+        const cardContainer = document.createElement('div');
+        cardContainer.className = `card-perspective w-full ${cardHeightClass}`;
+        cardContainer.id = `container_${card.id}`;
+        
+        const cardInner = document.createElement('div');
+        cardInner.className = `card-inner ${startFlipped ? 'is-flipped' : ''}`;
+        cardInner.id = `inner_${card.id}`;
+        cardInner.onclick = () => handleCardClick(card);
+        
+        const cardBack = document.createElement('div');
+        cardBack.className = 'card-back';
+        cardBack.innerHTML = `
+          <div class="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:16px_16px]"></div>
+          <span class="text-amber-500 font-bold opacity-30 text-2xl sm:text-4xl select-none">🌍</span>
+        `;
+        
+        const cardFront = document.createElement('div');
+        cardFront.className = 'card-front p-1.5 relative overflow-hidden flex flex-col justify-center items-center';
+        
+        if (card.type === 'flag') {
+          cardFront.innerHTML = `
+            <img src="https://flagcdn.com/w160/${card.content}.png" 
+                 onerror="this.src='https://placehold.co/160x100/1e3a8a/ffffff?text=${card.content.toUpperCase()}'" 
+                 alt="${card.countryName} Flag" 
+                 class="max-w-[85%] max-h-[85%] rounded border border-slate-200 object-contain shadow" />
+          `;
+        } else {
+          // Dynamic text size generation logic prevents truncation and clips
+          const textStyleClass = getDynamicFontSizeClass(card.content, cards.length);
+          const bgOpacityClass = card.type === 'capital' ? 'bg-amber-500/5' : 'bg-blue-500/5';
+          const titleLabel = card.type === 'capital' ? '🏛️ Capital' : '🏷️ Country';
+          const labelColor = card.type === 'capital' ? 'text-amber-600' : 'text-blue-600';
+
+          if (isDense) {
+            // Clean high-density layout: hide text-clutter (headers/footers) so names can wrap fully and remain clearly visible
+            cardFront.innerHTML = `
+              <div class="absolute inset-0 ${bgOpacityClass} opacity-30"></div>
+              <div class="flex flex-col items-center justify-center h-full w-full px-1.5 z-10 relative">
+                <span class="font-display font-extrabold text-slate-900 text-center break-words max-w-full ${textStyleClass}">
+                  ${card.content}
+                </span>
+              </div>
+            `;
+          } else {
+            // Standard layout with full descriptive banners
+            cardFront.innerHTML = `
+              <div class="absolute inset-0 ${bgOpacityClass} opacity-30"></div>
+              <div class="flex flex-col items-center justify-between h-full w-full py-1 z-10 relative">
+                <span class="text-[7px] font-black uppercase ${labelColor} tracking-wider">${titleLabel}</span>
+                <span class="font-display font-extrabold text-slate-900 text-center px-1 break-words max-w-full ${textStyleClass}">
+                  ${card.content}
+                </span>
+                <span class="text-[6px] text-slate-400 w-full text-center">Geography stamp</span>
+              </div>
+            `;
+          }
+        }
+        
+        cardInner.appendChild(cardBack);
+        cardInner.appendChild(cardFront);
+        cardContainer.appendChild(cardInner);
+        grid.appendChild(cardContainer);
+      });
+      
+      const config = LEVEL_CONFIGS.find(c => c.level === currentLevel) || { pairs: 18 };
+      document.getElementById('pairsLeft').textContent = `0 / ${config.pairs}`;
+    }
+
+    function handleCardClick(card) {
+      if (isLocked) return;
+      
+      const inner = document.getElementById(`inner_${card.id}`);
+      
+      // 1. Ignore click if card is already matched and locked
+      if (inner.classList.contains('matched')) return;
+      
+      // 2. Toggle selection: If card is already active in current turn, unselect it
+      if (activeCards.some(c => c.id === card.id)) {
+        unselectCard(card);
+        return;
+      }
+      
+      SoundEffects.playFlip();
+      
+      const cardFront = document.querySelector(`#inner_${card.id} .card-front`);
+      
+      if (gameMode === 'easy') {
+        cardFront.classList.add('border-amber-500', 'ring-4', 'ring-amber-400');
+      } else {
+        inner.classList.add('is-flipped');
+      }
+      
+      activeCards.push(card);
+      
+      flipCount++;
+      document.getElementById('flipCount').textContent = flipCount;
+      
+      // Always match on 2 active cards since we are strictly in pair matching modes
+      if (activeCards.length === 2) {
+        checkMatch();
+      }
+    }
+
+    function unselectCard(card) {
+      SoundEffects.playFlip();
+      
+      // Remove the card from the active selections array
+      activeCards = activeCards.filter(c => c.id !== card.id);
+      
+      const inner = document.getElementById(`inner_${card.id}`);
+      const cardFront = document.querySelector(`#inner_${card.id} .card-front`);
+      
+      if (gameMode === 'easy') {
+        // Remove select highlight indicators on Easy Mode
+        cardFront.classList.remove('border-amber-500', 'ring-4', 'ring-amber-400');
+      } else {
+        // Perform 3D rotation flip back closed on Difficult Mode
+        inner.classList.remove('is-flipped');
+      }
+      
+      // Gracefully decrement flipCount since the move was canceled
+      if (flipCount > 0) {
+        flipCount--;
+        document.getElementById('flipCount').textContent = flipCount;
+      }
+    }
+
+    function checkMatch() {
+      isLocked = true;
+      const [cardA, cardB] = activeCards;
+      
+      // Share same countryCode AND represent different property types
+      const isMatch = (cardA.countryCode === cardB.countryCode) && (cardA.type !== cardB.type);
+      
+      if (isMatch) {
+        handleSuccessfulMatch(cardA);
+      } else {
+        handleMismatch();
+      }
+    }
+
+    function handleSuccessfulMatch(card) {
+      const config = LEVEL_CONFIGS.find(c => c.level === currentLevel) || { pairs: 18 };
+      
+      SoundEffects.playMatch();
+      
+      activeCards.forEach(c => {
+        const inner = document.getElementById(`inner_${c.id}`);
+        inner.classList.add('matched'); // Lock card permanently open using CSS
+        
+        const cardFront = document.querySelector(`#inner_${c.id} .card-front`);
+        cardFront.classList.remove('border-slate-e2e8f0', 'border-amber-500', 'ring-4', 'ring-amber-400');
+        
+        // Match decoration: Stay open, flat, and highlighted in green with checkmark
+        cardFront.classList.add('border-emerald-500', 'bg-emerald-50/95', 'ring-2', 'ring-emerald-400/50');
+        
+        if (!cardFront.querySelector('.verified-badge')) {
+          const verifiedBadge = document.createElement('div');
+          verifiedBadge.className = 'verified-badge absolute top-1 right-1 bg-amber-500 text-slate-950 text-[8px] w-4.5 h-4.5 rounded-full flex items-center justify-center font-black shadow z-20 animate-bounce';
+          verifiedBadge.textContent = '✓';
+          cardFront.appendChild(verifiedBadge);
+        }
+      });
+
+      addDiscovery(card.countryCode, card.countryName);
+
+      matchedPairsCount++;
+      document.getElementById('pairsLeft').textContent = `${matchedPairsCount} / ${config.pairs}`;
+
+      if (!unlockedCountries.includes(card.countryCode)) {
+        unlockedCountries.push(card.countryCode);
+        localStorage.setItem('explorer_unlocked_countries', JSON.stringify(unlockedCountries));
+        updateGlobalProgress();
+        setupPassportUI();
+      }
+
+      confetti({
+        particleCount: 15,
+        spread: 30,
+        origin: { y: 0.8 }
+      });
+
+      activeCards = [];
+      isLocked = false;
+
+      if (matchedPairsCount === config.pairs) {
+        triggerVictory();
+      }
+    }
+
+    function handleMismatch() {
+      SoundEffects.playMismatch();
+      
+      activeCards.forEach(c => {
+        const container = document.getElementById(`container_${c.id}`);
+        const cardFront = document.querySelector(`#inner_${c.id} .card-front`);
+        cardFront.classList.remove('border-amber-500', 'ring-4', 'ring-amber-400');
+        cardFront.classList.add('border-red-500', 'bg-red-50');
+        container.classList.add('mismatch-shake');
+      });
+
+      setTimeout(() => {
+        activeCards.forEach(c => {
+          const container = document.getElementById(`container_${c.id}`);
+          const inner = document.getElementById(`inner_${c.id}`);
+          const cardFront = document.querySelector(`#inner_${c.id} .card-front`);
+          
+          cardFront.classList.remove('border-red-500', 'bg-red-50');
+          container.classList.remove('mismatch-shake');
+          
+          if (gameMode !== 'easy') {
+            inner.classList.remove('is-flipped');
+          }
+        });
+        
+        activeCards = [];
+        isLocked = false;
+      }, 1200);
+    }
+
+    function addDiscovery(code, name) {
+      const country = ALL_COUNTRIES.find(c => c.code === code);
+      if (!country) return;
+
+      discoveredThisLevel.push(country);
+      
+      const list = document.getElementById('discoveryList');
+      if (discoveredThisLevel.length === 1) {
+        list.innerHTML = ''; 
+      }
+
+      const item = document.createElement('div');
+      item.className = 'flex items-center gap-2 bg-slate-900/60 p-2 rounded-lg border border-slate-800 animate-slide-in';
+      item.innerHTML = `
+        <img src="https://flagcdn.com/w40/${code}.png" class="w-6 h-4 object-cover rounded shadow-sm" alt="Flag">
+        <div class="flex-grow min-w-0">
+          <p class="text-xs font-bold text-white truncate">${name}</p>
+          <p class="text-[10px] text-slate-400 truncate">Cap: ${country.capital}</p>
+        </div>
+        <span class="text-xs text-emerald-500">🛂</span>
+      `;
+      list.prepend(item);
+    }
+
+    function startTimer() {
+      secondsElapsed = 0;
+      document.getElementById('gameTimer').textContent = "00:00";
+      
+      timerInterval = setInterval(() => {
+        secondsElapsed++;
+        document.getElementById('gameTimer').textContent = formatTime(secondsElapsed);
+      }, 1000);
+    }
+
+    function resetTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+    }
+
+    function formatTime(totalSeconds) {
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function restartLevel() {
+      resetTimer();
+      if (previewInterval) clearInterval(previewInterval);
+      initLevel(currentLevel);
+    }
+
+    function triggerVictory() {
+      resetTimer();
+      SoundEffects.playWin();
+
+      const end = Date.now() + 1200;
+      const colors = ['#f59e0b', '#10b981', '#3b82f6'];
+
+      (function frame() {
+        confetti({
+          particleCount: 4,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+          colors: colors
+        });
+        confetti({
+          particleCount: 4,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+          colors: colors
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      }());
+
+      const currentBest = bestTimeRecord[currentLevel];
+      if (!currentBest || secondsElapsed < currentBest) {
+        bestTimeRecord[currentLevel] = secondsElapsed;
+        localStorage.setItem('explorer_best_time', JSON.stringify(bestTimeRecord));
+      }
+
+      document.getElementById('victoryFlips').textContent = flipCount;
+      document.getElementById('victoryTime').textContent = formatTime(secondsElapsed);
+      
+      const container = document.getElementById('victoryStamps');
+      container.innerHTML = '';
+      discoveredThisLevel.forEach(country => {
+        const stamp = document.createElement('div');
+        stamp.className = 'flex items-center gap-1.5 bg-slate-900 border border-amber-500/30 px-2.5 py-1 rounded-lg text-xs';
+        stamp.innerHTML = `
+          <img src="https://flagcdn.com/w40/${country.code}.png" class="w-5 h-3 object-cover rounded" alt="Flag">
+          <span class="text-slate-100 font-semibold">${country.name}</span>
+        `;
+        container.appendChild(stamp);
+      });
+
+      document.getElementById('victoryModal').classList.remove('hidden');
+    }
+
+    function advanceLevel() {
+      document.getElementById('victoryModal').classList.add('hidden');
+      currentLevel++;
+      initLevel(currentLevel);
+    }
+
+    function updateGlobalProgress() {
+      const count = unlockedCountries.length;
+      const total = ALL_COUNTRIES.length;
+      const pct = Math.round((count / total) * 100);
+      
+      document.getElementById('passportCountBadge').textContent = `${count}/${total}`;
+      document.getElementById('progressPercent').textContent = `${pct}%`;
+      document.getElementById('progressBar').style.width = `${pct}%`;
+    }
+
+    function togglePassport(show) {
+      const modal = document.getElementById('passportModal');
+      if (show) {
+        modal.classList.remove('hidden');
+        setupPassportUI();
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function setPassportFilter(continent) {
+      activePassportFilter = continent;
+      
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        if (btn.getAttribute('data-continent') === continent) {
+          btn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-black transition whitespace-nowrap bg-amber-500 text-slate-950 shadow-md shadow-amber-500/25";
+        } else {
+          btn.className = "tab-btn px-4 py-2 rounded-xl text-xs font-bold transition whitespace-nowrap bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700/40";
+        }
+      });
+
+      filterPassport();
+    }
+
+    function setupPassportUI() {
+      const grid = document.getElementById('passportGrid');
+      grid.innerHTML = '';
+      
+      let filtered = ALL_COUNTRIES;
+      if (activePassportFilter !== 'All') {
+        filtered = filtered.filter(c => c.continent === activePassportFilter);
+      }
+
+      filtered.sort((a,b) => a.name.localeCompare(b.name));
+
+      const fragment = document.createDocumentFragment();
+
+      filtered.forEach(country => {
+        const isUnlocked = unlockedCountries.includes(country.code);
+        
+        const wrapper = document.createElement('div');
+        wrapper.className = `p-4 rounded-2xl border transition-all duration-300 ${
+          isUnlocked 
+            ? 'bg-slate-800 border-amber-500/30 shadow-lg relative overflow-hidden' 
+            : 'bg-slate-950/40 border-slate-850 opacity-40'
+        }`;
+        wrapper.id = `passport_card_${country.code}`;
+        wrapper.setAttribute('data-name', country.name.toLowerCase());
+        wrapper.setAttribute('data-capital', country.capital.toLowerCase());
+
+        let stampOverlay = '';
+        if (isUnlocked) {
+          stampOverlay = `
+            <div class="absolute -right-4 -bottom-4 w-16 h-16 border-2 border-emerald-500/20 rounded-full flex items-center justify-center rotate-12 pointer-events-none">
+              <span class="text-emerald-500/30 text-[10px] font-black tracking-widest font-display">VERIFIED</span>
+            </div>
+          `;
+        }
+
+        wrapper.innerHTML = `
+          ${stampOverlay}
+          <div class="flex items-start gap-3">
+            <div class="relative flex-shrink-0">
+              <img src="https://flagcdn.com/w80/${country.code}.png" 
+                   class="w-14 h-10 object-cover rounded-lg shadow-md border border-slate-700/50 ${!isUnlocked ? 'grayscale filter blur-[2px]' : ''}" 
+                   alt="${country.name}">
+              ${isUnlocked ? '<span class="absolute -top-1.5 -right-1.5 bg-emerald-500 text-slate-950 rounded-full text-[9px] w-4.5 h-4.5 flex items-center justify-center font-black">✓</span>' : ''}
+            </div>
+            
+            <div class="min-w-0 flex-grow">
+              <span class="text-[9px] uppercase tracking-widest font-black text-slate-500">${country.continent}</span>
+              <h4 class="font-display font-bold text-sm text-white truncate">${country.name}</h4>
+              <p class="text-xs text-slate-400 truncate">Capital: ${isUnlocked ? country.capital : '🔒 Locked'}</p>
+            </div>
+          </div>
+        `;
+        fragment.appendChild(wrapper);
+      });
+
+      grid.appendChild(fragment);
+    }
+
+    function filterPassport() {
+      const searchVal = document.getElementById('passportSearch').value.toLowerCase();
+      const grid = document.getElementById('passportGrid');
+      const cards = grid.children;
+
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
+        const name = card.getAttribute('data-name');
+        const capital = card.getAttribute('data-capital');
+
+        if (name.includes(searchVal) || capital.includes(searchVal)) {
+          card.classList.remove('hidden');
+        } else {
+          card.classList.add('hidden');
+        }
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      updateComboSelectors();
+      toggleModeSelection(gameMode);
+    });
+  </script>
+</body>
+</html>
