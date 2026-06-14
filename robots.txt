@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://studiobasicslab-oss.github.io/Games/sitemap.xml
