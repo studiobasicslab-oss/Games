@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timeline Splicer - History & Logic Game</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter & Cormorant Garamond -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Cormorant Garamond', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            gold: '#d4af37',
+                            goldHover: '#b89528',
+                            bronze: '#aa7c11',
+                            darkBg: '#0b0d12',
+                            cardBg: '#141824',
+                            cardBorder: '#2a324b',
+                            accentEmerald: '#10b981',
+                            accentRose: '#f43f5e'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0b0d12;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2a324b;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d4af37;
+        }
+
+        /* Card Drag Styling */
+        .dragging {
+            opacity: 0.4;
+            transform: scale(0.98);
+        }
+
+        .drag-over {
+            border-color: #d4af37 !important;
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+
+        /* Flip animation */
+        .flip-card {
+            perspective: 1000px;
+        }
+
+        .flip-card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* Pulsing Timer Ring */
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+        }
+
+        .timer-warning {
+            animation: pulse-ring 1s infinite ease-in-out;
+            color: #ef4444 !important;
+        }
+
+        /* Glassmorphism overlays */
+        .glass-panel {
+            background: rgba(20, 24, 36, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-brand-darkBg text-slate-200 font-sans min-h-screen flex flex-col justify-between selection:bg-brand-gold selection:text-black antialiased">
+
+    <!-- TOP HUD / HEADER -->
+    <header class="w-full border-b border-slate-800 bg-slate-950/80 sticky top-0 z-30 backdrop-blur-md">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+
+            <!-- Logo & Title -->
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500/20 to-amber-700/10 border border-amber-500/40 flex items-center justify-center text-amber-400 font-serif text-xl font-bold shadow-inner">
+                    <i class="fa-solid font-bold fa-timeline text-amber-400"></i>
+                </div>
+                <div>
+                    <h1
+                        class="font-serif text-xl sm:text-2xl font-bold tracking-wide text-amber-100 flex items-center gap-2">
+                        TIMELINE SPLICER
+                        <span
+                            class="text-xs font-sans uppercase font-semibold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-300">Lab
+                            Edition</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Chrono-Logics & Sequence Synchronization</p>
+                </div>
+            </div>
+
+            <!-- Live Counters HUD -->
+            <div class="flex items-center gap-3 sm:gap-6 text-sm">
+                <div class="flex items-center gap-2 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-lg">
+                    <i class="fa-solid fa-trophy text-amber-400 text-xs"></i>
+                    <span class="text-slate-400 text-xs hidden xs:inline">Score:</span>
+                    <span id="score-display" class="font-mono font-bold text-amber-300">0</span>
+                </div>
+
+                <div class="flex items-center gap-2 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-lg">
+                    <i class="fa-solid fa-fire text-orange-400 text-xs"></i>
+                    <span class="text-slate-400 text-xs hidden xs:inline">Streak:</span>
+                    <span id="streak-display" class="font-mono font-bold text-orange-400">0</span>
+                </div>
+
+                <!-- Audio Toggle -->
+                <button id="btn-sound" onclick="toggleAudio()"
+                    class="w-9 h-9 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-amber-400 hover:border-amber-500/40 transition flex items-center justify-center"
+                    title="Toggle Sound">
+                    <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- MAIN GAME WRAPPER -->
+    <main class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full flex flex-col justify-center">
+
+        <!-- START SCREEN -->
+        <div id="screen-start"
+            class="w-full glass-panel rounded-2xl p-6 sm:p-10 text-center shadow-2xl relative overflow-hidden border border-amber-500/20 my-auto">
+            <div class="absolute -top-24 -right-24 w-60 h-60 bg-amber-500/10 rounded-full blur-3xl pointer-events-none">
+            </div>
+            <div
+                class="absolute -bottom-24 -left-24 w-60 h-60 bg-blue-500/10 rounded-full blur-3xl pointer-events-none">
+            </div>
+
+            <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs uppercase tracking-widest font-semibold mb-4">
+                <i class="fa-solid fa-hourglass-start"></i> Chrono-Cognitive Test
+            </div>
+
+            <h2 class="font-serif text-3xl sm:text-5xl font-bold text-slate-100 mb-4 tracking-tight">
+                Master the Flow of History
+            </h2>
+            <p class="text-slate-300 max-w-xl mx-auto text-sm sm:text-base leading-relaxed mb-8">
+                Randomized historical events and scientific discoveries have been unmoored from time. Drag, drop, or tap
+                to arrange them in strict chronological order before the paradox timer collapses.
+            </p>
+
+            <!-- Mode Selector -->
+            <div class="max-w-md mx-auto mb-8 bg-slate-900/90 p-2 rounded-xl border border-slate-800">
+                <p class="text-xs text-slate-400 uppercase tracking-wider font-semibold mb-2">Select Temporal Precision
+                </p>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="setDifficulty('easy')" id="diff-easy"
+                        class="diff-btn py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition border border-amber-500/50 bg-amber-500/20 text-amber-300">
+                        Novice<br><span class="text-[10px] opacity-75 font-normal">4 Events • 30s</span>
+                    </button>
+                    <button onclick="setDifficulty('medium')" id="diff-medium"
+                        class="diff-btn py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition border border-slate-800 bg-slate-800/60 text-slate-400 hover:text-slate-200">
+                        Historian<br><span class="text-[10px] opacity-75 font-normal">5 Events • 25s</span>
+                    </button>
+                    <button onclick="setDifficulty('hard')" id="diff-hard"
+                        class="diff-btn py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition border border-slate-800 bg-slate-800/60 text-slate-400 hover:text-slate-200">
+                        Chrono Master<br><span class="text-[10px] opacity-75 font-normal">5 Tight • 20s</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Start Button -->
+            <button onclick="startGame()"
+                class="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-lg rounded-xl shadow-lg shadow-amber-500/20 transform hover:-translate-y-0.5 active:translate-y-0 transition flex items-center justify-center gap-3 mx-auto">
+                <i class="fa-solid fa-play"></i> Initiate Timeline Splicing
+            </button>
+
+            <!-- Keyboard/Touch Hints -->
+            <div class="mt-8 flex items-center justify-center gap-6 text-xs text-slate-400">
+                <span><i class="fa-solid fa-hand-pointer text-amber-400 mr-1"></i> Tap or Drag cards</span>
+                <span><i class="fa-solid fa-bolt text-amber-400 mr-1"></i> Speed Multiplier</span>
+                <span><i class="fa-solid fa-brain text-amber-400 mr-1"></i> Working Memory</span>
+            </div>
+        </div>
+
+        <!-- PLAY SCREEN -->
+        <div id="screen-play" class="w-full hidden flex-col gap-6">
+
+            <!-- Round Info & Timer Header -->
+            <div class="glass-panel p-4 rounded-xl flex items-center justify-between border border-slate-800 shadow-md">
+                <div>
+                    <div class="flex items-center gap-2 text-xs uppercase font-semibold text-amber-400 tracking-wider">
+                        <span id="category-badge"
+                            class="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">Science & Tech</span>
+                        <span>• Round <span id="round-current">1</span></span>
+                    </div>
+                    <h3 id="round-prompt" class="text-sm sm:text-base font-medium text-slate-200 mt-0.5">
+                        Arrange events from <strong class="text-amber-400 font-semibold">Earliest (Top)</strong> to
+                        <strong class="text-amber-400 font-semibold">Latest (Bottom)</strong>
+                    </h3>
+                </div>
+
+                <!-- Timer Circle -->
+                <div class="flex items-center gap-3">
+                    <div class="relative flex items-center justify-center">
+                        <svg class="w-14 h-14 transform -rotate-90">
+                            <circle cx="28" cy="28" r="22" stroke="currentColor" stroke-width="4" class="text-slate-800"
+                                fill="transparent" />
+                            <circle id="timer-progress" cx="28" cy="28" r="22" stroke="currentColor" stroke-width="4"
+                                class="text-amber-400 transition-all duration-1000" fill="transparent"
+                                stroke-dasharray="138" stroke-dashoffset="0" />
+                        </svg>
+                        <span id="timer-text" class="absolute font-mono font-bold text-base text-amber-300">25</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Container -->
+            <div class="relative">
+                <!-- Visual Vertical Timeline Axis -->
+                <div
+                    class="absolute left-6 sm:left-8 top-6 bottom-6 w-1 bg-gradient-to-b from-amber-500/60 via-slate-700 to-amber-500/60 rounded-full z-0 hidden xs:block">
+                </div>
+
+                <!-- Cards List Container -->
+                <div id="timeline-list" class="flex flex-col gap-3 relative z-10">
+                    <!-- Dynamically populated card items -->
+                </div>
+            </div>
+
+            <!-- Control Bar -->
+            <div class="flex items-center gap-3">
+                <button id="btn-submit" onclick="submitTimeline()"
+                    class="flex-1 py-3.5 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-base rounded-xl shadow-lg shadow-amber-500/20 active:scale-[0.99] transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-lock"></i> Lock & Validate Timeline
+                </button>
+            </div>
+
+        </div>
+
+        <!-- REVEAL / ARCHIVE MODAL (ROUND RESULTS) -->
+        <div id="modal-reveal"
+            class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4 overflow-y-auto">
+            <div
+                class="glass-panel w-full max-w-2xl rounded-2xl p-6 sm:p-8 border border-amber-500/30 shadow-2xl relative my-auto my-6">
+
+                <div class="text-center mb-6">
+                    <div id="reveal-status-icon"
+                        class="w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl mb-3 shadow-inner">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h3 id="reveal-title" class="font-serif text-2xl sm:text-3xl font-bold text-slate-100">Timeline
+                        Synchronized!</h3>
+                    <p id="reveal-subtitle" class="text-xs sm:text-sm text-slate-400 mt-1">Exact chronological alignment
+                        breakdown</p>
+                </div>
+
+                <!-- Chronological List with Facts -->
+                <div id="archive-facts-list" class="space-y-3 max-h-[50vh] overflow-y-auto pr-1 mb-6">
+                    <!-- Populated by JS -->
+                </div>
+
+                <!-- Round Stats Summary -->
+                <div
+                    class="grid grid-cols-3 gap-3 bg-slate-900/90 p-3 rounded-xl border border-slate-800 text-center mb-6 text-xs sm:text-sm">
+                    <div>
+                        <span class="text-slate-400 block text-[11px] uppercase">Accuracy</span>
+                        <span id="modal-accuracy" class="font-mono font-bold text-amber-300 text-base">100%</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[11px] uppercase">Time Left</span>
+                        <span id="modal-time-left" class="font-mono font-bold text-amber-300 text-base">+12s</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[11px] uppercase">Round Score</span>
+                        <span id="modal-points" class="font-mono font-bold text-amber-300 text-base">+350</span>
+                    </div>
+                </div>
+
+                <!-- Continue Button -->
+                <button onclick="nextRound()"
+                    class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-base rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                    <span>Proceed to Next Sequence</span> <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- GAME OVER / FINAL SUMMARY SCREEN -->
+        <div id="screen-gameover"
+            class="w-full hidden glass-panel rounded-2xl p-6 sm:p-10 text-center shadow-2xl border border-amber-500/20 my-auto">
+            <div
+                class="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center text-3xl mx-auto mb-4">
+                <i class="fa-solid fa-award"></i>
+            </div>
+
+            <h2 class="font-serif text-3xl sm:text-4xl font-bold text-slate-100 mb-2">Chrono Session Complete</h2>
+            <p class="text-slate-400 text-sm max-w-md mx-auto mb-6">You tested your working memory and chronological
+                precision across historical matrix lines.</p>
+
+            <!-- Final Stats Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-xl mx-auto mb-8">
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <span class="text-xs text-slate-400 uppercase block">Final Score</span>
+                    <span id="final-score" class="font-mono font-bold text-xl text-amber-300">0</span>
+                </div>
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <span class="text-xs text-slate-400 uppercase block">Max Streak</span>
+                    <span id="final-streak" class="font-mono font-bold text-xl text-orange-400">0</span>
+                </div>
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <span class="text-xs text-slate-400 uppercase block">Total Rounds</span>
+                    <span id="final-rounds" class="font-mono font-bold text-xl text-amber-300">0</span>
+                </div>
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                    <span class="text-xs text-slate-400 uppercase block">Accuracy</span>
+                    <span id="final-accuracy" class="font-mono font-bold text-xl text-emerald-400">0%</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto">
+                <button onclick="copyShareResults()"
+                    class="w-full sm:w-auto flex-1 py-3 px-5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl border border-slate-700 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-share-nodes text-amber-400"></i> Share Result
+                </button>
+                <button onclick="startGame()"
+                    class="w-full sm:w-auto flex-1 py-3 px-6 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Play Again
+                </button>
+            </div>
+
+            <p id="share-copied-msg" class="text-xs text-emerald-400 mt-3 hidden font-mono">
+                <i class="fa-solid fa-check"></i> Score summary copied to clipboard!
+            </p>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="w-full border-t border-slate-900 py-4 px-4 text-center text-xs text-slate-500">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+            <p>Timeline Splicer &bull; Hari's Lab Educational Arcade</p>
+            <p class="text-slate-600">Designed for working memory & historical deduction</p>
+        </div>
+    </footer>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        /* ==========================================================================
+           1. HISTORICAL EVENT DATABASE (100+ CURATED EVENTS)
+           ========================================================================== */
+        const EVENT_DATABASE = [
+            // Science & Technology
+            { title: "Invention of the Printing Press", year: 1440, category: "Science & Tech", fact: "Johannes Gutenberg developed movable metallic type, sparking the information revolution in Europe." },
+            { title: "Galileo Discovers Jupiter's Moons", year: 1610, category: "Science & Tech", fact: "Galileo used his handmade telescope to discover Io, Europa, Ganymede, and Callisto." },
+            { title: "Newton Publishes 'Principia Mathematica'", year: 1687, category: "Science & Tech", fact: "Laid out the universal laws of motion and gravitation, founding modern classical physics." },
+            { title: "First Demonstration of Smallpox Vaccine", year: 1796, category: "Science & Tech", fact: "Edward Jenner used cowpox material to create the world's first successful vaccine." },
+            { title: "Invention of the Electric Telegraph", year: 1837, category: "Science & Tech", fact: "Samuel Morse and William Fothergill Cooke revolutionized long-distance electronic communication." },
+            { title: "Darwin Publishes 'On the Origin of Species'", year: 1859, category: "Science & Tech", fact: "Introduced the scientific theory of evolution by natural selection." },
+            { title: "Patenting of the Telephone", year: 1876, category: "Science & Tech", fact: "Alexander Graham Bell was awarded the patent for transmitting speech electronically." },
+            { title: "Edison Demonstrates Incandescent Lightbulb", year: 1879, category: "Science & Tech", fact: "Thomas Edison created a practical long-lasting carbon filament light bulb." },
+            { title: "Discovery of X-Rays", year: 1895, category: "Science & Tech", fact: "Wilhelm Röntgen stumbled upon electromagnetic radiation while experimenting with electron beams." },
+            { title: "Wright Brothers' First Motorized Flight", year: 1903, category: "Science & Tech", fact: "Orville and Wilbur Wright achieved 12 seconds of sustained controlled flight at Kitty Hawk." },
+            { title: "Einstein Publishes Special Theory of Relativity", year: 1905, category: "Science & Tech", fact: "Formulated E=mc² and proposed that light speed is constant in all inertial frames." },
+            { title: "Discovery of Penicillin", year: 1928, category: "Science & Tech", fact: "Alexander Fleming discovered antibiotic mold contaminating his staphylococcus Petri dish." },
+            { title: "Discovery of the Structure of DNA", year: 1953, category: "Science & Tech", fact: "Watson, Crick, Franklin, and Wilkins elucidated the double-helix model of life." },
+            { title: "First Computer Virus ('Creeper')", year: 1971, category: "Science & Tech", fact: "Creeper gained access to ARPANET computers, printing 'I'm the creeper, catch me if you can!'" },
+            { title: "Launch of the World Wide Web", year: 1991, category: "Science & Tech", fact: "Tim Berners-Lee released the WWW software publicly from CERN." },
+            { title: "Human Genome Project Completed", year: 2003, category: "Science & Tech", fact: "Sequenced 99% of the human euchromatic genome with 99.99% accuracy." },
+
+            // World History
+            { title: "Construction of the Great Pyramid of Giza", year: -2560, category: "Ancient History", fact: "Built as a tomb for Pharaoh Khufu over a 20-year period." },
+            { title: "Code of Hammurabi Carved", year: -1750, category: "Ancient History", fact: "One of the earliest and most complete written legal codes in human history." },
+            { title: "Assassination of Julius Caesar", year: -44, category: "Ancient History", fact: "Occurred on the Ides of March, accelerating the fall of the Roman Republic." },
+            { title: "Eruption of Mount Vesuvius (Pompeii)", year: 79, category: "Ancient History", fact: "Buried the Roman cities of Pompeii and Herculaneum under volcanic ash." },
+            { title: "Signing of the Magna Carta", year: 1215, category: "World History", fact: "English barons forced King John to grant rights establishing that the monarch isn't above the law." },
+            { title: "Fall of Constantinople", year: 1453, category: "World History", fact: "The Ottoman Empire under Sultan Mehmed II conquered the Byzantine capital." },
+            { title: "Columbus Reaches the Americas", year: 1492, category: "World History", fact: "Initiated sustained European contact and transatlantic colonization." },
+            { title: "American Declaration of Independence", year: 1776, category: "World History", fact: "The 13 American colonies severed political ties with the Kingdom of Great Britain." },
+            { title: "Storming of the Bastille (French Revolution)", year: 1789, category: "World History", fact: "Signaled the beginning of the French Revolution against absolute monarchy." },
+            { title: "Battle of Waterloo", year: 1815, category: "World History", fact: "Napoleon Bonaparte was decisively defeated by Anglo-Allied and Prussian forces." },
+            { title: "Completion of the Suez Canal", year: 1869, category: "World History", fact: "Connected the Mediterranean Sea directly to the Red Sea." },
+            { title: "Outbreak of World War I", year: 1914, category: "World History", fact: "Triggered by the assassination of Archduke Franz Ferdinand in Sarajevo." },
+            { title: "Fall of the Berlin Wall", year: 1989, category: "World History", fact: "Symbolized the collapse of Soviet influence and the end of the Cold War." },
+
+            // Space Exploration
+            { title: "Sputnik 1 Launched into Orbit", year: 1957, category: "Space Exploration", fact: "The Soviet Union launched the first artificial Earth satellite, initiating the Space Race." },
+            { title: "Yuri Gagarin Becomes First Human in Space", year: 1961, category: "Space Exploration", fact: "Completed an orbit of the Earth aboard Vostok 1." },
+            { title: "Apollo 11 Moon Landing", year: 1969, category: "Space Exploration", fact: "Neil Armstrong and Buzz Aldrin became the first humans to walk on the Moon." },
+            { title: "Launch of Voyager 1 Spacecraft", year: 1977, category: "Space Exploration", fact: "Sent to explore the outer Solar System; now the farthest human-made object from Earth." },
+            { title: "Hubble Space Telescope Deployed", year: 1990, category: "Space Exploration", fact: "Placed into orbit by Space Shuttle Discovery, revolutionizing deep-space astronomy." },
+            { title: "Curiosity Rover Lands on Mars", year: 2012, category: "Space Exploration", fact: "Landed using an innovative sky-crane maneuver to investigate Martian habitability." },
+            { title: "First Image of a Black Hole Released", year: 2019, category: "Space Exploration", fact: "Captured by the Event Horizon Telescope array, imaging the supermassive black hole in M87." },
+
+            // Culture & Ideas
+            { title: "Founding of the Academy by Plato", year: -387, category: "Culture & Ideas", fact: "The primary locus of philosophical and scientific instruction in Ancient Greece." },
+            { title: "Construction of the Colosseum Completed", year: 80, category: "Culture & Ideas", fact: "Built under Emperor Titus as the largest amphitheater ever constructed." },
+            { title: "Shakespeare Writes 'Hamlet'", year: 1601, category: "Culture & Ideas", fact: "One of the most powerful and influential tragedies in the English language." },
+            { title: "First Public Movie Screening (Lumière Brothers)", year: 1895, category: "Culture & Ideas", fact: "Showed ten short motion pictures to a paying audience in Paris." },
+            { title: "Beethoven Premieres Symphony No. 9", year: 1824, category: "Culture & Ideas", fact: "Included the iconic 'Ode to Joy', composed while Beethoven was almost completely deaf." },
+            { title: "Release of the First iPhone", year: 2007, category: "Culture & Ideas", fact: "Combined an iPod, touch-screen phone, and internet communicator, reshaping modern tech." }
+        ];
+
+        /* ==========================================================================
+           2. GAME STATE & VARIABLES
+           ========================================================================== */
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        let difficulty = 'easy'; // 'easy' (4 items), 'medium' (5 items), 'hard' (5 items close years)
+        let score = 0;
+        let streak = 0;
+        let currentRound = 1;
+        let totalCorrectItems = 0;
+        let totalItemsAttempted = 0;
+
+        let currentEvents = []; // Current round events in target correct order
+        let displayEvents = []; // User's active arrangement
+        let timerSeconds = 25;
+        let maxTimer = 25;
+        let timerInterval = null;
+        let selectedCardIndex = null; // For tap-to-swap interaction
+
+        /* ==========================================================================
+           3. WEB AUDIO SYNTHESIZER
+           ========================================================================== */
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high';
+                playSound(600, 0.05, 'sine');
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-slate-600';
+            }
+        }
+
+        function playSound(freq, duration = 0.1, type = 'sine') {
+            if (!soundEnabled) return;
+            initAudio();
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {
+                // Fallback for audio errors
+            }
+        }
+
+        function playChime(success = true) {
+            if (!soundEnabled) return;
+            initAudio();
+            const now = audioCtx.currentTime;
+            if (success) {
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+                notes.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                    gain.gain.setValueAtTime(0.15, now + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.25);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.25);
+                });
+            } else {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.exponentialRampToValueAtTime(110, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+        }
+
+        /* ==========================================================================
+           4. GAME INIT & CONTROLS
+           ========================================================================== */
+        function setDifficulty(mode) {
+            difficulty = mode;
+            document.querySelectorAll('.diff-btn').forEach(btn => {
+                btn.className = 'diff-btn py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition border border-slate-800 bg-slate-800/60 text-slate-400 hover:text-slate-200';
+            });
+            const activeBtn = document.getElementById(`diff-${mode}`);
+            if (activeBtn) {
+                activeBtn.className = 'diff-btn py-2.5 px-3 rounded-lg text-xs sm:text-sm font-semibold transition border border-amber-500/50 bg-amber-500/20 text-amber-300';
+            }
+            playSound(440, 0.05);
+        }
+
+        function startGame() {
+            initAudio();
+            score = 0;
+            streak = 0;
+            currentRound = 1;
+            totalCorrectItems = 0;
+            totalItemsAttempted = 0;
+
+            updateHUD();
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-gameover').classList.add('hidden');
+            document.getElementById('screen-play').classList.remove('hidden');
+            document.getElementById('screen-play').classList.add('flex');
+
+            loadRound();
+        }
+
+        function updateHUD() {
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('streak-display').innerText = streak;
+            document.getElementById('round-current').innerText = currentRound;
+        }
+
+        /* ==========================================================================
+           5. ROUND GENERATION & TIMELINE LOGIC
+           ========================================================================== */
+        function loadRound() {
+            selectedCardIndex = null;
+            let count = difficulty === 'easy' ? 4 : 5;
+            maxTimer = difficulty === 'easy' ? 30 : (difficulty === 'medium' ? 25 : 20);
+            timerSeconds = maxTimer;
+
+            // Select events
+            currentEvents = selectRoundEvents(count);
+
+            // Shuffle display copy so it's not pre-sorted
+            displayEvents = [...currentEvents];
+            do {
+                shuffleArray(displayEvents);
+            } while (isAlreadySorted(displayEvents) && currentEvents.length > 2);
+
+            // Set category badge
+            const mainCat = currentEvents[0].category;
+            document.getElementById('category-badge').innerText = mainCat;
+
+            renderTimelineList();
+            startTimer();
+        }
+
+        function selectRoundEvents(count) {
+            let pool = [...EVENT_DATABASE];
+            shuffleArray(pool);
+
+            if (difficulty === 'hard') {
+                // Try to find events that are closer in year to make it challenging
+                pool.sort((a, b) => a.year - b.year);
+                let startIdx = Math.floor(Math.random() * (pool.length - count));
+                let selected = pool.slice(startIdx, startIdx + count);
+                return selected.sort((a, b) => a.year - b.year);
+            }
+
+            let selected = pool.slice(0, count);
+            return selected.sort((a, b) => a.year - b.year);
+        }
+
+        function isAlreadySorted(arr) {
+            for (let i = 0; i < arr.length - 1; i++) {
+                if (arr[i].year > arr[i + 1].year) return false;
+            }
+            return true;
+        }
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+        }
+
+        /* ==========================================================================
+           6. TIMELINE RENDERING & REORDERING (DRAG / TAP / NUDGE)
+           ========================================================================== */
+        function renderTimelineList() {
+            const container = document.getElementById('timeline-list');
+            container.innerHTML = '';
+
+            displayEvents.forEach((evt, idx) => {
+                const card = document.createElement('div');
+                const isSelected = selectedCardIndex === idx;
+
+                card.className = `group relative bg-slate-900/90 border ${isSelected
+                        ? 'border-amber-400 ring-2 ring-amber-400/30 bg-amber-500/10'
+                        : 'border-slate-800 hover:border-amber-500/40'
+                    } p-3.5 sm:p-4 rounded-xl transition-all duration-200 cursor-pointer flex items-center justify-between gap-3 shadow-md`;
+
+                card.draggable = true;
+                card.dataset.index = idx;
+
+                // Formatted Era display tag (Hidden during play, revealed on lock)
+                card.innerHTML = `
+          <div class="flex items-center gap-3 sm:gap-4 flex-1">
+            <!-- Drag Handle & Position Indicator -->
+            <div class="flex items-center gap-2 text-slate-500 group-hover:text-amber-400 transition">
+              <i class="fa-solid fa-grip-vertical text-xs"></i>
+              <span class="font-mono text-xs w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 font-bold">${idx + 1}</span>
+            </div>
+
+            <!-- Event Details -->
+            <div class="flex-1">
+              <h4 class="font-serif text-base sm:text-lg font-semibold text-slate-100 group-hover:text-amber-200 transition leading-snug">
+                ${evt.title}
+              </h4>
+              <span class="text-[11px] font-sans text-slate-400 block mt-0.5">
+                <i class="fa-solid fa-tag text-[9px] text-amber-500/70 mr-1"></i>${evt.category}
+              </span>
+            </div>
+          </div>
+
+          <!-- Nudge Controls for Quick Mobile Reordering -->
+          <div class="flex flex-col gap-1 z-20">
+            <button onclick="nudgeItem(event, ${idx}, -1)" class="w-7 h-6 rounded bg-slate-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-slate-400 text-xs flex items-center justify-center transition border border-slate-700/60" title="Move Up">
+              <i class="fa-solid fa-chevron-up"></i>
+            </button>
+            <button onclick="nudgeItem(event, ${idx}, 1)" class="w-7 h-6 rounded bg-slate-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-slate-400 text-xs flex items-center justify-center transition border border-slate-700/60" title="Move Down">
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+          </div>
+        `;
+
+                // Event Listeners for Drag & Drop
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragover', handleDragOver);
+                card.addEventListener('drop', handleDrop);
+                card.addEventListener('dragend', handleDragEnd);
+
+                // Tap-to-Swap Listener
+                card.addEventListener('click', (e) => {
+                    if (e.target.closest('button')) return; // Ignore nudge buttons
+                    handleCardTap(idx);
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        function handleCardTap(index) {
+            if (selectedCardIndex === null) {
+                selectedCardIndex = index;
+                playSound(400, 0.05);
+            } else if (selectedCardIndex === index) {
+                selectedCardIndex = null;
+                playSound(300, 0.05);
+            } else {
+                // Swap selected and tapped
+                swapItems(selectedCardIndex, index);
+                selectedCardIndex = null;
+                playSound(600, 0.08);
+            }
+            renderTimelineList();
+        }
+
+        function nudgeItem(e, index, direction) {
+            e.stopPropagation();
+            const targetIndex = index + direction;
+            if (targetIndex >= 0 && targetIndex < displayEvents.length) {
+                swapItems(index, targetIndex);
+                playSound(500, 0.05);
+                renderTimelineList();
+            }
+        }
+
+        function swapItems(i, j) {
+            const temp = displayEvents[i];
+            displayEvents[i] = displayEvents[j];
+            displayEvents[j] = temp;
+        }
+
+        /* Drag & Drop HTML5 Handlers */
+        let draggedIndex = null;
+
+        function handleDragStart(e) {
+            draggedIndex = parseInt(this.dataset.index);
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            playSound(350, 0.04);
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) e.preventDefault();
+            this.classList.add('drag-over');
+            return false;
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) e.stopPropagation();
+            const targetIdx = parseInt(this.dataset.index);
+            if (draggedIndex !== null && draggedIndex !== targetIdx) {
+                swapItems(draggedIndex, targetIdx);
+                playSound(550, 0.06);
+                renderTimelineList();
+            }
+            return false;
+        }
+
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        }
+
+        /* ==========================================================================
+           7. TIMER ENGINE
+           ========================================================================== */
+        function startTimer() {
+            clearInterval(timerInterval);
+            updateTimerUI();
+
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                updateTimerUI();
+
+                if (timerSeconds <= 5 && timerSeconds > 0) {
+                    playSound(800, 0.04, 'square');
+                }
+
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    submitTimeline(true); // Forced timeout submit
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const text = document.getElementById('timer-text');
+            const circle = document.getElementById('timer-progress');
+
+            text.innerText = timerSeconds;
+
+            const totalDash = 138;
+            const offset = totalDash - (timerSeconds / maxTimer) * totalDash;
+            circle.style.strokeDashoffset = offset;
+
+            if (timerSeconds <= 5) {
+                text.classList.add('timer-warning');
+                circle.setAttribute('class', 'text-rose-500 transition-all duration-1000');
+            } else {
+                text.classList.remove('timer-warning');
+                circle.setAttribute('class', 'text-amber-400 transition-all duration-1000');
+            }
+        }
+
+        /* ==========================================================================
+           8. VALIDATION & REVEAL ARCHIVE
+           ========================================================================== */
+        function submitTimeline(isTimeout = false) {
+            clearInterval(timerInterval);
+
+            let correctCount = 0;
+            let totalCount = displayEvents.length;
+
+            // Evaluate order match against sorted currentEvents
+            displayEvents.forEach((evt, idx) => {
+                if (evt.id === currentEvents[idx].id || evt.year === currentEvents[idx].year) {
+                    correctCount++;
+                }
+            });
+
+            totalCorrectItems += correctCount;
+            totalItemsAttempted += totalCount;
+
+            const isPerfect = correctCount === totalCount;
+
+            // Calculate Score
+            let roundPoints = 0;
+            if (isPerfect) {
+                streak++;
+                const timeBonus = timerSeconds * 10;
+                const diffMultiplier = difficulty === 'easy' ? 100 : (difficulty === 'medium' ? 150 : 200);
+                roundPoints = diffMultiplier + timeBonus + (streak * 25);
+                score += roundPoints;
+                playChime(true);
+            } else {
+                streak = 0;
+                roundPoints = correctCount * 20;
+                score += roundPoints;
+                playChime(false);
+            }
+
+            updateHUD();
+            showRevealModal(isPerfect, correctCount, totalCount, roundPoints, isTimeout);
+        }
+
+        function showRevealModal(isPerfect, correctCount, totalCount, roundPoints, isTimeout) {
+            const modal = document.getElementById('modal-reveal');
+            const iconContainer = document.getElementById('reveal-status-icon');
+            const title = document.getElementById('reveal-title');
+            const subtitle = document.getElementById('reveal-subtitle');
+            const factsList = document.getElementById('archive-facts-list');
+
+            if (isPerfect) {
+                iconContainer.className = 'w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl mb-3 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-emerald-500/20';
+                iconContainer.innerHTML = '<i class="fa-solid fa-check"></i>';
+                title.innerText = 'Timeline Synchronized!';
+                subtitle.innerText = 'Flawless chronological alignment achieved.';
+            } else if (isTimeout) {
+                iconContainer.className = 'w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl mb-3 bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-rose-500/20';
+                iconContainer.innerHTML = '<i class="fa-solid fa-hourglass-end"></i>';
+                title.innerText = 'Temporal Paradox!';
+                subtitle.innerText = 'Time collapsed before alignment was complete.';
+            } else {
+                iconContainer.className = 'w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl mb-3 bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-amber-500/20';
+                iconContainer.innerHTML = '<i class="fa-solid fa-arrows-split-up-and-left"></i>';
+                title.innerText = `${correctCount} of ${totalCount} In Sequence`;
+                subtitle.innerText = 'Some historical nodes were placed out of order.';
+            }
+
+            // Populate Facts in True Chronological Order
+            factsList.innerHTML = '';
+            currentEvents.forEach((evt, idx) => {
+                // Check if user had this event in correct spot
+                const userPlacedAtIdx = displayEvents.findIndex(item => item.title === evt.title);
+                const isPlacedCorrect = userPlacedAtIdx === idx;
+
+                const yearFormatted = evt.year < 0 ? `${Math.abs(evt.year)} BCE` : `${evt.year} CE`;
+
+                const row = document.createElement('div');
+                row.className = `p-3 rounded-xl border ${isPlacedCorrect
+                        ? 'bg-emerald-950/30 border-emerald-500/40'
+                        : 'bg-rose-950/30 border-rose-500/40'
+                    } flex flex-col gap-1 transition`;
+
+                row.innerHTML = `
+          <div class="flex items-center justify-between text-xs sm:text-sm">
+            <span class="font-serif font-bold ${isPlacedCorrect ? 'text-emerald-300' : 'text-rose-300'} flex items-center gap-2">
+              <i class="fa-solid ${isPlacedCorrect ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-rose-400'} text-xs"></i>
+              ${evt.title}
+            </span>
+            <span class="font-mono font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-amber-300 text-xs">
+              ${yearFormatted}
+            </span>
+          </div>
+          <p class="text-xs text-slate-300 mt-1 pl-5 border-l border-slate-700/80 leading-relaxed italic">
+            "${evt.fact}"
+          </p>
+        `;
+                factsList.appendChild(row);
+            });
+
+            // Stats
+            document.getElementById('modal-accuracy').innerText = `${Math.round((correctCount / totalCount) * 100)}%`;
+            document.getElementById('modal-time-left').innerText = `+${timerSeconds}s`;
+            document.getElementById('modal-points').innerText = `+${roundPoints}`;
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function nextRound() {
+            document.getElementById('modal-reveal').classList.add('hidden');
+            document.getElementById('modal-reveal').classList.remove('flex');
+
+            currentRound++;
+            if (currentRound > 5) {
+                showGameOver();
+            } else {
+                updateHUD();
+                loadRound();
+            }
+        }
+
+        /* ==========================================================================
+           9. GAME OVER & RESULTS SHARING
+           ========================================================================== */
+        function showGameOver() {
+            document.getElementById('screen-play').classList.add('hidden');
+            document.getElementById('screen-play').classList.remove('flex');
+            document.getElementById('screen-gameover').classList.remove('hidden');
+
+            const accuracy = totalItemsAttempted > 0 ? Math.round((totalCorrectItems / totalItemsAttempted) * 100) : 0;
+
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-streak').innerText = streak;
+            document.getElementById('final-rounds').innerText = currentRound - 1;
+            document.getElementById('final-accuracy').innerText = `${accuracy}%`;
+        }
+
+        function copyShareResults() {
+            const accuracy = totalItemsAttempted > 0 ? Math.round((totalCorrectItems / totalItemsAttempted) * 100) : 0;
+            const text = `⌛ Timeline Splicer Score: ${score}\n🎯 Accuracy: ${accuracy}%\n🔥 Max Streak: ${streak}\n🧠 Hari's Lab Chrono Challenge`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showShareCopiedToast();
+                });
+            } else {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showShareCopiedToast();
+            }
+        }
+
+        function showShareCopiedToast() {
+            const msg = document.getElementById('share-copied-msg');
+            msg.classList.remove('hidden');
+            setTimeout(() => msg.classList.add('hidden'), 3000);
+        }
+    </script>
+</body>
+
+</html>
