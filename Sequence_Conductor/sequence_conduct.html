@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sequence Conductor - Cognitive Memory Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        conductor: {
+                            bg: '#080a0f',
+                            card: '#111520',
+                            border: '#1f293d',
+                            accent: '#6366f1',
+                            gold: '#f59e0b',
+                            emerald: '#10b981',
+                            rose: '#f43f5e',
+                            cyan: '#06b6d4'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #080a0f;
+            color: #f8fafc;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Custom glow effects */
+        .pad-glow-0 {
+            box-shadow: 0 0 35px rgba(239, 68, 68, 0.6), inset 0 0 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .pad-glow-1 {
+            box-shadow: 0 0 35px rgba(59, 130, 246, 0.6), inset 0 0 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .pad-glow-2 {
+            box-shadow: 0 0 35px rgba(16, 185, 129, 0.6), inset 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .pad-glow-3 {
+            box-shadow: 0 0 35px rgba(245, 158, 11, 0.6), inset 0 0 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .pad-glow-4 {
+            box-shadow: 0 0 35px rgba(168, 85, 247, 0.6), inset 0 0 15px rgba(168, 85, 247, 0.4);
+        }
+
+        .pad-glow-5 {
+            box-shadow: 0 0 35px rgba(6, 182, 212, 0.6), inset 0 0 15px rgba(6, 182, 212, 0.4);
+        }
+
+        .glass-panel {
+            background: rgba(17, 21, 32, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .pulse-active {
+            animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: scale(1.03);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(0.95);
+                opacity: 0.8;
+            }
+        }
+
+        .key-ripple {
+            transition: all 0.15s ease-out;
+        }
+
+        .key-ripple:active {
+            transform: scale(0.92);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col justify-between items-center p-3 sm:p-6 font-sans overflow-x-hidden">
+
+    <!-- Top Header -->
+    <header class="w-full max-w-4xl flex items-center justify-between py-2 border-b border-conductor-border/60 mb-3">
+        <div class="flex items-center space-x-3">
+            <div
+                class="w-9 h-9 rounded-xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold text-lg shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12 0c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3">
+                    </path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+                    SEQUENCE CONDUCTOR
+                    <span
+                        class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono border border-indigo-500/30">v2.0</span>
+                </h1>
+                <p class="text-xs text-slate-400 font-mono hidden sm:block">Working Memory & Rules Processing Lab</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <button id="btn-sound-toggle"
+                class="p-2 rounded-lg bg-slate-800/80 border border-slate-700 hover:bg-slate-700 text-slate-300 transition text-xs flex items-center gap-1.5 font-mono">
+                <span id="sound-icon">🔊</span>
+                <span id="sound-text" class="hidden sm:inline">Audio ON</span>
+            </button>
+            <button id="btn-help"
+                class="p-2 rounded-lg bg-slate-800/80 border border-slate-700 hover:bg-slate-700 text-slate-300 transition text-xs font-mono">
+                ? Rules
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="w-full max-w-4xl flex-1 flex flex-col justify-center items-center">
+
+        <!-- SCREEN: MENU / MODE SELECT -->
+        <section id="screen-menu"
+            class="w-full max-w-2xl glass-panel rounded-2xl p-6 sm:p-8 my-auto shadow-2xl relative overflow-hidden">
+            <div class="text-center mb-6">
+                <span
+                    class="text-xs font-mono font-semibold tracking-widest text-indigo-400 uppercase bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20">Select
+                    Cognitive Protocol</span>
+                <h2 class="text-2xl sm:text-3xl font-bold mt-3 text-white">Choose Your Challenge Mode</h2>
+                <p class="text-slate-400 text-xs sm:text-sm mt-1">Train memory capacity, visual recognition, and
+                    cognitive flexibility.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                <!-- Mode 1 -->
+                <button data-mode="direct"
+                    class="mode-card group p-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 text-left transition flex flex-col justify-between relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-white group-hover:text-indigo-400">1. Direct Echo</span>
+                        <span
+                            class="text-xs px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono border border-emerald-500/20">Standard</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Repeat the exact audio-visual sequence in the order it appeared.
+                    </p>
+                </button>
+
+                <!-- Mode 2 -->
+                <button data-mode="reverse"
+                    class="mode-card group p-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 text-left transition flex flex-col justify-between relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-white group-hover:text-indigo-400">2. Reverse Recall</span>
+                        <span
+                            class="text-xs px-2 py-0.5 rounded bg-indigo-500/10 text-indigo-400 font-mono border border-indigo-500/20">Working
+                            Memory</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Reproduce the sequence in reverse order (Last to First).</p>
+                </button>
+
+                <!-- Mode 3 -->
+                <button data-mode="inversion"
+                    class="mode-card group p-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 text-left transition flex flex-col justify-between relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-white group-hover:text-indigo-400">3. Spatial Mirror</span>
+                        <span
+                            class="text-xs px-2 py-0.5 rounded bg-gold-500/10 text-amber-400 font-mono border border-amber-500/20">Rule
+                            Mapping</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Click the diagonally opposite node for each item shown.</p>
+                </button>
+
+                <!-- Mode 4 -->
+                <button data-mode="shift"
+                    class="mode-card group p-4 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-indigo-500/60 hover:bg-slate-800/60 text-left transition flex flex-col justify-between relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-white group-hover:text-indigo-400">4. Numeric Shift
+                            (+1)</span>
+                        <span
+                            class="text-xs px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono border border-cyan-500/20">Calculation</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Shift each node sequence by +1 step forward (Pad 1 &#8594; Pad 2,
+                        Pad 6 &#8594; Pad 1).</p>
+                </button>
+
+                <!-- Mode 5 (Blitz) -->
+                <button data-mode="blitz"
+                    class="mode-card sm:col-span-2 group p-4 rounded-xl bg-indigo-950/40 border border-indigo-500/40 hover:border-indigo-400 hover:bg-indigo-900/30 text-left transition relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm font-extrabold text-indigo-300 flex items-center gap-2">
+                            <span>⚡ 5. Conductor's Blitz</span>
+                        </span>
+                        <span
+                            class="text-xs px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono border border-rose-500/30">Master
+                            Class</span>
+                    </div>
+                    <p class="text-xs text-slate-300">Rules change dynamically every round! Requires extreme cognitive
+                        agility.</p>
+                </button>
+            </div>
+
+            <!-- Grid Size Selector -->
+            <div class="flex items-center justify-between bg-slate-950/60 p-3 rounded-xl border border-slate-800 mb-6">
+                <span class="text-xs text-slate-400 font-mono">GRID COMPLEXITY:</span>
+                <div class="flex space-x-2">
+                    <button id="grid-4-btn"
+                        class="grid-select-btn px-3 py-1 rounded-lg text-xs font-mono font-bold bg-indigo-600 text-white border border-indigo-500 transition">4
+                        Nodes (2x2)</button>
+                    <button id="grid-6-btn"
+                        class="grid-select-btn px-3 py-1 rounded-lg text-xs font-mono font-bold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition">6
+                        Nodes (3x2)</button>
+                </div>
+            </div>
+
+            <!-- Start Game Button -->
+            <button id="btn-start-game"
+                class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold text-sm tracking-wide shadow-lg shadow-indigo-600/30 transition transform hover:-translate-y-0.5">
+                START CONDUCTING
+            </button>
+        </section>
+
+        <!-- SCREEN: ACTIVE GAME BOARD -->
+        <section id="screen-game" class="w-full max-w-2xl flex flex-col items-center hidden">
+
+            <!-- HUD Panel -->
+            <div
+                class="w-full glass-panel rounded-2xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg border border-slate-800">
+                <!-- Current Rule Banner -->
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <div id="rule-badge-icon"
+                        class="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-xl shrink-0">
+                        🔄
+                    </div>
+                    <div>
+                        <div class="text-[10px] font-mono text-indigo-400 uppercase tracking-widest font-semibold"
+                            id="hud-mode-title">DIRECT ECHO</div>
+                        <div class="text-sm font-bold text-white leading-tight" id="hud-rule-desc">Repeat exact sequence
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Metrics Grid -->
+                <div
+                    class="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 font-mono text-xs border-t sm:border-t-0 border-slate-800 pt-2 sm:pt-0">
+                    <div class="text-center px-2">
+                        <div class="text-slate-400 text-[10px]">ROUND</div>
+                        <div id="hud-round" class="text-base font-bold text-amber-400">1</div>
+                    </div>
+                    <div class="text-center px-2 border-l border-slate-800">
+                        <div class="text-slate-400 text-[10px]">SCORE</div>
+                        <div id="hud-score" class="text-base font-bold text-emerald-400">0</div>
+                    </div>
+                    <div class="text-center px-2 border-l border-slate-800">
+                        <div class="text-slate-400 text-[10px]">STREAK</div>
+                        <div id="hud-streak" class="text-base font-bold text-cyan-400">0</div>
+                    </div>
+                    <div class="text-center px-2 border-l border-slate-800">
+                        <div class="text-slate-400 text-[10px]">BEST</div>
+                        <div id="hud-high" class="text-base font-bold text-indigo-400">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Indicator Bar -->
+            <div id="status-bar"
+                class="w-full py-2 px-4 rounded-xl bg-slate-900/90 border border-slate-800 text-center font-mono text-xs mb-4 flex items-center justify-center space-x-2">
+                <span id="status-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+                <span id="status-text" class="text-slate-300 font-semibold">OBSERVE SEQUENCE</span>
+            </div>
+
+            <!-- Sequence Progress Visualizer -->
+            <div id="sequence-tracker" class="flex items-center justify-center space-x-1.5 mb-6 min-h-[24px]">
+                <!-- Dynamic dots injected via JS -->
+            </div>
+
+            <!-- Interactive Pad Canvas / Grid -->
+            <div id="pads-container" class="w-full max-w-md grid grid-cols-2 gap-3 sm:gap-4 p-2 my-auto">
+                <!-- Dynamic Nodes Generated via JS -->
+            </div>
+
+            <!-- Bottom Controls -->
+            <div class="w-full max-w-md flex items-center justify-between mt-6 pt-3 border-t border-slate-800/60">
+                <button id="btn-quit-game"
+                    class="text-xs font-mono text-slate-400 hover:text-rose-400 transition flex items-center gap-1">
+                    &#8592; Quit Session
+                </button>
+                <div class="text-[11px] font-mono text-slate-500" id="hud-speed-label">Speed: Standard (800ms)</div>
+            </div>
+        </section>
+
+        <!-- SCREEN: RESULTS & STATS -->
+        <section id="screen-results"
+            class="w-full max-w-lg glass-panel rounded-2xl p-6 sm:p-8 my-auto shadow-2xl hidden text-center">
+            <div
+                class="w-16 h-16 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-3xl mx-auto mb-4 text-indigo-400">
+                🧠
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-1">Session Complete</h2>
+            <p class="text-xs text-slate-400 font-mono mb-6" id="results-mode-label">Mode: Direct Echo</p>
+
+            <!-- Main Score Card -->
+            <div class="bg-slate-900/80 rounded-xl p-4 border border-slate-800 mb-6 grid grid-cols-3 gap-2 font-mono">
+                <div>
+                    <div class="text-[10px] text-slate-400">FINAL SCORE</div>
+                    <div id="res-score" class="text-xl font-extrabold text-emerald-400">0</div>
+                </div>
+                <div>
+                    <div class="text-[10px] text-slate-400">ROUNDS</div>
+                    <div id="res-rounds" class="text-xl font-extrabold text-amber-400">0</div>
+                </div>
+                <div>
+                    <div class="text-[10px] text-slate-400">SPAN LEVEL</div>
+                    <div id="res-span" class="text-xl font-extrabold text-cyan-400">0</div>
+                </div>
+            </div>
+
+            <!-- Cognitive Breakdown -->
+            <div
+                class="text-left bg-slate-950/60 rounded-xl p-4 border border-slate-800/80 mb-6 space-y-3 font-mono text-xs">
+                <div class="flex justify-between items-center text-slate-300">
+                    <span>Working Memory Accuracy:</span>
+                    <span id="res-accuracy" class="font-bold text-indigo-300">100%</span>
+                </div>
+                <div class="flex justify-between items-center text-slate-300">
+                    <span>Max Sequence Reached:</span>
+                    <span id="res-max-seq" class="font-bold text-amber-300">5 items</span>
+                </div>
+                <div class="flex justify-between items-center text-slate-300">
+                    <span>Cognitive Rating:</span>
+                    <span id="res-rating" class="font-bold text-emerald-300">Sharp Conductor</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex space-x-3">
+                <button id="btn-replay"
+                    class="flex-1 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs tracking-wider transition">
+                    PLAY AGAIN
+                </button>
+                <button id="btn-return-menu"
+                    class="flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs tracking-wider transition">
+                    CHANGE MODE
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Instructions Overlay -->
+    <div id="modal-help"
+        class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+        <div
+            class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-slate-300 text-xs leading-relaxed space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <span>🎮 How to Play Sequence Conductor</span>
+                </h3>
+                <button id="btn-close-help"
+                    class="text-slate-400 hover:text-white font-mono text-base font-bold">&times;</button>
+            </div>
+
+            <p><strong class="text-indigo-400">Sequence Conductor</strong> challenges your brain's working memory by
+                requiring you to process sequence patterns under active transformation rules.</p>
+
+            <div class="space-y-2 border-l-2 border-indigo-500/40 pl-3">
+                <div><strong class="text-white">1. Direct Echo:</strong> Click the exact pads in the order they light
+                    up.</div>
+                <div><strong class="text-white">2. Reverse Recall:</strong> Enter the nodes in backward order (last node
+                    first).</div>
+                <div><strong class="text-white">3. Spatial Mirror:</strong> Enter the diagonally opposite node for each
+                    item.</div>
+                <div><strong class="text-white">4. Numeric Shift (+1):</strong> Shift each pad value by +1 clockwise
+                    around the board.</div>
+                <div><strong class="text-white">5. Conductor's Blitz:</strong> Rules change dynamically on every round!
+                </div>
+            </div>
+
+            <p class="text-slate-400 italic text-[11px]">Tip: Sound tones are pitched in harmonic intervals to assist
+                auditory memory encoding.</p>
+
+            <button id="btn-close-help-2"
+                class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold font-mono">
+                Got It
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer
+        class="w-full max-w-4xl text-center py-2 border-t border-conductor-border/40 text-[11px] text-slate-500 font-mono flex items-center justify-between mt-4">
+        <span>Hari's Lab &bull; Cognitive Series</span>
+        <span>A Minute of Knowledge</span>
+    </footer>
+
+    <!-- GAME LOGIC SCRIPT -->
+    <script>
+        // --- Web Audio Synthesizer Engine ---
+        class AudioSynth {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+                // Harmonic Pentatonic Scale Frequencies (Hz)
+                this.frequencies = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25]; // C4, D4, E4, G4, A4, C5
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playTone(index, duration = 0.35, type = 'sine') {
+                if (this.muted) return;
+                this.init();
+
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    const freq = this.frequencies[index % this.frequencies.length];
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+                    // Envelope (Attack, Decay)
+                    gain.gain.setValueAtTime(0.01, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.3, this.ctx.currentTime + 0.04);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {
+                    console.error("Audio error:", e);
+                }
+            }
+
+            playFeedback(success = true) {
+                if (this.muted) return;
+                this.init();
+
+                if (success) {
+                    // Success arpeggio
+                    [329.63, 392.00, 523.25].forEach((freq, idx) => {
+                        setTimeout(() => {
+                            const osc = this.ctx.createOscillator();
+                            const gain = this.ctx.createGain();
+                            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                            gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.25);
+                            osc.connect(gain);
+                            gain.connect(this.ctx.destination);
+                            osc.start();
+                            osc.stop(this.ctx.currentTime + 0.25);
+                        }, idx * 70);
+                    });
+                } else {
+                    // Error buzz
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(120, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.4);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.4);
+                }
+            }
+        }
+
+        const audio = new AudioSynth();
+
+        // --- Node Definitions ---
+        const NODE_CONFIGS = [
+            { id: 0, label: 'ALPHA', symbol: '▲', color: 'red', bg: 'bg-rose-950/60', border: 'border-rose-500/40', text: 'text-rose-400', glow: 'pad-glow-0' },
+            { id: 1, label: 'BETA', symbol: '■', color: 'blue', bg: 'bg-blue-950/60', border: 'border-blue-500/40', text: 'text-blue-400', glow: 'pad-glow-1' },
+            { id: 2, label: 'GAMMA', symbol: '●', color: 'green', bg: 'bg-emerald-950/60', border: 'border-emerald-500/40', text: 'text-emerald-400', glow: 'pad-glow-2' },
+            { id: 3, label: 'DELTA', symbol: '◆', color: 'amber', bg: 'bg-amber-950/60', border: 'border-amber-500/40', text: 'text-amber-400', glow: 'pad-glow-3' },
+            { id: 4, label: 'EPSILON', symbol: '★', color: 'purple', bg: 'bg-purple-950/60', border: 'border-purple-500/40', text: 'text-purple-400', glow: 'pad-glow-4' },
+            { id: 5, label: 'ZETA', symbol: '⬟', color: 'cyan', bg: 'bg-cyan-950/60', border: 'border-cyan-500/40', text: 'text-cyan-400', glow: 'pad-glow-5' }
+        ];
+
+        // --- Game State Engine ---
+        const state = {
+            mode: 'direct', // direct, reverse, inversion, shift, blitz
+            gridSize: 4, // 4 or 6
+            sequence: [],
+            expectedInput: [],
+            playerInput: [],
+            round: 1,
+            score: 0,
+            streak: 0,
+            highScore: 0,
+            isPlayingSequence: false,
+            acceptingInput: false,
+            speedMs: 750,
+            activeRule: 'direct',
+            totalCorrectItems: 0,
+            totalItemsAttempted: 0
+        };
+
+        // --- DOM Elements ---
+        const screens = {
+            menu: document.getElementById('screen-menu'),
+            game: document.getElementById('screen-game'),
+            results: document.getElementById('screen-results')
+        };
+
+        const hud = {
+            modeTitle: document.getElementById('hud-mode-title'),
+            ruleDesc: document.getElementById('hud-rule-desc'),
+            round: document.getElementById('hud-round'),
+            score: document.getElementById('hud-score'),
+            streak: document.getElementById('hud-streak'),
+            high: document.getElementById('hud-high'),
+            speedLabel: document.getElementById('hud-speed-label'),
+            ruleIcon: document.getElementById('rule-badge-icon'),
+            statusBar: document.getElementById('status-bar'),
+            statusDot: document.getElementById('status-dot'),
+            statusText: document.getElementById('status-text'),
+            tracker: document.getElementById('sequence-tracker')
+        };
+
+        const padsContainer = document.getElementById('pads-container');
+
+        // --- Mode Configurations ---
+        const MODE_RULES = {
+            direct: {
+                title: 'DIRECT ECHO',
+                desc: 'Repeat exact sequence forward',
+                icon: '➡️'
+            },
+            reverse: {
+                title: 'REVERSE RECALL',
+                desc: 'Enter sequence in BACKWARD order',
+                icon: '⬅️'
+            },
+            inversion: {
+                title: 'SPATIAL MIRROR',
+                desc: 'Click DIAGONALLY OPPOSITE node',
+                icon: '🪞'
+            },
+            shift: {
+                title: 'NUMERIC SHIFT (+1)',
+                desc: 'Shift node value by +1 clockwise',
+                icon: '⏩'
+            },
+            blitz: {
+                title: 'CONDUCTOR BLITZ',
+                desc: 'Dynamic rules per round!',
+                icon: '⚡'
+            }
+        };
+
+        // --- High Score Persistence ---
+        function loadHighScore() {
+            const saved = localStorage.getItem('seq_conductor_high');
+            if (saved) {
+                state.highScore = parseInt(saved, 10);
+                hud.high.textContent = state.highScore;
+            }
+        }
+
+        function saveHighScore() {
+            if (state.score > state.highScore) {
+                state.highScore = state.score;
+                localStorage.setItem('seq_conductor_high', state.highScore);
+                hud.high.textContent = state.highScore;
+            }
+        }
+
+        // --- Render Node Grid ---
+        function createGrid() {
+            padsContainer.innerHTML = '';
+
+            if (state.gridSize === 4) {
+                padsContainer.className = "w-full max-w-md grid grid-cols-2 gap-3 sm:gap-4 p-2 my-auto";
+            } else {
+                padsContainer.className = "w-full max-w-md grid grid-cols-3 gap-2 sm:gap-3 p-2 my-auto";
+            }
+
+            for (let i = 0; i < state.gridSize; i++) {
+                const conf = NODE_CONFIGS[i];
+                const btn = document.createElement('button');
+                btn.id = `pad-${i}`;
+                btn.dataset.id = i;
+                btn.className = `pad-btn key-ripple relative aspect-square rounded-2xl ${conf.bg} border ${conf.border} flex flex-col items-center justify-center p-3 transition-all duration-200 cursor-pointer overflow-hidden`;
+
+                btn.innerHTML = `
+                    <span class="text-2xl sm:text-3xl font-extrabold ${conf.text} mb-1 pointer-events-none">${conf.symbol}</span>
+                    <span class="text-[10px] font-mono tracking-widest text-slate-400 font-bold pointer-events-none">${conf.label}</span>
+                    <span class="absolute top-2 left-2 text-[10px] font-mono text-slate-600 font-bold">${i + 1}</span>
+                `;
+
+                btn.addEventListener('click', () => handlePadClick(i));
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    handlePadClick(i);
+                });
+
+                padsContainer.appendChild(btn);
+            }
+        }
+
+        // --- Navigation Switcher ---
+        function showScreen(screenName) {
+            Object.keys(screens).forEach(key => {
+                screens[key].classList.add('hidden');
+            });
+            screens[screenName].classList.remove('hidden');
+        }
+
+        // --- Game Flow Methods ---
+        function initGame() {
+            loadHighScore();
+            state.round = 1;
+            state.score = 0;
+            state.streak = 0;
+            state.sequence = [];
+            state.totalCorrectItems = 0;
+            state.totalItemsAttempted = 0;
+
+            updateHUD();
+            createGrid();
+            showScreen('game');
+
+            setTimeout(() => {
+                startRound();
+            }, 600);
+        }
+
+        function startRound() {
+            state.isPlayingSequence = true;
+            state.acceptingInput = false;
+            state.playerInput = [];
+
+            // Determine active rule if Blitz mode
+            if (state.mode === 'blitz') {
+                const rules = ['direct', 'reverse', 'inversion', 'shift'];
+                state.activeRule = rules[Math.floor(Math.random() * rules.length)];
+            } else {
+                state.activeRule = state.mode;
+            }
+
+            // Calculate Speed based on round
+            state.speedMs = Math.max(380, 800 - (state.round * 35));
+            hud.speedLabel.textContent = `Speed: ${state.speedMs}ms`;
+
+            // Append new item to sequence
+            const nextItem = Math.floor(Math.random() * state.gridSize);
+            state.sequence.push(nextItem);
+
+            // Compute expected transformed answer key based on rule
+            state.expectedInput = computeExpectedSequence(state.sequence, state.activeRule, state.gridSize);
+
+            updateHUD();
+            renderSequenceTracker();
+
+            // Status message
+            setGameStatus('OBSERVE SEQUENCE', 'amber');
+
+            // Play Sequence
+            playSequence();
+        }
+
+        function computeExpectedSequence(seq, rule, gridSize) {
+            if (rule === 'direct') {
+                return [...seq];
+            } else if (rule === 'reverse') {
+                return [...seq].reverse();
+            } else if (rule === 'inversion') {
+                // Diagonally opposite on 2x2 or 3x2 grid
+                return seq.map(id => {
+                    if (gridSize === 4) {
+                        // 0 <-> 3, 1 <-> 2
+                        const map = { 0: 3, 1: 2, 2: 1, 3: 0 };
+                        return map[id];
+                    } else {
+                        // 6 grid (3x2): 0<->5, 1<->4, 2<->3
+                        const map = { 0: 5, 1: 4, 2: 3, 3: 2, 4: 1, 5: 0 };
+                        return map[id];
+                    }
+                });
+            } else if (rule === 'shift') {
+                // +1 step modular shift
+                return seq.map(id => (id + 1) % gridSize);
+            }
+            return [...seq];
+        }
+
+        function playSequence() {
+            let idx = 0;
+
+            const interval = setInterval(() => {
+                if (idx < state.sequence.length) {
+                    const nodeIndex = state.sequence[idx];
+                    highlightPad(nodeIndex, state.speedMs * 0.65);
+                    idx++;
+                } else {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        state.isPlayingSequence = false;
+                        state.acceptingInput = true;
+                        setGameStatus('YOUR TURN - CONDUCT!', 'emerald');
+                    }, 250);
+                }
+            }, state.speedMs);
+        }
+
+        function highlightPad(index, duration = 400) {
+            const btn = document.getElementById(`pad-${index}`);
+            if (!btn) return;
+
+            const conf = NODE_CONFIGS[index];
+            btn.classList.add(conf.glow, 'scale-95', 'brightness-150');
+            audio.playTone(index, duration / 1000);
+
+            setTimeout(() => {
+                btn.classList.remove(conf.glow, 'scale-95', 'brightness-150');
+            }, duration);
+        }
+
+        function handlePadClick(index) {
+            if (!state.acceptingInput || state.isPlayingSequence) return;
+
+            // Visual and audio feedback
+            highlightPad(index, 200);
+
+            state.playerInput.push(index);
+            state.totalItemsAttempted++;
+
+            const currentStep = state.playerInput.length - 1;
+            const expectedIndex = state.expectedInput[currentStep];
+
+            updateTrackerStep(currentStep, index === expectedIndex);
+
+            if (index === expectedIndex) {
+                state.totalCorrectItems++;
+                // Correct step
+                if (state.playerInput.length === state.expectedInput.length) {
+                    // Round Completed Successfully!
+                    state.acceptingInput = false;
+                    state.score += (100 * state.round) + (state.streak * 25);
+                    state.streak++;
+                    state.round++;
+                    saveHighScore();
+                    updateHUD();
+
+                    audio.playFeedback(true);
+                    setGameStatus('EXCELLENT! NEXT ROUND...', 'emerald');
+
+                    setTimeout(() => {
+                        startRound();
+                    }, 1200);
+                }
+            } else {
+                // Incorrect step - Game Over
+                state.acceptingInput = false;
+                audio.playFeedback(false);
+                setGameStatus('SEQUENCE BROKEN!', 'rose');
+
+                // Shake button
+                const btn = document.getElementById(`pad-${index}`);
+                if (btn) btn.classList.add('animate-bounce');
+
+                setTimeout(() => {
+                    showResultsScreen();
+                }, 1400);
+            }
+        }
+
+        function renderSequenceTracker() {
+            hud.tracker.innerHTML = '';
+            for (let i = 0; i < state.expectedInput.length; i++) {
+                const dot = document.createElement('div');
+                dot.id = `tracker-dot-${i}`;
+                dot.className = 'w-3 h-3 rounded-full bg-slate-800 border border-slate-700 transition-all duration-200';
+                hud.tracker.appendChild(dot);
+            }
+        }
+
+        function updateTrackerStep(stepIndex, isCorrect) {
+            const dot = document.getElementById(`tracker-dot-${stepIndex}`);
+            if (dot) {
+                if (isCorrect) {
+                    dot.className = 'w-3 h-3 rounded-full bg-emerald-400 border border-emerald-300 shadow-md shadow-emerald-500/50 scale-110';
+                } else {
+                    dot.className = 'w-3 h-3 rounded-full bg-rose-500 border border-rose-400 shadow-md shadow-rose-500/50 scale-125';
+                }
+            }
+        }
+
+        function setGameStatus(text, colorTheme = 'amber') {
+            hud.statusText.textContent = text;
+
+            if (colorTheme === 'amber') {
+                hud.statusDot.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping';
+                hud.statusBar.className = 'w-full py-2 px-4 rounded-xl bg-amber-950/40 border border-amber-500/30 text-center font-mono text-xs mb-4 flex items-center justify-center space-x-2 text-amber-300';
+            } else if (colorTheme === 'emerald') {
+                hud.statusDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
+                hud.statusBar.className = 'w-full py-2 px-4 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-center font-mono text-xs mb-4 flex items-center justify-center space-x-2 text-emerald-300';
+            } else if (colorTheme === 'rose') {
+                hud.statusDot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+                hud.statusBar.className = 'w-full py-2 px-4 rounded-xl bg-rose-950/40 border border-rose-500/30 text-center font-mono text-xs mb-4 flex items-center justify-center space-x-2 text-rose-300';
+            }
+        }
+
+        function updateHUD() {
+            const rule = MODE_RULES[state.activeRule];
+            hud.modeTitle.textContent = rule.title;
+            hud.ruleDesc.textContent = rule.desc;
+            hud.ruleIcon.textContent = rule.icon;
+
+            hud.round.textContent = state.round;
+            hud.score.textContent = state.score;
+            hud.streak.textContent = state.streak;
+            hud.high.textContent = state.highScore;
+        }
+
+        function showResultsScreen() {
+            document.getElementById('res-score').textContent = state.score;
+            document.getElementById('res-rounds').textContent = state.round - 1;
+            document.getElementById('res-span').textContent = Math.max(0, state.sequence.length - 1);
+
+            document.getElementById('results-mode-label').textContent = `Mode: ${MODE_RULES[state.mode].title} (${state.gridSize} Nodes)`;
+            document.getElementById('res-max-seq').textContent = `${Math.max(0, state.sequence.length - 1)} items`;
+
+            const accuracy = state.totalItemsAttempted > 0
+                ? Math.round((state.totalCorrectItems / state.totalItemsAttempted) * 100)
+                : 0;
+            document.getElementById('res-accuracy').textContent = `${accuracy}%`;
+
+            // Rating algorithm
+            let rating = "Beginner Conductor";
+            const maxSeq = state.sequence.length - 1;
+            if (maxSeq >= 10) rating = "Grand Maestro 🎼";
+            else if (maxSeq >= 7) rating = "Cognitive Virtuoso 🧠";
+            else if (maxSeq >= 5) rating = "Sharp Conductor ⚡";
+            else if (maxSeq >= 3) rating = "Adept Memorizer 👍";
+
+            document.getElementById('res-rating').textContent = rating;
+
+            showScreen('results');
+        }
+
+        // --- Event Listeners Initialization ---
+        function setupEventListeners() {
+            // Mode Select Buttons
+            document.querySelectorAll('.mode-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.mode-card').forEach(c => {
+                        c.classList.remove('border-indigo-500', 'bg-indigo-950/40');
+                        c.classList.add('border-slate-800', 'bg-slate-900/80');
+                    });
+                    card.classList.remove('border-slate-800', 'bg-slate-900/80');
+                    card.classList.add('border-indigo-500', 'bg-indigo-950/40');
+                    state.mode = card.dataset.mode;
+                });
+            });
+
+            // Grid Size Toggle
+            const btn4 = document.getElementById('grid-4-btn');
+            const btn6 = document.getElementById('grid-6-btn');
+
+            btn4.addEventListener('click', () => {
+                state.gridSize = 4;
+                btn4.className = "grid-select-btn px-3 py-1 rounded-lg text-xs font-mono font-bold bg-indigo-600 text-white border border-indigo-500 transition";
+                btn6.className = "grid-select-btn px-3 py-1 rounded-lg text-xs font-mono font-bold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition";
+            });
+
+            btn6.addEventListener('click', () => {
+                state.gridSize = 6;
+                btn6.className = "grid-select-btn px-3 py-1 rounded-lg text-xs font-mono font-bold bg-indigo-600 text-white border border-indigo-500 transition";
+                btn4.className = "grid-select-btn px-3 py-1 rounded-lg text-xs font-mono font-bold bg-slate-800 text-slate-400 hover:text-white border border-slate-700 transition";
+            });
+
+            // Start Game
+            document.getElementById('btn-start-game').addEventListener('click', () => {
+                audio.init();
+                initGame();
+            });
+
+            // Replay & Return Buttons
+            document.getElementById('btn-replay').addEventListener('click', () => {
+                initGame();
+            });
+
+            document.getElementById('btn-return-menu').addEventListener('click', () => {
+                showScreen('menu');
+            });
+
+            document.getElementById('btn-quit-game').addEventListener('click', () => {
+                showScreen('menu');
+            });
+
+            // Sound Toggle
+            const soundBtn = document.getElementById('btn-sound-toggle');
+            const soundIcon = document.getElementById('sound-icon');
+            const soundText = document.getElementById('sound-text');
+
+            soundBtn.addEventListener('click', () => {
+                audio.muted = !audio.muted;
+                if (audio.muted) {
+                    soundIcon.textContent = '🔇';
+                    soundText.textContent = 'Audio OFF';
+                    soundBtn.classList.add('text-rose-400');
+                } else {
+                    soundIcon.textContent = '🔊';
+                    soundText.textContent = 'Audio ON';
+                    soundBtn.classList.remove('text-rose-400');
+                }
+            });
+
+            // Help Modal
+            const helpModal = document.getElementById('modal-help');
+            document.getElementById('btn-help').addEventListener('click', () => {
+                helpModal.classList.remove('hidden');
+            });
+            document.getElementById('btn-close-help').addEventListener('click', () => {
+                helpModal.classList.add('hidden');
+            });
+            document.getElementById('btn-close-help-2').addEventListener('click', () => {
+                helpModal.classList.add('hidden');
+            });
+
+            // Keyboard Shortcuts (1-6 keys)
+            window.addEventListener('keydown', (e) => {
+                if (!screens.game.classList.contains('hidden') && state.acceptingInput) {
+                    const keyNum = parseInt(e.key, 10);
+                    if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= state.gridSize) {
+                        handlePadClick(keyNum - 1);
+                    }
+                }
+            });
+        }
+
+        // Initialize on DOM ready
+        window.onload = function () {
+            setupEventListeners();
+            loadHighScore();
+            // Default highlight first mode
+            const firstCard = document.querySelector('.mode-card');
+            if (firstCard) {
+                firstCard.classList.add('border-indigo-500', 'bg-indigo-950/40');
+            }
+        };
+    </script>
+</body>
+
+</html>

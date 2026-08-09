@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Stroop Runner | The Arcade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #f5f4ef;
+            --color-red: #ef4444;
+            --color-blue: #3b82f6;
+            --color-green: #22c55e;
+            --color-yellow: #eab308;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: #4a4a4a;
+            overflow: hidden; /* Prevent scrolling on mobile */
+            touch-action: manipulation;
+        }
+        .serif { font-family: 'Instrument Serif', serif; }
+        
+        .game-container {
+            max-width: 600px;
+            margin: 0 auto;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* The word display */
+        #word-display {
+            font-size: clamp(4rem, 15vw, 8rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: -0.05em;
+            transition: transform 0.1s;
+        }
+
+        /* Timer bar */
+        #timer-container {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e5e5;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 20px;
+        }
+        #timer-bar {
+            width: 100%;
+            height: 100%;
+            background-color: #1c1917; /* stone-900 */
+            transform-origin: left;
+        }
+
+        /* Buttons */
+        .color-btn {
+            transition: all 0.1s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .color-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Modals */
+        .modal {
+            backdrop-filter: blur(8px);
+            background: rgba(245, 244, 239, 0.8);
+        }
+
+        /* Shake animation for wrong answer */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+        }
+        .shake {
+            animation: shake 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container p-4 md:p-8">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8">
+            <a href="../index.html" class="text-stone-400 hover:text-stone-900 transition flex items-center gap-2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <span class="hidden sm:inline">Back</span>
+            </a>
+            <div class="text-right">
+                <p class="text-sm text-stone-500 uppercase tracking-widest font-semibold">Score</p>
+                <p id="score-display" class="text-3xl font-bold text-stone-900 leading-none">0</p>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <main class="flex-grow flex flex-col items-center justify-center relative">
+            <div id="game-area" class="w-full flex flex-col items-center justify-center opacity-0 transition-opacity duration-300">
+                <p class="text-stone-500 mb-2 font-medium">Select the <span class="text-stone-900 font-bold underline">INK COLOR</span>, not the word!</p>
+                
+                <div id="word-display" class="my-8 drop-shadow-sm">RED</div>
+                
+                <div id="timer-container" class="max-w-xs">
+                    <div id="timer-bar"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Controls (Bottom) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8 pb-8">
+            <button class="color-btn rounded-2xl h-24 sm:h-32 shadow-sm border border-black/5 relative group" 
+                    style="background-color: var(--color-red);" 
+                    onclick="checkAnswer('red')">
+                <span class="absolute bottom-2 left-1/2 -translate-x-1/2 text-white/50 text-xs font-bold uppercase tracking-wider hidden sm:block">Key: R / 1</span>
+            </button>
+            <button class="color-btn rounded-2xl h-24 sm:h-32 shadow-sm border border-black/5 relative group" 
+                    style="background-color: var(--color-blue);" 
+                    onclick="checkAnswer('blue')">
+                <span class="absolute bottom-2 left-1/2 -translate-x-1/2 text-white/50 text-xs font-bold uppercase tracking-wider hidden sm:block">Key: B / 2</span>
+            </button>
+            <button class="color-btn rounded-2xl h-24 sm:h-32 shadow-sm border border-black/5 relative group" 
+                    style="background-color: var(--color-green);" 
+                    onclick="checkAnswer('green')">
+                <span class="absolute bottom-2 left-1/2 -translate-x-1/2 text-white/50 text-xs font-bold uppercase tracking-wider hidden sm:block">Key: G / 3</span>
+            </button>
+            <button class="color-btn rounded-2xl h-24 sm:h-32 shadow-sm border border-black/5 relative group" 
+                    style="background-color: var(--color-yellow);" 
+                    onclick="checkAnswer('yellow')">
+                <span class="absolute bottom-2 left-1/2 -translate-x-1/2 text-white/50 text-xs font-bold uppercase tracking-wider hidden sm:block">Key: Y / 4</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Start Modal -->
+    <div id="start-modal" class="modal fixed inset-0 flex items-center justify-center z-50">
+        <div class="bg-white p-8 md:p-12 rounded-3xl shadow-2xl border border-stone-200 max-w-md w-full mx-4 text-center">
+            <h1 class="serif text-5xl text-stone-900 mb-4">The Stroop Runner</h1>
+            <p class="text-stone-600 mb-8 leading-relaxed">
+                Test your cognitive flexibility. 
+                When a word appears, you must press the button that matches the <strong class="text-stone-900 border-b-2 border-stone-900">color of the ink</strong>, ignoring the word itself.
+            </p>
+            <div class="flex flex-col gap-2 mb-8 text-sm text-stone-500 text-left bg-stone-50 p-4 rounded-xl border border-stone-100">
+                <p>👉 Word says <span class="font-bold">"BLUE"</span> but ink is <span class="text-red-500 font-bold">RED</span></p>
+                <p>👉 You press the <strong class="text-red-500">RED</strong> button!</p>
+            </div>
+            <button onclick="startGame()" class="w-full bg-stone-900 text-white font-medium py-4 rounded-2xl hover:bg-stone-800 transition active:scale-95">Start Running</button>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-8 md:p-12 rounded-3xl shadow-2xl border border-stone-200 max-w-md w-full mx-4 text-center">
+            <h2 class="serif text-4xl text-stone-900 mb-2">Game Over!</h2>
+            <p id="game-over-reason" class="text-stone-500 mb-6 font-medium">You got brain-tied!</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100">
+                    <p class="text-sm text-stone-500 uppercase tracking-wider font-semibold mb-1">Score</p>
+                    <p id="final-score" class="text-3xl font-bold text-stone-900">0</p>
+                </div>
+                <div class="bg-stone-50 p-4 rounded-2xl border border-stone-100">
+                    <p class="text-sm text-stone-500 uppercase tracking-wider font-semibold mb-1">Best</p>
+                    <p id="high-score" class="text-3xl font-bold text-stone-900">0</p>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="w-full bg-stone-900 text-white font-medium py-4 rounded-2xl hover:bg-stone-800 transition active:scale-95 mb-3">Try Again</button>
+            <a href="../index.html" class="block w-full text-stone-500 hover:text-stone-900 py-2 font-medium transition">Back to Arcade</a>
+        </div>
+    </div>
+
+    <script>
+        const colors = [
+            { id: 'red', hex: 'var(--color-red)', name: 'RED' },
+            { id: 'blue', hex: 'var(--color-blue)', name: 'BLUE' },
+            { id: 'green', hex: 'var(--color-green)', name: 'GREEN' },
+            { id: 'yellow', hex: 'var(--color-yellow)', name: 'YELLOW' }
+        ];
+
+        let score = 0;
+        let highScore = localStorage.getItem('stroopHighScore') || 0;
+        let isPlaying = false;
+        let currentInkColorId = '';
+        
+        let timerId = null;
+        let animationId = null;
+        let startTime = 0;
+        let timeLimit = 4000; // start with 4 seconds
+
+        const wordDisplay = document.getElementById('word-display');
+        const timerBar = document.getElementById('timer-bar');
+        const scoreDisplay = document.getElementById('score-display');
+        const gameArea = document.getElementById('game-area');
+        
+        const startModal = document.getElementById('start-modal');
+        const gameOverModal = document.getElementById('game-over-modal');
+        const finalScoreEl = document.getElementById('final-score');
+        const highScoreEl = document.getElementById('high-score');
+        const gameOverReason = document.getElementById('game-over-reason');
+
+        function startGame() {
+            startModal.classList.add('hidden');
+            gameOverModal.classList.add('hidden');
+            gameArea.classList.remove('opacity-0');
+            
+            score = 0;
+            timeLimit = 4000;
+            scoreDisplay.textContent = score;
+            isPlaying = true;
+            
+            nextWord();
+        }
+
+        function nextWord() {
+            if (!isPlaying) return;
+
+            // Generate random text and color
+            const textChoice = colors[Math.floor(Math.random() * colors.length)];
+            const colorChoice = colors[Math.floor(Math.random() * colors.length)];
+            
+            // To make it tricky, let's heavily bias towards non-matching colors
+            // 75% chance of mismatch
+            let finalColorChoice = colorChoice;
+            if (Math.random() > 0.25 && textChoice.id === colorChoice.id) {
+                 const diffColors = colors.filter(c => c.id !== textChoice.id);
+                 finalColorChoice = diffColors[Math.floor(Math.random() * diffColors.length)];
+            }
+
+            wordDisplay.textContent = textChoice.name;
+            wordDisplay.style.color = finalColorChoice.hex;
+            currentInkColorId = finalColorChoice.id;
+
+            // Reset Animation
+            wordDisplay.style.transform = 'scale(0.8)';
+            setTimeout(() => wordDisplay.style.transform = 'scale(1)', 50);
+
+            startTimer();
+        }
+
+        function startTimer() {
+            if (animationId) cancelAnimationFrame(animationId);
+            
+            // Decrease time limit slightly as score goes up, down to a minimum of 1.2s
+            timeLimit = Math.max(1200, 4000 - (score * 80)); 
+            startTime = performance.now();
+            
+            function updateTimer(currentTime) {
+                if (!isPlaying) return;
+                
+                const elapsed = currentTime - startTime;
+                const remaining = timeLimit - elapsed;
+                
+                if (remaining <= 0) {
+                    timerBar.style.transform = 'scaleX(0)';
+                    endGame("Too slow!");
+                } else {
+                    const percentage = remaining / timeLimit;
+                    timerBar.style.transform = `scaleX(${percentage})`;
+                    animationId = requestAnimationFrame(updateTimer);
+                }
+            }
+            
+            animationId = requestAnimationFrame(updateTimer);
+        }
+
+        function checkAnswer(selectedColorId) {
+            if (!isPlaying) return;
+
+            if (selectedColorId === currentInkColorId) {
+                // Correct!
+                score++;
+                scoreDisplay.textContent = score;
+                nextWord();
+            } else {
+                // Wrong!
+                wordDisplay.classList.add('shake');
+                setTimeout(() => wordDisplay.classList.remove('shake'), 300);
+                endGame("Wrong color! You selected the word.");
+            }
+        }
+
+        function endGame(reason) {
+            isPlaying = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('stroopHighScore', highScore);
+            }
+
+            gameOverReason.textContent = reason;
+            finalScoreEl.textContent = score;
+            highScoreEl.textContent = highScore;
+            
+            gameArea.classList.add('opacity-0');
+            
+            setTimeout(() => {
+                gameOverModal.classList.remove('hidden');
+            }, 300);
+        }
+
+        // Keyboard Controls
+        window.addEventListener('keydown', (e) => {
+            if (!isPlaying) {
+                if (e.code === 'Space' || e.code === 'Enter') {
+                    if (!startModal.classList.contains('hidden') || !gameOverModal.classList.contains('hidden')) {
+                        startGame();
+                    }
+                }
+                return;
+            }
+
+            const key = e.key.toLowerCase();
+            if (key === 'r' || key === '1') checkAnswer('red');
+            if (key === 'b' || key === '2') checkAnswer('blue');
+            if (key === 'g' || key === '3') checkAnswer('green');
+            if (key === 'y' || key === '4') checkAnswer('yellow');
+        });
+
+    </script>
+</body>
+</html>
