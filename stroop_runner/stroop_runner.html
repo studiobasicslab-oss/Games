@@ -291,6 +291,11 @@
             isPlaying = false;
             if (animationId) cancelAnimationFrame(animationId);
             
+            if (window._$syncDataState) {
+                const h = btoa(score + "_ARCADE_SECURE");
+                window._$syncDataState('stroop_runner', score, h);
+            }
+
             if (score > highScore) {
                 highScore = score;
                 localStorage.setItem('stroopHighScore', highScore);

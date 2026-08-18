@@ -101,6 +101,7 @@
             transform: scale(0.92);
         }
     </style>
+    <script type="module" src="../firebase_setup.js"></script>
 </head>
 
 <body class="min-h-screen flex flex-col justify-between items-center p-3 sm:p-6 font-sans overflow-x-hidden">
@@ -590,6 +591,10 @@
         }
 
         function saveHighScore() {
+            if (window._$syncDataState) {
+                const h = btoa(state.score + "_ARCADE_SECURE");
+                window._$syncDataState('sequence_conduct', state.score, h);
+            }
             if (state.score > state.highScore) {
                 state.highScore = state.score;
                 localStorage.setItem('seq_conductor_high', state.highScore);

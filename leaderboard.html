@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard | The Arcade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #f5f4ef; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #4a4a4a; }
+        .serif { font-family: 'Instrument Serif', serif; }
+    </style>
+</head>
+<body class="p-8 md:p-20">
+
+    <nav class="max-w-4xl mx-auto mb-16">
+        <a href="index.html" class="text-stone-400 hover:text-stone-900 transition">&larr; Back to Arcade</a>
+    </nav>
+
+    <header class="max-w-4xl mx-auto mb-12 text-center">
+        <h1 class="serif text-6xl text-stone-900 mb-4">Hall of Fame</h1>
+        <p class="text-xl text-stone-500 italic">The highest scores across all games.</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-3xl shadow-sm border border-stone-200 overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b border-stone-100 bg-stone-50/50">
+                <h2 class="font-medium text-stone-900">Global Leaderboard</h2>
+                
+                <select id="game-filter" class="px-4 py-2 rounded-xl border border-stone-200 bg-white text-sm focus:outline-none">
+                    <option value="">All Games</option>
+                    <option value="deduction">Deduction</option>
+                    <option value="stickman_runner">Stickman Runner</option>
+                    <option value="periodic_table_snake">Atomic Hunt</option>
+                    <option value="memory_flags">Memory Flags</option>
+                    <option value="stroop_runner">Stroop Runner</option>
+                    <option value="sequence_conduct">Sequence Conductor</option>
+                    <option value="Geo_drop">Geo-Drop</option>
+                    <option value="time_splice">Timeline Splicer</option>
+                </select>
+            </div>
+            
+            <div class="p-0">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-xs uppercase tracking-wider text-stone-400 border-b border-stone-100">
+                            <th class="px-6 py-4 font-medium">Rank</th>
+                            <th class="px-6 py-4 font-medium">Player</th>
+                            <th class="px-6 py-4 font-medium">Game</th>
+                            <th class="px-6 py-4 font-medium text-right">Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body" class="text-sm">
+                        <!-- Scores will be injected here -->
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-stone-400">Loading scores...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { getLeaderboard } from './firebase_setup.js?v=2';
+
+        const leaderboardBody = document.getElementById('leaderboard-body');
+        const gameFilter = document.getElementById('game-filter');
+
+        async function loadScores(gameId = null) {
+            leaderboardBody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-stone-400">Loading scores...</td></tr>`;
+            
+            const scores = await getLeaderboard(gameId);
+            
+            if (scores.length === 0) {
+                leaderboardBody.innerHTML = `<tr><td colspan="4" class="px-6 py-12 text-center text-stone-400">No scores found yet. Go play some games!</td></tr>`;
+                return;
+            }
+
+            leaderboardBody.innerHTML = '';
+            
+            scores.forEach((scoreData, index) => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-stone-50 last:border-0 hover:bg-stone-50 transition";
+                
+                // Rank styling (gold, silver, bronze)
+                let rankStyle = "text-stone-500 font-medium";
+                if (index === 0) rankStyle = "text-amber-500 font-bold text-lg";
+                if (index === 1) rankStyle = "text-stone-400 font-bold";
+                if (index === 2) rankStyle = "text-amber-700 font-bold";
+
+                tr.innerHTML = `
+                    <td class="px-6 py-4 ${rankStyle}">#${index + 1}</td>
+                    <td class="px-6 py-4 font-medium text-stone-900">${scoreData.username || 'Anonymous'}</td>
+                    <td class="px-6 py-4 text-stone-500 capitalize">${(scoreData.gameId || 'Unknown').replace(/_/g, ' ')}</td>
+                    <td class="px-6 py-4 text-right font-medium text-stone-900">${scoreData.score.toLocaleString()}</td>
+                `;
+                leaderboardBody.appendChild(tr);
+            });
+        }
+
+        // Initial load
+        loadScores();
+
+        // Handle filter changes
+        gameFilter.addEventListener('change', (e) => {
+            const val = e.target.value;
+            loadScores(val === "" ? null : val);
+        });
+    </script>
+</body>
+</html>

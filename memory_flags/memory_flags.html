@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Global Explorer: Passport Match</title>
+  <title>Memory Flags - World Tour</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <script type="module" src="../firebase_setup.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Canvas Confetti CDN for gorgeous particle effects -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -1329,6 +1330,11 @@
     function triggerVictory() {
       resetTimer();
       SoundEffects.playWin();
+      
+      if (window._$syncDataState) {
+          const h = btoa(totalScore + "_ARCADE_SECURE");
+          window._$syncDataState('memory_flags', totalScore, h);
+      }
 
       const end = Date.now() + 1200;
       const colors = ['#f59e0b', '#10b981', '#3b82f6'];

@@ -166,6 +166,7 @@
             animation: pulse-banner 1s ease-in-out infinite;
         }
     </style>
+    <script type="module" src="../firebase_setup.js"></script>
 </head>
 
 <body
@@ -1179,6 +1180,10 @@
         }
 
         function endGameSummary() {
+            if (window._$syncDataState) {
+                const h = btoa(gameState.score + "_ARCADE_SECURE");
+                window._$syncDataState('Geo_drop', gameState.score, h);
+            }
             document.getElementById('summary-final-score').textContent = gameState.score.toLocaleString();
             document.getElementById('summary-overlay').classList.remove('hidden');
         }

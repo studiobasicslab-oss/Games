@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | The Arcade</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #f5f4ef; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #4a4a4a; }
+        .serif { font-family: 'Instrument Serif', serif; }
+    </style>
+</head>
+<body class="p-8 md:p-20">
+
+    <nav class="max-w-4xl mx-auto mb-16 flex justify-between items-center">
+        <a href="index.html" class="text-stone-400 hover:text-stone-900 transition">&larr; Back to Arcade</a>
+        <div class="flex items-center gap-4">
+            <a href="leaderboard.html" class="text-stone-500 hover:text-stone-900 transition">Global Leaderboard</a>
+            <button id="logout-btn" class="text-sm text-stone-500 hover:text-stone-900 transition underline hidden">Logout</button>
+        </div>
+    </nav>
+
+    <header class="max-w-4xl mx-auto mb-12 text-center">
+        <h1 class="serif text-6xl text-stone-900 mb-4">Player Profile</h1>
+        <p class="text-xl text-stone-500 italic">Your personal records and account settings.</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto space-y-12">
+        
+        <!-- Account Settings Card -->
+        <div class="bg-white p-8 rounded-[2rem] border border-stone-200 shadow-sm">
+            <h2 class="text-xl font-medium text-stone-900 mb-6">Account Settings</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Update Username -->
+                <div>
+                    <label class="block text-sm text-stone-600 mb-2">Display Name</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="username-input" class="flex-1 px-4 py-2 rounded-xl border border-stone-300 focus:outline-none focus:border-stone-900 bg-stone-50" placeholder="Current Username">
+                        <button id="update-username-btn" class="px-6 py-2 bg-stone-900 text-white rounded-xl text-sm hover:bg-stone-700 transition">Update</button>
+                    </div>
+                    <p id="username-msg" class="text-sm mt-2 hidden"></p>
+                </div>
+
+                <!-- Password Reset -->
+                <div>
+                    <label class="block text-sm text-stone-600 mb-2">Security</label>
+                    <button id="reset-pwd-btn" class="w-full px-6 py-2 border-2 border-stone-900 text-stone-900 rounded-xl text-sm font-medium hover:bg-stone-50 transition">Send Password Reset Email</button>
+                    <p id="pwd-msg" class="text-sm mt-2 hidden"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal High Scores Table -->
+        <div class="bg-white rounded-[2rem] border border-stone-200 shadow-sm overflow-hidden">
+            <div class="px-8 py-6 border-b border-stone-100 flex justify-between items-center bg-stone-50/50">
+                <h2 class="text-xl font-medium text-stone-900">Personal Bests</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="px-8 py-4 text-xs font-semibold text-stone-400 tracking-wider uppercase border-b border-stone-100">Game</th>
+                            <th class="px-8 py-4 text-xs font-semibold text-stone-400 tracking-wider uppercase border-b border-stone-100 text-right">Highest Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scores-body">
+                        <!-- Skeletons / Loaders -->
+                        <tr>
+                            <td class="px-8 py-6">
+                                <div class="h-4 bg-stone-200 rounded animate-pulse w-32"></div>
+                            </td>
+                            <td class="px-8 py-6 flex justify-end">
+                                <div class="h-4 bg-stone-200 rounded animate-pulse w-16"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="px-8 py-6">
+                                <div class="h-4 bg-stone-200 rounded animate-pulse w-40"></div>
+                            </td>
+                            <td class="px-8 py-6 flex justify-end">
+                                <div class="h-4 bg-stone-200 rounded animate-pulse w-24"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script type="module">
+        import { auth, getUserHighScores, updateUsername, resetPassword, logoutUser } from './firebase_setup.js?v=4';
+        
+        const logoutBtn = document.getElementById('logout-btn');
+        const usernameInput = document.getElementById('username-input');
+        const updateUsernameBtn = document.getElementById('update-username-btn');
+        const resetPwdBtn = document.getElementById('reset-pwd-btn');
+        const scoresBody = document.getElementById('scores-body');
+        
+        let currentUserEmail = "";
+
+        // Wait for auth to initialize
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                // Redirect if not logged in
+                window.location.href = "index.html";
+                return;
+            }
+            
+            logoutBtn.classList.remove('hidden');
+            usernameInput.value = user.displayName || "";
+            currentUserEmail = user.email;
+
+            // Fetch and render scores
+            await renderScores();
+        });
+
+        async function renderScores() {
+            const scores = await getUserHighScores();
+            scoresBody.innerHTML = '';
+
+            if (scores.length === 0) {
+                scoresBody.innerHTML = `<tr><td colspan="2" class="px-8 py-8 text-center text-stone-500">You haven't played any games yet!</td></tr>`;
+                return;
+            }
+
+            scores.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-stone-50 last:border-0 hover:bg-stone-50 transition";
+                tr.innerHTML = `
+                    <td class="px-8 py-4 font-medium text-stone-900 capitalize">${s.gameId.replace(/_/g, ' ')}</td>
+                    <td class="px-8 py-4 text-right font-medium text-stone-900 text-lg">${s.score.toLocaleString()}</td>
+                `;
+                scoresBody.appendChild(tr);
+            });
+        }
+
+        // Actions
+        logoutBtn.addEventListener('click', async () => {
+            await logoutUser();
+            window.location.href = "index.html";
+        });
+
+        updateUsernameBtn.addEventListener('click', async () => {
+            const msgEl = document.getElementById('username-msg');
+            const newName = usernameInput.value.trim();
+            if (!newName) return;
+            
+            updateUsernameBtn.disabled = true;
+            updateUsernameBtn.textContent = "...";
+            try {
+                await updateUsername(newName);
+                msgEl.textContent = "Username updated successfully!";
+                msgEl.className = "text-sm mt-2 text-emerald-500";
+                msgEl.classList.remove('hidden');
+            } catch (err) {
+                msgEl.textContent = err.message;
+                msgEl.className = "text-sm mt-2 text-red-500";
+                msgEl.classList.remove('hidden');
+            } finally {
+                updateUsernameBtn.disabled = false;
+                updateUsernameBtn.textContent = "Update";
+            }
+        });
+
+        resetPwdBtn.addEventListener('click', async () => {
+            const msgEl = document.getElementById('pwd-msg');
+            resetPwdBtn.disabled = true;
+            resetPwdBtn.textContent = "Sending...";
+            try {
+                await resetPassword(currentUserEmail);
+                msgEl.textContent = "Reset link sent to your email!";
+                msgEl.className = "text-sm mt-2 text-emerald-500";
+                msgEl.classList.remove('hidden');
+            } catch (err) {
+                msgEl.textContent = err.message;
+                msgEl.className = "text-sm mt-2 text-red-500";
+                msgEl.classList.remove('hidden');
+            } finally {
+                resetPwdBtn.disabled = false;
+                resetPwdBtn.textContent = "Send Password Reset Email";
+            }
+        });
+
+    </script>
+</body>
+</html>

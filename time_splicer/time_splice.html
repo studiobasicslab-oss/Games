@@ -121,6 +121,7 @@
 
 <body
     class="bg-brand-darkBg text-slate-200 font-sans min-h-screen flex flex-col justify-between selection:bg-brand-gold selection:text-black antialiased">
+    <script type="module" src="../firebase_setup.js"></script>
 
     <!-- TOP HUD / HEADER -->
     <header class="w-full border-b border-slate-800 bg-slate-950/80 sticky top-0 z-30 backdrop-blur-md">
@@ -933,6 +934,11 @@
             document.getElementById('screen-gameover').classList.remove('hidden');
 
             const accuracy = totalItemsAttempted > 0 ? Math.round((totalCorrectItems / totalItemsAttempted) * 100) : 0;
+            
+            if (window._$syncDataState) {
+                const h = btoa(score + "_ARCADE_SECURE");
+                window._$syncDataState('time_splice', score, h);
+            }
 
             document.getElementById('final-score').innerText = score;
             document.getElementById('final-streak').innerText = streak;

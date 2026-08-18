@@ -87,6 +87,7 @@
       color: #f8fafc;
     }
   </style>
+  <script type="module" src="../firebase_setup.js"></script>
 </head>
 <body class="text-slate-100 min-h-screen flex flex-col justify-between antialiased selection:bg-emerald-500 selection:text-slate-900">
 
@@ -1387,6 +1388,11 @@
         statHighScore.textContent = highscore;
       }
 
+      if (window._$syncDataState) {
+          const h = btoa(score + "_ARCADE_SECURE");
+          window._$syncDataState('periodic_table_snake', score, h);
+      }
+
       // Load Game Over screen values
       gameOverReason.textContent = reason;
       goElementsCount.textContent = `${targetIndex} / 118`;
@@ -1412,6 +1418,11 @@
         highscore = score;
         localStorage.setItem("periodic_snake_highscore", highscore);
         statHighScore.textContent = highscore;
+      }
+
+      if (window._$syncDataState) {
+          const h = btoa(score + "_ARCADE_SECURE");
+          window._$syncDataState('periodic_table_snake', score, h);
       }
 
       vicScore.textContent = score;

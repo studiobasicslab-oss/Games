@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Split Screen Stickman Runner</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="../firebase_setup.js"></script>
     <style>
         body, html {
             margin: 0;
@@ -543,6 +544,10 @@
 
         function gameOver(crashingPlayer) {
             gameMode = 'gameover';
+            if (window._$syncDataState) {
+                const h = btoa(Math.floor(score) + "_ARCADE_SECURE");
+                window._$syncDataState('stickman_runner', Math.floor(score), h);
+            }
             
             let centerBodyOffset = crashingPlayer.isUpsideDown ? 30 : -30;
             createExplosion(crashingPlayer.x, crashingPlayer.y + centerBodyOffset, crashingPlayer.color);
