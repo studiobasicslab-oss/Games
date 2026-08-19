@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISOFILTER | Nuclear Sorting Facility & Logic Engine</title>
+    
+    <!-- Google Fonts for crisp industrial look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- CRT phosphor scanline overlay -->
+    <div class="crt-overlay"></div>
+
+    <!-- Top Facility Navigation Bar -->
+    <header>
+        <div class="logo-area">
+            <div class="rad-badge">
+                <span style="font-size: 1.25rem;">☢️</span>
+            </div>
+            <div class="title-text">
+                <h1>ISOFILTER</h1>
+                <span>SUBATOMIC ROUTING & LOGIC SORTING</span>
+            </div>
+        </div>
+
+        <!-- Mode Switcher -->
+        <div class="mode-tabs">
+            <button class="tab-btn active" id="tabLogicLab">
+                <span>🧠</span> LOGIC LAB
+            </button>
+            <button class="tab-btn" id="tabSortRush">
+                <span>⚡</span> SORT RUSH
+            </button>
+        </div>
+
+        <!-- Quick Facility Tools -->
+        <div class="nav-controls">
+            <button class="tool-btn" id="btnOpenLevels">
+                <span>📑</span> PROTOCOLS
+            </button>
+            <button class="tool-btn" id="btnOpenCodex">
+                <span>🔬</span> CODEX
+            </button>
+            <button class="tool-btn" id="btnMute">
+                <span>🔊</span> AUDIO
+            </button>
+            <a href="../index.html" class="tool-btn">
+                <span>&larr;</span> ARCADE
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Workspace Area -->
+    <main class="app-layout">
+        <!-- Machine Simulation Viewport -->
+        <section class="machine-container">
+            <!-- Machine Top Status Strip -->
+            <div class="machine-header">
+                <div class="status-cluster">
+                    <div class="status-item">
+                        <span class="status-label">OPERATION</span>
+                        <span class="status-val green" id="hudLevelNum">PROTOCOL 01</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">RATING / SCORE</span>
+                        <span class="status-val cyan" id="hudScoreVal">☆☆☆</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">LOGIC STATUS</span>
+                        <span class="status-val amber" id="hudStreakVal">MAX GATES: 1</span>
+                    </div>
+                </div>
+
+                <!-- FLOW STATE Surge Badge -->
+                <div class="flow-state-tag" id="flowStateTag">
+                    <span>⚡</span> FLOW STATE (2X OVERDRIVE)
+                </div>
+            </div>
+
+            <!-- Canvas Viewport -->
+            <div class="canvas-wrapper">
+                <canvas id="machineCanvas"></canvas>
+            </div>
+
+            <!-- Machine Bottom Control Strip -->
+            <div class="machine-footer">
+                <!-- Logic Lab Actions -->
+                <div id="logicLabControls" style="display: flex; gap: 0.75rem; align-items: center;">
+                    <button class="action-btn primary" id="btnStartSim">
+                        <span>▶</span> ENGAGE FEEDER
+                    </button>
+                    <button class="action-btn secondary" id="btnResetPipeline">
+                        <span>↺</span> RESET GATES
+                    </button>
+                </div>
+
+                <!-- Sort Rush Actions -->
+                <div id="sortRushControls" style="display: none; gap: 0.75rem; align-items: center;">
+                    <button class="action-btn primary" id="btnStartRush">
+                        <span>⚡</span> START RUSH
+                    </button>
+                    <button class="action-btn secondary" id="btnFlipGate">
+                        <span>⇄</span> DIVERTER: LOWER (STABLE)
+                    </button>
+                </div>
+
+                <div style="font-size: 0.75rem; color: #64748b; font-family: var(--font-mono);">
+                    [SPACE] QUICK ACTION • [M] MUTE • [R] RESET
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Industrial Control Terminal Sidebar -->
+        <aside class="sidebar-panel">
+            <!-- CRT Feedback Terminal -->
+            <div class="crt-terminal">
+                <div class="crt-terminal-title">
+                    <span id="crtLevelTitle">SUBATOMIC TELEMETRY</span>
+                    <span style="animation: radPulse 1.5s infinite;">● ONLINE</span>
+                </div>
+                <p class="crt-text" id="crtLevelDesc">
+                    Select a gate from the palette below, then click on the conveyor slot to configure the routing pipeline.
+                </p>
+                <div id="crtRushDesc" style="display: none;" class="crt-text"></div>
+                <div id="crtQueueDisplay" style="margin-top: 0.5rem; font-size: 0.7rem; color: #38bdf8;"></div>
+            </div>
+
+            <!-- Logic Lab Controls: Gate Palette & Target Bins -->
+            <div id="logicLabSidebar" style="display: flex; flex-direction: column; gap: 1rem;">
+                <div class="gate-palette">
+                    <div class="section-label">
+                        <span>AVAILABLE LOGIC GATES</span>
+                        <span style="font-size: 0.65rem; color: var(--neon-cyan);">CLICK TO SELECT</span>
+                    </div>
+                    <div id="gatePaletteContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <!-- Dynamically filled by game.js -->
+                    </div>
+                </div>
+
+                <div class="bins-target-list">
+                    <div class="section-label">
+                        <span>TARGET RECEPTACLES</span>
+                        <span style="font-size: 0.65rem; color: var(--neon-green);">DESTINATIONS</span>
+                    </div>
+                    <div id="targetBinsContainer" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <!-- Dynamically filled by game.js -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sort Rush Sidebar -->
+            <div id="sortRushSidebar" style="display: none; flex-direction: column; gap: 1rem;">
+                <div class="crt-terminal" style="border-color: #854d0e; color: #fde047; box-shadow: inset 0 0 15px rgba(234, 179, 8, 0.15);">
+                    <div class="crt-terminal-title" style="color: #facc15;">
+                        <span>CRITICALITY MONITOR</span>
+                        <span>RADIATION HAZARDS</span>
+                    </div>
+                    <p style="font-size: 0.78rem; line-height: 1.4; color: #fef08a;">
+                        Incoming isotopes approach in real time. Inspect their nuclear properties and route them to UPPER (Radioactive) or LOWER (Stable) bin before they reach the receptor.
+                    </p>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Modal: Isotope Codex -->
+    <div class="modal-backdrop" id="codexModal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>🔬</span> ISOTOPE SCIENCE & PROPERTIES CODEX
+                </div>
+                <button class="modal-close" id="btnCloseCodex">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="codex-grid" id="codexGrid">
+                    <!-- Populated by game.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Level Select -->
+    <div class="modal-backdrop" id="levelsModal">
+        <div class="modal-window" style="max-width: 580px;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>📑</span> MISSION PROTOCOLS
+                </div>
+                <button class="modal-close" id="btnCloseLevels">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="level-grid" id="levelSelectGrid">
+                    <!-- Populated by game.js -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Victory -->
+    <div class="modal-backdrop" id="victoryModal">
+        <div class="modal-window" style="max-width: 460px; text-align: center;">
+            <div class="modal-header">
+                <div class="modal-title" style="color: var(--neon-green);">
+                    <span>✔</span> PROTOCOL SOLVED
+                </div>
+                <button class="modal-close" id="btnCloseVictory">&times;</button>
+            </div>
+            <div class="modal-body" style="align-items: center; text-align: center;">
+                <div id="victoryStars" style="font-size: 2.5rem; color: #fbbf24; margin: 0.5rem 0;">⭐⭐⭐</div>
+                <p id="victorySummary" style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.4;">
+                    All isotopes correctly routed according to logical specifications.
+                </p>
+                <div style="display: flex; gap: 0.75rem; margin-top: 1rem; width: 100%;">
+                    <button class="action-btn secondary" style="flex: 1;" onclick="document.getElementById('victoryModal').classList.remove('open')">REVIEW</button>
+                    <button class="action-btn primary" id="btnNextLevel" style="flex: 1;">NEXT PROTOCOL &rarr;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Sort Rush Game Over / Meltdown -->
+    <div class="modal-backdrop" id="gameOverModal">
+        <div class="modal-window" style="max-width: 460px; text-align: center; border-color: #ef4444;">
+            <div class="modal-header" style="border-bottom-color: #ef4444;">
+                <div class="modal-title" style="color: var(--neon-red);">
+                    <span>☢️</span> REACTOR MELTDOWN
+                </div>
+                <button class="modal-close" id="btnCloseGameOver">&times;</button>
+            </div>
+            <div class="modal-body" style="align-items: center; text-align: center;">
+                <div style="font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.1em;">FINAL SCORE</div>
+                <div id="gameOverScore" style="font-size: 2.5rem; font-weight: 800; font-family: var(--font-mono); color: #fff; margin: 0.25rem 0;">0</div>
+                <div id="gameOverStreak" style="font-size: 0.85rem; color: var(--neon-cyan); font-family: var(--font-mono);">Max Streak: ×0</div>
+                <div id="gameOverBest" style="font-size: 0.8rem; color: #94a3b8; font-family: var(--font-mono); margin-top: 0.25rem;">Personal Best: 0</div>
+                
+                <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem; width: 100%;">
+                    <button class="action-btn secondary" style="flex: 1;" onclick="document.getElementById('gameOverModal').classList.remove('open')">CLOSE</button>
+                    <button class="action-btn primary" id="btnRestartRush" style="flex: 1;">TRY AGAIN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Game Script Module -->
+    <script type="module" src="game.js"></script>
+    <script type="module" src="../firebase_setup.js"></script>
+</body>
+</html>

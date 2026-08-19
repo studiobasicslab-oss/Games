@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LINKED — Four Degrees of Connection</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Particle Synapse Background Canvas -->
+    <canvas id="synapse-canvas"></canvas>
+
+    <div id="app">
+        <!-- TOP NAVBAR -->
+        <header class="navbar">
+            <div class="nav-left">
+                <a href="../index.html" class="back-link">&larr; Arcade</a>
+                <div class="brand-badge">
+                    <span class="brand-icon">🔗</span>
+                    <span>LINKED</span>
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="hud-pill" title="Current Daily Streak">
+                    <span>🔥</span>
+                    <span id="hud-streak">0</span>
+                </div>
+                <div class="hud-pill" title="Personal Best Score">
+                    <span>⭐</span>
+                    <span id="hud-best-score">0</span>
+                </div>
+                <button id="btn-sound-toggle" class="btn-icon" title="Toggle Sound" aria-label="Toggle Sound">🔊</button>
+            </div>
+        </header>
+
+        <!-- HEADER & TAGLINE -->
+        <div class="game-header">
+            <h1 class="game-title">LINKED</h1>
+            <p class="game-tagline">Everything is connected. <span class="tagline-accent">Prove it in four steps.</span></p>
+        </div>
+
+        <!-- MODE SELECTOR BAR -->
+        <nav class="mode-bar" aria-label="Game Modes">
+            <button class="mode-btn active" data-mode="knowledge">🧠 Knowledge</button>
+            <button class="mode-btn" data-mode="daily">🌎 Daily Four</button>
+            <button class="mode-btn" data-mode="popculture">🎬 Pop Culture</button>
+            <button class="mode-btn" data-mode="everyday">🍔 Everyday</button>
+            <button class="mode-btn" data-mode="chaos">😈 Chaos</button>
+            <button class="mode-btn" data-mode="speedrun">⚔️ Speed Duel</button>
+            <button class="mode-btn" data-mode="endless">✨ Free Play</button>
+        </nav>
+
+        <!-- PUZZLE META BANNER -->
+        <div class="puzzle-info-card">
+            <div class="puzzle-meta">
+                <span id="puzzle-difficulty-badge" class="badge-difficulty">🟢 Easy</span>
+                <h2 id="puzzle-title" class="puzzle-title">Space & Spreads</h2>
+            </div>
+            <div id="puzzle-timer-box" class="timer-box" style="display: none;">
+                <span id="timer-display" class="timer-display">60s</span>
+                <div class="timer-bar-container">
+                    <div id="timer-bar-fill" class="timer-bar-fill"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAIN ARENA (FOUR DEGREES INTERFACE) -->
+        <main class="chain-arena">
+            
+            <!-- START TERMINAL NODE -->
+            <div class="node-card terminal-node node-start">
+                <div class="node-content-left">
+                    <div id="start-node-icon" class="node-icon">🌙</div>
+                    <div class="node-details">
+                        <span class="node-badge-slot">START CONCEPT</span>
+                        <h3 id="start-node-title" class="node-title">Moon Landing</h3>
+                        <p id="start-node-clue" class="node-subclue">1969 Apollo 11 human achievement</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONNECTOR BRIDGE 0 -->
+            <div id="bridge-0" class="connector-bridge">
+                <div class="connector-line"></div>
+                <button id="bridge-pill-0" class="connector-pill" aria-label="Connection Status">
+                    <span class="pill-stars">⏳</span> Connect
+                </button>
+            </div>
+
+            <!-- INTERMEDIATE SLOT 1 -->
+            <div id="slot-card-1" class="node-card node-intermediate">
+                <div class="node-input-wrapper">
+                    <div class="node-step-index">1</div>
+                    <input type="text" id="slot-input-1" class="node-input" placeholder="Type first connection concept..." autocomplete="off" spellcheck="false">
+                </div>
+                <div class="node-actions">
+                    <button id="btn-slot-submit-1" class="btn-node-submit">Link ➔</button>
+                    <button id="btn-slot-clear-1" class="btn-node-clear" title="Clear slot">&times;</button>
+                </div>
+            </div>
+
+            <!-- CONNECTOR BRIDGE 1 -->
+            <div id="bridge-1" class="connector-bridge">
+                <div class="connector-line"></div>
+                <button id="bridge-pill-1" class="connector-pill" aria-label="Connection Status">
+                    <span class="pill-stars">⏳</span> Connect
+                </button>
+            </div>
+
+            <!-- INTERMEDIATE SLOT 2 -->
+            <div id="slot-card-2" class="node-card node-intermediate">
+                <div class="node-input-wrapper">
+                    <div class="node-step-index">2</div>
+                    <input type="text" id="slot-input-2" class="node-input" placeholder="Type second connection concept..." autocomplete="off" spellcheck="false">
+                </div>
+                <div class="node-actions">
+                    <button id="btn-slot-submit-2" class="btn-node-submit">Link ➔</button>
+                    <button id="btn-slot-clear-2" class="btn-node-clear" title="Clear slot">&times;</button>
+                </div>
+            </div>
+
+            <!-- CONNECTOR BRIDGE 2 -->
+            <div id="bridge-2" class="connector-bridge">
+                <div class="connector-line"></div>
+                <button id="bridge-pill-2" class="connector-pill" aria-label="Connection Status">
+                    <span class="pill-stars">⏳</span> Connect
+                </button>
+            </div>
+
+            <!-- INTERMEDIATE SLOT 3 -->
+            <div id="slot-card-3" class="node-card node-intermediate">
+                <div class="node-input-wrapper">
+                    <div class="node-step-index">3</div>
+                    <input type="text" id="slot-input-3" class="node-input" placeholder="Type third connection concept..." autocomplete="off" spellcheck="false">
+                </div>
+                <div class="node-actions">
+                    <button id="btn-slot-submit-3" class="btn-node-submit">Link ➔</button>
+                    <button id="btn-slot-clear-3" class="btn-node-clear" title="Clear slot">&times;</button>
+                </div>
+            </div>
+
+            <!-- CONNECTOR BRIDGE 3 -->
+            <div id="bridge-3" class="connector-bridge">
+                <div class="connector-line"></div>
+                <button id="bridge-pill-3" class="connector-pill" aria-label="Connection Status">
+                    <span class="pill-stars">⏳</span> Connect
+                </button>
+            </div>
+
+            <!-- INTERMEDIATE SLOT 4 -->
+            <div id="slot-card-4" class="node-card node-intermediate">
+                <div class="node-input-wrapper">
+                    <div class="node-step-index">4</div>
+                    <input type="text" id="slot-input-4" class="node-input" placeholder="Type fourth connection concept..." autocomplete="off" spellcheck="false">
+                </div>
+                <div class="node-actions">
+                    <button id="btn-slot-submit-4" class="btn-node-submit">Link ➔</button>
+                    <button id="btn-slot-clear-4" class="btn-node-clear" title="Clear slot">&times;</button>
+                </div>
+            </div>
+
+            <!-- CONNECTOR BRIDGE 4 -->
+            <div id="bridge-4" class="connector-bridge">
+                <div class="connector-line"></div>
+                <button id="bridge-pill-4" class="connector-pill" aria-label="Connection Status">
+                    <span class="pill-stars">⏳</span> Connect
+                </button>
+            </div>
+
+            <!-- END TERMINAL NODE -->
+            <div class="node-card terminal-node node-end">
+                <div class="node-content-left">
+                    <div id="end-node-icon" class="node-icon">🥜</div>
+                    <div class="node-details">
+                        <span class="node-badge-slot">DESTINATION TARGET</span>
+                        <h3 id="end-node-title" class="node-title">Peanut Butter Sandwich</h3>
+                        <p id="end-node-clue" class="node-subclue">Classic lunchroom staple</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- CONNECTION TYPES TOOLBOX -->
+        <section class="toolbox-section">
+            <div class="toolbox-header">
+                <span class="toolbox-title">🔗 Connection Types Toolbox</span>
+                <span style="font-size: 0.8rem; color: var(--text-dim);">Click category for idea suggestions</span>
+            </div>
+            <div class="toolbox-chips">
+                <button class="chip-type" data-type="person">👤 Person</button>
+                <button class="chip-type" data-type="place">📍 Place</button>
+                <button class="chip-type" data-type="object">📦 Object</button>
+                <button class="chip-type" data-type="event">⚡ Event</button>
+                <button class="chip-type" data-type="food">🍕 Food & Drink</button>
+                <button class="chip-type" data-type="popculture">🎬 Pop Culture</button>
+                <button class="chip-type" data-type="science">🔬 Science</button>
+                <button class="chip-type" data-type="word">🔗 Word Link</button>
+            </div>
+            <!-- Dynamic Autocomplete Suggestions Drawer -->
+            <div id="suggestions-drawer" class="suggestions-drawer"></div>
+        </section>
+
+        <!-- HINT CARDS SYSTEM -->
+        <section class="hints-section">
+            <div class="hints-header">
+                <span class="toolbox-title">🃏 Lateral Hint Cards</span>
+                <span style="font-size: 0.8rem; color: var(--text-dim);">-1 Star per revealed clue</span>
+            </div>
+            <div class="hints-grid">
+                <!-- Hint 1 -->
+                <div id="hint-card-0" class="hint-card">
+                    <div class="hint-top">
+                        <span class="hint-tier-label">Hint 1 • Category</span>
+                        <span class="hint-cost">-1 ⭐</span>
+                    </div>
+                    <div id="hint-body-0" class="hint-body">
+                        <span style="color:var(--text-dim)">Hint locked.</span>
+                    </div>
+                    <button id="btn-hint-0" class="btn-unlock-hint">Reveal Category</button>
+                </div>
+
+                <!-- Hint 2 -->
+                <div id="hint-card-1" class="hint-card">
+                    <div class="hint-top">
+                        <span class="hint-tier-label">Hint 2 • First Letter</span>
+                        <span class="hint-cost">-1 ⭐</span>
+                    </div>
+                    <div id="hint-body-1" class="hint-body">
+                        <span style="color:var(--text-dim)">Hint locked.</span>
+                    </div>
+                    <button id="btn-hint-1" class="btn-unlock-hint">Reveal Letter</button>
+                </div>
+
+                <!-- Hint 3 -->
+                <div id="hint-card-2" class="hint-card">
+                    <div class="hint-top">
+                        <span class="hint-tier-label">Hint 3 • Direct Clue</span>
+                        <span class="hint-cost">-1 ⭐</span>
+                    </div>
+                    <div id="hint-body-2" class="hint-body">
+                        <span style="color:var(--text-dim)">Hint locked.</span>
+                    </div>
+                    <button id="btn-hint-2" class="btn-unlock-hint">Narrow Down</button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- RATIONALE EXPLANATION MODAL -->
+    <div id="rationale-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title">Connection Rationale</h3>
+                <button id="btn-close-rationale" class="btn-close-modal">&times;</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span id="modal-link-pair" style="font-weight:700; font-size:1.1rem; color:var(--accent-cyan);">Concept A ➔ Concept B</span>
+                <span id="modal-link-stars" style="font-weight:700; font-family:var(--font-mono); color:var(--accent-emerald);">⭐⭐⭐</span>
+            </div>
+            <div id="modal-link-reason" class="reason-box">
+                Loading semantic explanation...
+            </div>
+        </div>
+    </div>
+
+    <!-- VICTORY SCORECARD MODAL -->
+    <div id="scorecard-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="scorecard-header">
+                <div id="scorecard-stars-display" class="scorecard-stars">⭐ 11 / 12</div>
+                <div id="scorecard-rank-display" class="scorecard-rank">🔥 Lateral Thinker</div>
+                <p style="color:var(--text-muted); font-size:0.88rem; margin-top:4px;">You successfully discovered the four degrees of connection!</p>
+            </div>
+
+            <table class="scorecard-summary-table">
+                <thead>
+                    <tr style="color:var(--text-dim); text-align:left; font-size:0.78rem; text-transform:uppercase;">
+                        <th>Connection</th>
+                        <th style="text-align:center;">Score</th>
+                        <th>Quality</th>
+                    </tr>
+                </thead>
+                <tbody id="scorecard-table-body">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+
+            <div class="scorecard-actions">
+                <button id="btn-share-scorecard" class="btn-secondary-action">📋 Share Path</button>
+                <button id="btn-play-next" class="btn-primary-action">Next Puzzle ➔</button>
+                <button id="btn-close-scorecard" class="btn-secondary-action">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Engine Entry -->
+    <script type="module" src="./game.js"></script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Plant Detective 🌱 — Botanical Classification Lab</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Particle effects canvas -->
+    <canvas id="fx-canvas"></canvas>
+
+    <div id="app">
+        <!-- Floating ambient glowing laboratory orbs -->
+        <div class="bg-blur blob-1"></div>
+        <div class="bg-blur blob-2"></div>
+        <div class="bg-blur blob-3"></div>
+        
+        <!-- AUDIO & TOP CONTROL BAR -->
+        <div class="top-nav-bar">
+            <div class="lab-brand">
+                <span class="lab-pill">BIO-LAB HUD v2.4</span>
+                <span class="high-score-tag">BEST: <strong id="ui-best-score">0</strong></span>
+            </div>
+            <button id="btn-sound-toggle" class="btn-sound" title="Toggle Audio (M)" aria-label="Toggle Sound">
+                <span id="sound-icon">🔊</span>
+            </button>
+        </div>
+
+        <!-- START SCREEN -->
+        <section id="screen-start" class="screen active">
+            <div class="glass-panel main-menu-panel">
+                <div class="logo-container">
+                    <div class="holo-ring"></div>
+                    <div class="logo">🌿</div>
+                </div>
+                <h1>PLANT DETECTIVE</h1>
+                <p class="subtitle">Botanical Forensics & Classification Terminal</p>
+                
+                <div class="briefing-box">
+                    <div class="briefing-header">
+                        <span class="pulse-dot"></span>
+                        <strong>LABORATORY BRIEFING</strong>
+                    </div>
+                    <p>Unknown specimens are arriving at containment bay 7. Analyze morphological traits, spot trick anomalies, and build your botanical dossier.</p>
+                </div>
+
+                <div class="menu-actions">
+                    <button id="btn-start" class="btn-primary btn-glow">
+                        <span class="btn-shine"></span>
+                        START INVESTIGATION 🚀
+                    </button>
+                    <button id="btn-menu-encyclopedia" class="btn-secondary">
+                        📖 OPEN PLANT DOSSIER (<span id="menu-discovered-count">0</span>/33)
+                    </button>
+                </div>
+
+                <div class="keyboard-guide">
+                    <span>⚡ Tip: Play fast using keyboard keys <strong>[1 - 4]</strong>, <strong>[Space]</strong>, & <strong>[C]</strong></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- GAMEPLAY SCREEN -->
+        <section id="screen-game" class="screen">
+            <!-- HUD Panel -->
+            <header class="game-hud glass-panel">
+                <div class="hud-top-row">
+                    <div class="clearance-badge">
+                        <span class="badge-label">CLEARANCE</span>
+                        <span class="badge-val" id="ui-clearance-title">TRAINEE</span>
+                    </div>
+                    
+                    <div class="score-display">
+                        <span class="hud-title">SCORE</span>
+                        <span class="score-number" id="ui-score">0</span>
+                        <div id="floating-score-container"></div>
+                    </div>
+
+                    <div class="lives-container">
+                        <span class="hud-title">SHIELD</span>
+                        <div class="lives-hearts" id="ui-lives">❤️❤️❤️</div>
+                    </div>
+                </div>
+
+                <!-- Level & Progress Track -->
+                <div class="level-progress-bar-wrap">
+                    <div class="level-progress-info">
+                        <span>LEVEL <strong id="ui-level">1</strong></span>
+                        <span id="ui-level-progress-text">Specimen 1 / 5</span>
+                    </div>
+                    <div class="progress-track">
+                        <div class="progress-fill" id="ui-progress-fill" style="width: 20%;"></div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Combo Heat Bar -->
+                <div class="combo-strip" id="ui-combo-strip">
+                    <div class="combo-label">
+                        <span id="combo-fire-icon">🔥</span> COMBO <span id="ui-combo">×1</span>
+                        <span class="combo-rank" id="ui-combo-rank">STANDARD</span>
+                    </div>
+                    <div class="combo-meter-track">
+                        <div class="combo-meter-fill" id="ui-combo-fill"></div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Specimen Chamber & Diagnostic Deck -->
+            <div class="game-area">
+                <!-- Specimen Containment Pod -->
+                <div class="specimen-pod glass-panel" id="plant-display-panel">
+                    <!-- Scanner beam animation line -->
+                    <div class="scanner-laser" id="scanner-laser"></div>
+
+                    <!-- Anomaly banner for trick specimens -->
+                    <div class="anomaly-banner hidden" id="ui-anomaly-banner">
+                        <span class="hazard-icon">⚠️</span> ANOMALY DETECTED: TRICK SPECIMEN
+                    </div>
+
+                    <div class="specimen-viewport">
+                        <div class="specimen-glow-ring"></div>
+                        <div class="plant-image" id="ui-plant-image">🌿</div>
+                    </div>
+
+                    <div class="specimen-meta">
+                        <div class="specimen-id-tag" id="ui-specimen-id">SPECIMEN #01</div>
+                        <h2 class="plant-name" id="ui-plant-name">Plant Name</h2>
+                    </div>
+
+                    <!-- Clue Scanner Action Button -->
+                    <div class="clue-row">
+                        <button id="btn-clue" class="btn-clue-scan" title="Scan morphology for a detective clue (C)">
+                            🔍 SCAN CLUE <span class="clue-badge">[C]</span>
+                        </button>
+                        <div id="clue-popup" class="clue-popup hidden">
+                            <span id="clue-text">Analyzing morphological characteristics...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question Deck -->
+                <div class="question-deck glass-panel">
+                    <div class="question-header">
+                        <span class="scan-step-indicator" id="ui-question-tag">DIAGNOSTIC QUERY</span>
+                        <h3 id="ui-question">What is this plant?</h3>
+                    </div>
+
+                    <div class="options-grid" id="ui-options">
+                        <!-- Options injected by JS with [1], [2], [3], [4] hotkey chips -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detective Feedback & Plant File Dossier Overlay -->
+            <div id="feedback-overlay" class="hidden glass-panel feedback-card">
+                <div class="feedback-status-header">
+                    <div class="status-indicator-icon" id="feedback-icon">✓</div>
+                    <div class="status-texts">
+                        <h2 id="feedback-title">CLASSIFICATION VERIFIED</h2>
+                        <p id="feedback-explanation">Explanation here.</p>
+                    </div>
+                </div>
+                
+                <!-- Specimen Dossier File -->
+                <div class="plant-file">
+                    <div class="file-header">
+                        <span class="file-icon" id="file-icon">🌵</span>
+                        <div class="file-title-wrap">
+                            <h4 id="file-name">CACTUS</h4>
+                            <span class="scientific-name-tag" id="file-scientific">Cactaceae</span>
+                        </div>
+                        <span class="discovery-stamp" id="file-discovery-stamp">ARCHIVED</span>
+                    </div>
+
+                    <div class="file-details-grid">
+                        <div class="detail-box">
+                            <span class="detail-label">CATEGORY</span>
+                            <span class="detail-val" id="file-category">Succulent</span>
+                        </div>
+                        <div class="detail-box">
+                            <span class="detail-label">GROWTH FORM</span>
+                            <span class="detail-val" id="file-growth">Succulent</span>
+                        </div>
+                        <div class="detail-box">
+                            <span class="detail-label">REPRODUCTION</span>
+                            <span class="detail-val" id="file-reproduction">Seeds</span>
+                        </div>
+                        <div class="detail-box">
+                            <span class="detail-label">HABITAT</span>
+                            <span class="detail-val" id="file-habitat">Arid environments</span>
+                        </div>
+                    </div>
+
+                    <div class="did-you-know-box">
+                        <div class="dyk-title">🌟 BOTANICAL INTELLIGENCE BRIEF</div>
+                        <p id="file-fact">Fact goes here.</p>
+                    </div>
+                </div>
+
+                <button id="btn-next" class="btn-primary btn-glow">
+                    NEXT SPECIMEN ➔ <span class="hotkey-tip">[SPACE]</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- GAME OVER SCREEN -->
+        <section id="screen-gameover" class="screen">
+            <div class="glass-panel text-center gameover-panel">
+                <div class="debrief-header">
+                    <div class="medal-icon">🎖️</div>
+                    <h2>INVESTIGATION DEBRIEF</h2>
+                    <p class="subtitle">Terminal Session Concluded</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-label">FINAL SCORE</span>
+                        <span class="stat-value highlight" id="end-score">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">SPECIMENS SCANNED</span>
+                        <span class="stat-value" id="end-plants">0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">MAX COMBO</span>
+                        <span class="stat-value combo-highlight" id="end-combo">×0</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">ACCURACY RATE</span>
+                        <span class="stat-value" id="end-accuracy">100%</span>
+                    </div>
+                </div>
+
+                <div class="rank-award-card">
+                    <span class="rank-award-label">ACHIEVED TITLE</span>
+                    <h3 class="rank-title" id="end-rank">🏆 Botanical Apprentice</h3>
+                </div>
+
+                <div class="button-group">
+                    <button id="btn-restart" class="btn-primary btn-glow">ANALYZE NEW BATCH 🔄</button>
+                    <button id="btn-encyclopedia" class="btn-secondary">VIEW ARCHIVED DOSSIER 📖</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ENCYCLOPEDIA / PLANT DOSSIER SCREEN -->
+        <section id="screen-encyclopedia" class="screen">
+            <div class="glass-panel encyclopedia-panel">
+                <div class="header-with-back">
+                    <button id="btn-back-home" class="btn-back">⬅ Back to Lab</button>
+                    <h2>Specimen Dossier</h2>
+                </div>
+                
+                <div class="encyclopedia-stats-bar">
+                    <div class="unlocked-counter">
+                        Catalogued: <strong id="encyclopedia-count">0</strong> of <strong id="encyclopedia-total">33</strong> Species
+                    </div>
+                    <div class="encyclopedia-progress-track">
+                        <div class="encyclopedia-progress-fill" id="encyclopedia-progress-fill"></div>
+                    </div>
+                </div>
+
+                <div class="filter-pills" id="dossier-filters">
+                    <button class="filter-pill active" data-filter="all">All (33)</button>
+                    <button class="filter-pill" data-filter="discovered">Catalogued</button>
+                    <button class="filter-pill" data-filter="tricks">Tricks / Anomalies</button>
+                </div>
+                
+                <div class="encyclopedia-grid" id="encyclopedia-grid">
+                    <!-- Cards injected by JS -->
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="data/plants.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
