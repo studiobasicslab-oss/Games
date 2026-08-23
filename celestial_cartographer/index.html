@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>THE CELESTIAL CARTOGRAPHER | Ancient Sky Navigation & Star-Linking</title>
+    <meta name="description" content="Chart the lost heavens. Connect constellations by apparent magnitude, navigate using ancient pointer stars (Polaris, Sirius, Aldebaran), and uncover multicultural astronomical lore.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navigation Header -->
+        <header class="game-header">
+            <div class="header-left">
+                <a href="../index.html" class="nav-back-btn" title="Return to The Arcade">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>Arcade</span>
+                </a>
+                <div class="brand-badge">
+                    <span class="pulse-star">✦</span>
+                    <div class="brand-text">
+                        <span class="brand-title">THE CELESTIAL CARTOGRAPHER</span>
+                        <span class="brand-subtitle">Night Sky Wayfinding & Lore</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <div class="mode-pills" id="mode-selector">
+                    <button class="mode-pill active" data-mode="journey" id="mode-btn-journey">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+                        </svg>
+                        <span>Journey</span>
+                    </button>
+                    <button class="mode-pill" data-mode="daily" id="mode-btn-daily">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        <span>Daily Stargaze</span>
+                    </button>
+                    <button class="mode-pill" data-mode="relay" id="mode-btn-relay">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                        </svg>
+                        <span>Time Attack (60s)</span>
+                    </button>
+                    <button class="mode-pill" data-mode="planetarium" id="mode-btn-planetarium">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path>
+                            <path d="M2 12h20"></path>
+                        </svg>
+                        <span>Planetarium</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <button class="stat-pill" id="chapters-btn" title="View Chapters & Epochs">
+                    <span>📜</span>
+                    <span id="header-chapter-label">Chapter 1</span>
+                </button>
+                <div class="stat-pill" title="Constellations Restored">
+                    <span>⭐</span>
+                    <span id="star-counter">0 / 12</span>
+                </div>
+                <button class="icon-btn" id="codex-btn" title="Open Celestial Lore Codex">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                </button>
+                <button class="icon-btn" id="sound-toggle-btn" title="Toggle Sound">
+                    <svg id="sound-icon-on" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                    <svg id="sound-icon-off" class="hidden" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <line x1="23" y1="9" x2="17" y2="15"></line>
+                        <line x1="17" y1="9" x2="23" y2="15"></line>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Sub-Header: Active Objective & Wayfinding Status -->
+        <div class="wayfinding-banner" id="wayfinding-banner">
+            <div class="chapter-info">
+                <span class="chapter-number" id="chapter-era-text">ERA: ANCIENT AEGEAN SEA (c. 1200 BCE)</span>
+                <span class="chapter-heading" id="target-constellation-title">Ursa Major — The Great Bear</span>
+            </div>
+
+            <div class="target-objective-box">
+                <span class="objective-icon">🧭</span>
+                <span class="objective-text" id="target-objective-text">Link the 7 anchor stars of the Big Dipper, then fire the pointer ray from Merak through Dubhe to ignite Polaris!</span>
+            </div>
+
+            <div class="chapter-stepper" id="chapter-stepper">
+                <!-- Dots injected via JS -->
+            </div>
+        </div>
+
+        <!-- Main Sky Canvas -->
+        <canvas id="sky-canvas"></canvas>
+
+        <!-- Time Attack Timer & Score HUD (Shown in Time Attack Mode) -->
+        <div class="timer-dial-hud" id="timer-hud" style="display: none;">
+            <div class="timer-clock" id="timer-val">60.0s</div>
+            <div class="score-counter-hud">
+                <span class="score-val" id="relay-score">0</span>
+                <span class="score-combo" id="relay-multiplier">1.0x MULTIPLIER</span>
+            </div>
+        </div>
+
+        <!-- Sandbox Custom Drawing Toolbar (Shown in Planetarium Mode) -->
+        <div class="sandbox-toolbar" id="sandbox-toolbar" style="display: none;">
+            <span style="font-size: 0.8rem; color: var(--gold-brass); font-weight: 600;">Custom Asterism:</span>
+            <button class="sandbox-btn" id="sandbox-clear-btn">Clear My Lines</button>
+            <button class="sandbox-btn" id="sandbox-save-btn">Name & Save</button>
+        </div>
+
+        <!-- Astrolabe Orientation Widget (Bottom Left) -->
+        <div class="astrolabe-widget" id="astrolabe-widget">
+            <div class="astrolabe-header">
+                <span>ASTROLABE COMPASS</span>
+                <span id="celestial-coords-text">RA 11.0h | +55°</span>
+            </div>
+            <div class="dial-controls">
+                <label style="font-size: 0.75rem; color: var(--text-muted);">Rotate Azimuth:</label>
+                <input type="range" min="0" max="360" value="0" class="dial-slider" id="azimuth-slider">
+                <span class="dial-value" id="azimuth-val">0°</span>
+            </div>
+        </div>
+
+        <!-- Pointer Star Guidance Pill (Bottom Center) -->
+        <div class="pointer-guidance-pill" id="pointer-guidance-pill">
+            <span class="pointer-pill-icon">🔭</span>
+            <div class="pointer-pill-text" id="pointer-instruction-text">
+                <strong>Wayfinding Rule:</strong> Connect Merak to Dubhe and project the line 5x to find Polaris.
+            </div>
+            <button class="btn-pointer-action" id="pointer-align-btn">Align Ray</button>
+        </div>
+
+        <!-- Planetarium Visual Toggles Palette (Bottom Right) -->
+        <div class="tools-palette">
+            <button class="tool-toggle-btn active" id="btn-toggle-artwork" title="Toggle Mythological Constellation Art">
+                <span>🎨</span>
+                <span>Art</span>
+            </button>
+            <button class="tool-toggle-btn active" id="btn-toggle-labels" title="Toggle Star Names & Magnitudes">
+                <span>🏷️</span>
+                <span>Labels</span>
+            </button>
+            <button class="tool-toggle-btn active" id="btn-toggle-colors" title="Toggle Spectral Star Colors">
+                <span>🌈</span>
+                <span>Spectral</span>
+            </button>
+            <button class="tool-toggle-btn" id="btn-toggle-parallax" title="Toggle 3D Light-Year Stellar Depth">
+                <span>🪐</span>
+                <span>3D Depth</span>
+            </button>
+            <button class="tool-toggle-btn active" id="btn-toggle-dso" title="Toggle Deep Sky Objects (Nebulae, Galaxies)">
+                <span>🌌</span>
+                <span>Nebulae</span>
+            </button>
+        </div>
+
+        <!-- Constellation Completed Celebration Toast -->
+        <div class="celebration-toast" id="celebration-toast">
+            <span class="toast-icon">✨</span>
+            <div class="toast-text-box">
+                <span class="toast-main" id="toast-title">CONSTELLATION CHARTED!</span>
+                <span class="toast-sub" id="toast-subtitle">Ursa Major restored to the celestial sphere.</span>
+            </div>
+        </div>
+
+        <!-- ==========================================================================
+             MODALS
+             ========================================================================== -->
+
+        <!-- 1. Lore Codex Modal -->
+        <div class="modal-backdrop" id="codex-modal">
+            <div class="modal-box">
+                <button class="modal-close-btn" id="close-codex-btn">&times;</button>
+                <h2 class="modal-title" id="codex-modal-title">Celestial Lore Codex</h2>
+                <span class="modal-subtitle" id="codex-modal-subtitle">Astronomical Knowledge & Myths Across Civilizations</span>
+
+                <div class="lore-tabs" id="codex-culture-tabs">
+                    <button class="lore-tab-btn active" data-culture="greek">Greek & Roman</button>
+                    <button class="lore-tab-btn" data-culture="arabic">Classical Arabic</button>
+                    <button class="lore-tab-btn" data-culture="vedic">Vedic Nakshatras</button>
+                    <button class="lore-tab-btn" data-culture="polynesian">Polynesian Wayfinding</button>
+                    <button class="lore-tab-btn" data-culture="navajo">Navajo / Indigenous</button>
+                </div>
+
+                <div class="lore-content-pane" id="codex-lore-text">
+                    Select a constellation to reveal its cultural history and navigation records.
+                </div>
+
+                <h3 style="font-family: var(--font-serif); color: var(--gold-primary); margin-top: 0.5rem;">Principal Stars of this Constellation</h3>
+                <div style="overflow-x: auto;">
+                    <table class="star-catalog-table" id="codex-star-table">
+                        <thead>
+                            <tr>
+                                <th>Star Name</th>
+                                <th>Bayer</th>
+                                <th>Spectral Class</th>
+                                <th>Apparent Mag</th>
+                                <th>Distance (ly)</th>
+                                <th>Etymology & Meaning</th>
+                            </tr>
+                        </thead>
+                        <tbody id="codex-star-tbody">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Chapter / Era Selector Modal -->
+        <div class="modal-backdrop" id="chapters-modal">
+            <div class="modal-box">
+                <button class="modal-close-btn" id="close-chapters-btn">&times;</button>
+                <h2 class="modal-title">Voyages of the Restorer</h2>
+                <span class="modal-subtitle">Select a historical era and star journey</span>
+
+                <div class="chapters-grid" id="chapters-container">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Daily Stargaze Briefing Modal -->
+        <div class="modal-backdrop" id="daily-modal">
+            <div class="modal-box">
+                <button class="modal-close-btn" id="close-daily-btn">&times;</button>
+                <h2 class="modal-title" id="daily-title">Daily Stargaze Challenge</h2>
+                <span class="modal-subtitle" id="daily-date-label">Aligning tonight's real-time celestial sky</span>
+
+                <div class="lore-content-pane" id="daily-flavor-text">
+                    Tonight's sky challenge tests your navigational recognition under time pressure.
+                </div>
+
+                <button class="btn-pointer-action" id="start-daily-challenge-btn" style="padding: 0.8rem 1.8rem; font-size: 1rem; align-self: center;">
+                    Begin 2-Minute Stargaze
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. Victory / Chapter Complete Modal -->
+        <div class="modal-backdrop" id="victory-modal">
+            <div class="modal-box" style="text-align: center; align-items: center;">
+                <button class="modal-close-btn" id="close-victory-btn">&times;</button>
+                <div style="font-size: 3.5rem; animation: starPulse 2s infinite ease-in-out;">🧭</div>
+                <h2 class="modal-title" id="victory-title">VOYAGE COMPLETED</h2>
+                <span class="modal-subtitle" id="victory-subtitle">The circumpolar night sky is illuminated once more</span>
+
+                <div class="lore-content-pane" id="victory-badge-box" style="width: 100%; max-width: 500px; text-align: center;">
+                    <div style="font-size: 1.8rem; margin-bottom: 0.5rem;" id="victory-badge-icon">🌟</div>
+                    <strong style="color: var(--gold-primary); font-size: 1.1rem;" id="victory-badge-title">Master of the North Star</strong>
+                    <p style="margin-top: 0.5rem; font-size: 0.88rem; color: #cbd5e1;" id="victory-badge-desc">You calibrated the ancient mariner's compass using the pointer stars Dubhe and Merak.</p>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn-pointer-action" id="next-chapter-btn" style="padding: 0.8rem 1.8rem;">Next Voyage</button>
+                    <button class="sandbox-btn" id="replay-chapter-btn" style="padding: 0.8rem 1.8rem;">Explore Sky</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Time Attack Game Over Modal -->
+        <div class="modal-backdrop" id="relay-over-modal">
+            <div class="modal-box" style="text-align: center; align-items: center;">
+                <button class="modal-close-btn" id="close-relay-btn">&times;</button>
+                <div style="font-size: 3rem;">⚡</div>
+                <h2 class="modal-title">TIME'S UP!</h2>
+                <span class="modal-subtitle">Sky Relay Performance Report</span>
+
+                <div class="lore-content-pane" style="width: 100%; max-width: 450px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Final Score:</span>
+                        <strong style="color: var(--gold-primary); font-size: 1.2rem;" id="relay-final-score">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Constellations Identified:</span>
+                        <strong style="color: var(--cyan-glow);" id="relay-final-count">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Best Streak Combo:</span>
+                        <strong style="color: #4ade80;" id="relay-final-streak">0x</strong>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                    <button class="btn-pointer-action" id="relay-retry-btn" style="padding: 0.8rem 1.8rem;">Play Again</button>
+                    <button class="sandbox-btn" id="relay-view-leaderboard-btn" style="padding: 0.8rem 1.8rem;">Leaderboard</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="game.js"></script>
+</body>
+</html>

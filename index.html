@@ -5,246 +5,1084 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Arcade | Basic Studio Labs</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #f5f4ef; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #4a4a4a; }
-        .serif { font-family: 'Instrument Serif', serif; }
+        :root {
+            --bg: #0f1117;
+            --card-bg: rgba(26, 29, 39, 0.75);
+        }
         
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #0b0d13;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 25%, rgba(236, 72, 153, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+        }
+
+        .serif { font-family: 'Instrument Serif', Georgia, serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* 3D Tilt Card Base */
+        .game-card-wrapper {
+            perspective: 1000px;
+        }
+
         .game-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(8px);
+            transition: transform 0.2s cubic-bezier(0.2, 0, 0.2, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+            transform-style: preserve-3d;
+            position: relative;
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
         }
+
+        .game-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, 0.12), transparent 40%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .game-card:hover::before {
+            opacity: 1;
+        }
+
         .game-card:hover {
-            transform: scale(1.02);
-            background: rgba(255, 255, 255, 0.9);
-            box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 24px -4px var(--card-glow, rgba(99, 102, 241, 0.3));
         }
-        .mascot-float { animation: float 4s ease-in-out infinite; }
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        /* Interactive badge animations */
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.75; transform: scale(1.05); }
+        }
+        .badge-pulse {
+            animation: pulse-glow 2.5s ease-in-out infinite;
+        }
+
+        /* Floating elements */
+        @keyframes float-gentle {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(2deg); }
+        }
+        .float-anim {
+            animation: float-gentle 4s ease-in-out infinite;
+        }
+
+        /* Equalizer bar animation */
+        @keyframes eq-bounce-1 { 0%, 100% { height: 20%; } 50% { height: 85%; } }
+        @keyframes eq-bounce-2 { 0%, 100% { height: 90%; } 50% { height: 35%; } }
+        @keyframes eq-bounce-3 { 0%, 100% { height: 40%; } 50% { height: 100%; } }
+        @keyframes eq-bounce-4 { 0%, 100% { height: 75%; } 50% { height: 15%; } }
+
+        .game-card:hover .eq-bar-1 { animation: eq-bounce-1 0.7s ease infinite; }
+        .game-card:hover .eq-bar-2 { animation: eq-bounce-2 0.6s ease infinite 0.15s; }
+        .game-card:hover .eq-bar-3 { animation: eq-bounce-3 0.8s ease infinite 0.3s; }
+        .game-card:hover .eq-bar-4 { animation: eq-bounce-4 0.5s ease infinite 0.1s; }
+
+        /* Radar scan */
+        @keyframes radar-sweep {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .game-card:hover .radar-beam {
+            animation: radar-sweep 2s linear infinite;
+        }
+
+        /* Precision shape spin */
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .game-card:hover .spin-on-hover {
+            animation: spin-slow 8s linear infinite;
+        }
+
+        /* Rule ticker shake / glitch */
+        @keyframes rule-ticker {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-3px); }
+            40% { transform: translateX(3px); }
+            60% { transform: translateX(-2px); }
+            80% { transform: translateX(2px); }
+        }
+        .game-card:hover .rule-glitch {
+            animation: rule-ticker 0.6s ease infinite;
+        }
+
+        /* Card highlight animation when randomly selected */
+        @keyframes lucky-select {
+            0%, 100% { transform: scale(1.05); box-shadow: 0 0 50px rgba(234, 179, 8, 0.8), inset 0 0 30px rgba(234, 179, 8, 0.4); }
+            50% { transform: scale(1.08); box-shadow: 0 0 70px rgba(234, 179, 8, 1), inset 0 0 40px rgba(234, 179, 8, 0.6); }
+        }
+        .lucky-highlight {
+            animation: lucky-select 0.5s ease 4 alternate;
+            border-color: #eab308 !important;
+            z-index: 30;
+        }
+
+        /* Filter pill active */
+        .filter-btn.active {
+            background: #ffffff;
+            color: #0b0d13;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.25);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0d13; }
+        ::-webkit-scrollbar-thumb { background: #272a38; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f445a; }
     </style>
 </head>
-<body class="p-8 md:p-20">
+<body class="p-4 sm:p-8 md:p-14 min-h-screen">
 
-    <nav class="max-w-6xl mx-auto mb-16 flex justify-between items-center">
-        <a href="https://haris-lab.vercel.app/" class="text-stone-400 hover:text-stone-900 transition">&larr; Back to Studio</a>
-        <div class="flex items-center gap-4">
-            <a href="leaderboard.html" class="text-stone-500 hover:text-stone-900 transition">Leaderboard</a>
+    <!-- TOP NAVIGATION -->
+    <nav class="max-w-7xl mx-auto mb-10 md:mb-14 flex flex-wrap justify-between items-center gap-4 bg-slate-900/60 p-4 sm:px-6 rounded-2xl border border-slate-800/80 backdrop-blur-md">
+        <a href="https://haris-lab.vercel.app/" class="text-slate-400 hover:text-white transition flex items-center gap-2 text-sm font-medium">
+            <span class="text-indigo-400">&larr;</span> Back to Studio
+        </a>
+        
+        <div class="flex items-center gap-3 sm:gap-5">
+            <!-- Sound Toggle Button -->
+            <button id="sound-toggle-btn" class="px-3 py-1.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-full text-xs font-mono border border-slate-700 transition flex items-center gap-1.5" title="Toggle Arcade Sound Effects">
+                <span id="sound-icon">🔊</span>
+                <span class="hidden sm:inline">SFX: ON</span>
+            </button>
+
+            <a href="leaderboard.html" class="text-slate-400 hover:text-amber-300 transition flex items-center gap-1.5 text-sm font-medium">
+                <span>🏆</span> Leaderboard
+            </a>
+
             <div id="auth-controls">
-                <button id="open-login-btn" class="px-4 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-700 transition">Login / Sign Up</button>
+                <button id="open-login-btn" class="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white rounded-full text-xs sm:text-sm font-semibold transition shadow-md shadow-indigo-500/20">Login / Sign Up</button>
             </div>
-            <div id="user-info" class="hidden flex items-center gap-4">
-                <span id="welcome-text" class="text-stone-600 font-medium"></span>
-                <a href="profile.html" class="text-sm text-stone-500 hover:text-stone-900 transition underline">My Profile</a>
-                <button id="logout-btn" class="text-sm text-stone-500 hover:text-stone-900 transition underline">Logout</button>
+            <div id="user-info" class="hidden flex items-center gap-3">
+                <span id="welcome-text" class="text-slate-300 font-medium text-sm"></span>
+                <a href="profile.html" class="text-xs text-indigo-400 hover:text-indigo-300 transition underline">Profile</a>
+                <button id="logout-btn" class="text-xs text-rose-400 hover:text-rose-300 transition underline">Logout</button>
             </div>
         </div>
     </nav>
 
     <!-- Login/Signup Modal -->
-    <div id="auth-modal" class="hidden fixed inset-0 bg-stone-900/40 backdrop-blur-sm z-50 flex items-center justify-center">
-        <div class="bg-[#f5f4ef] p-8 rounded-3xl max-w-md w-full shadow-2xl relative border border-stone-200">
-            <button id="close-modal-btn" class="absolute top-6 right-6 text-stone-400 hover:text-stone-900">&times;</button>
-            <h2 id="modal-title" class="serif text-4xl text-stone-900 mb-6">Welcome Back</h2>
+    <div id="auth-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 p-8 rounded-3xl max-w-md w-full shadow-2xl relative border border-slate-700 text-white">
+            <button id="close-modal-btn" class="absolute top-6 right-6 text-slate-400 hover:text-white text-2xl leading-none">&times;</button>
+            <h2 id="modal-title" class="serif text-4xl text-white mb-2">Welcome Back</h2>
+            <p class="text-xs text-slate-400 mb-6">Track your high scores, badges, and compete on the global arcade leaderboard.</p>
             
             <form id="auth-form" class="flex flex-col gap-4">
                 <div id="username-field" class="hidden flex-col gap-1">
-                    <label class="text-sm text-stone-600">Username</label>
-                    <input type="text" id="username" class="px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:border-stone-900 bg-white" placeholder="Player1">
+                    <label class="text-xs font-mono uppercase tracking-wider text-slate-400">Username</label>
+                    <input type="text" id="username" class="px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:border-indigo-500 bg-slate-800 text-white placeholder-slate-500" placeholder="ArcadeChampion">
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-sm text-stone-600">Email</label>
-                    <input type="email" id="email" required class="px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:border-stone-900 bg-white" placeholder="you@example.com">
+                    <label class="text-xs font-mono uppercase tracking-wider text-slate-400">Email</label>
+                    <input type="email" id="email" required class="px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:border-indigo-500 bg-slate-800 text-white placeholder-slate-500" placeholder="you@example.com">
                 </div>
                 <div class="flex flex-col gap-1">
-                    <label class="text-sm text-stone-600">Password</label>
-                    <input type="password" id="password" required class="px-4 py-3 rounded-xl border border-stone-300 focus:outline-none focus:border-stone-900 bg-white" placeholder="••••••••">
+                    <label class="text-xs font-mono uppercase tracking-wider text-slate-400">Password</label>
+                    <input type="password" id="password" required class="px-4 py-3 rounded-xl border border-slate-700 focus:outline-none focus:border-indigo-500 bg-slate-800 text-white placeholder-slate-500" placeholder="••••••••">
                 </div>
                 
-                <p id="auth-error" class="text-red-500 text-sm hidden"></p>
+                <p id="auth-error" class="text-rose-400 text-xs hidden"></p>
                 
-                <button type="submit" id="submit-btn" class="mt-4 px-6 py-3 bg-stone-900 text-white rounded-xl font-medium hover:bg-stone-800 transition">Log In</button>
+                <button type="submit" id="submit-btn" class="mt-2 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white rounded-xl font-semibold transition shadow-lg shadow-indigo-500/25">Log In</button>
             </form>
             
-            <p class="mt-6 text-center text-sm text-stone-500">
+            <p class="mt-6 text-center text-xs text-slate-400">
                 <span id="toggle-text">Don't have an account?</span> 
-                <button id="toggle-auth-btn" class="text-stone-900 underline font-medium hover:text-stone-700">Sign Up</button>
+                <button id="toggle-auth-btn" class="text-indigo-400 underline font-medium hover:text-indigo-300 ml-1">Sign Up</button>
             </p>
         </div>
     </div>
 
-    <header class="max-w-6xl mx-auto mb-16">
-        <h1 class="serif text-6xl text-stone-900 mb-4">The Arcade</h1>
-        <p class="text-xl text-stone-500 italic">Experiments, puzzles, and play.</p>
+    <!-- HEADER / HERO -->
+    <header class="max-w-7xl mx-auto mb-10 text-center md:text-left flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-500/30 text-indigo-300 text-xs font-mono mb-3">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span>BASIC STUDIO ARCADE • 15 EXPERIMENTAL TITLES</span>
+            </div>
+            <h1 class="serif text-5xl sm:text-6xl md:text-7xl text-white tracking-tight">The Arcade</h1>
+            <p class="text-lg text-slate-400 italic mt-2">Puzzles, reflexes, cognition, and mathematical play.</p>
+        </div>
+
+        <!-- ARCADE ACTION BUTTONS -->
+        <div class="flex flex-wrap items-center justify-center md:justify-end gap-3">
+            <button id="spin-random-btn" class="px-5 py-2.5 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-slate-950 font-bold text-sm transition shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 flex items-center gap-2">
+                <span class="text-base">🎲</span>
+                <span>SURPRISE ME / RANDOM</span>
+            </button>
+        </div>
     </header>
 
-    <main class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        
-        <!-- Stickman Runner Card -->
-        <div class="game-card p-8 rounded-3xl border border-stone-200">
-            <div class="w-12 h-12 bg-stone-900 rounded-2xl mb-6 flex items-center justify-center">
-                <!-- Simple Stickman Logo SVG -->
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="5" r="2"/>
-                    <path d="M12 7v6"/>
-                    <path d="M12 10l3-3"/>
-                    <path d="M12 10l-3-3"/>
-                    <path d="M12 13l2 4"/>
-                    <path d="M12 13l-2 4"/>
-                </svg>
-            </div>
-            <h3 class="text-xl font-medium text-stone-800 mb-2">Stickman Runner</h3>
-            <p class="text-stone-500 mb-6 text-sm">A quick fun arcade game to help coordinate your hands.</p>
-            <a href="stickman_runner/split_screen_stickman_runner.html" class="inline-block px-6 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-700 transition">Play Now</a>
+    <!-- INTERACTIVE CONTROLS: CATEGORIES & SEARCH -->
+    <div class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <!-- Category Filter Pills -->
+        <div class="flex flex-wrap gap-2 justify-center md:justify-start" id="filter-container">
+            <button class="filter-btn active px-4 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 transition" data-category="all">
+                All Games <span class="opacity-60 ml-1">(15)</span>
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 transition" data-category="speed">
+                ⚡ Reflex & Speed
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 transition" data-category="brain">
+                🧠 Brain & Logic
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 transition" data-category="science">
+                🧪 Science & Cosmos
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 transition" data-category="skill">
+                📐 Precision & Skill
+            </button>
         </div>
 
-        <!-- Snake Game Card -->
-        <div class="game-card p-8 rounded-3xl border border-stone-200">
-            <div class="w-12 h-12 bg-stone-900 rounded-2xl mb-6 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none"
-                    stroke="#2DD4BF" stroke-width="1.5">
-                    <ellipse cx="12" cy="12" rx="8" ry="4"/>
-                    <ellipse cx="12" cy="12" rx="4" ry="8"/>
-                    <circle cx="18" cy="12" r="1.5" fill="#2DD4BF"/>
-                </svg>
+        <!-- Live Search Input -->
+        <div class="relative w-full md:w-72">
+            <input type="text" id="game-search" placeholder="Search arcade games..." class="w-full px-4 py-2 pl-10 rounded-full bg-slate-900/90 border border-slate-700 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500 transition">
+            <span class="absolute left-3.5 top-2.5 text-slate-500 text-sm">🔍</span>
+        </div>
+    </div>
+
+    <!-- MAIN ARCADE CARDS GRID -->
+    <main id="games-grid" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+
+        <!-- 1. The Celestial Cartographer Card -->
+        <div class="game-card-wrapper" data-category="science" data-title="celestial cartographer astronomy stars constellations">
+            <div class="game-card h-full p-7 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-slate-950 via-indigo-950 to-stone-950 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(245, 158, 11, 0.3);">
+                <!-- Animated Background Starlight -->
+                <div class="absolute -right-8 -top-8 w-44 h-44 bg-amber-400/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-8 -bottom-8 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <!-- Top Bar: Icon + Badge -->
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-amber-400/20 border border-amber-400/50 rounded-2xl flex items-center justify-center text-amber-300 shadow-inner relative group">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="spin-on-hover transition-transform duration-700">
+                                <circle cx="12" cy="12" r="10"/>
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                            <span class="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-amber-400 animate-ping"></span>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-400/20 text-amber-300 border border-amber-400/40 badge-pulse tracking-wide">
+                            ✨ NEW EXPERIENCE
+                        </span>
+                    </div>
+
+                    <!-- Title & Tags -->
+                    <h3 class="text-2xl font-bold text-white mb-2 serif tracking-wide">The Celestial Cartographer</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-indigo-900/60 text-indigo-200 border border-indigo-700/50">🌌 Stellar Astronomy</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-amber-950/60 text-amber-300 border border-amber-800/50">⭐ Magnitude 1-6</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-slate-800 text-slate-300">🧭 Navigation</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Chart constellations by apparent magnitude, navigate using ancient pointer stars (Polaris, Sirius, Aldebaran), and unlock multicultural star lore.
+                    </p>
+                </div>
+
+                <!-- Footer / Action -->
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-amber-300/80 font-mono">Difficulty: 🌕🌕🌑</span>
+                    <a href="celestial_cartographer/index.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all duration-300 shadow-lg shadow-amber-400/20 hover:shadow-amber-400/40 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Chart Stars</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
             </div>
-            <h3 class="text-xl font-medium text-stone-800 mb-2">Atomic Hunt</h3>
-            <p class="text-stone-500 mb-6 text-sm">Start with Hydrogen. Follow the periodic table one element at a time. Eat the wrong element, and it's game over.</p>
-            <a href="Snake/periodic_table_snake.html" class="inline-block px-6 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-700 transition">Play Now</a>
         </div>
 
-        <!-- Memory Flags Card -->
-        <div class="game-card p-8 rounded-3xl border border-stone-200">
-            <div class="w-12 h-12 bg-stone-900 rounded-2xl mb-6 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M6 20V4"/>
-                    <path d="M6 5h10l-2 4 2 4H6"/>
-                    <path d="M10 8h2"/>
-                    <path d="M10 11h2"/>
-                </svg>
+        <!-- 2. PERFECT SHAPE Card -->
+        <div class="game-card-wrapper" data-category="skill" data-title="perfect shape geometry drawing precision circle square star heart">
+            <div class="game-card h-full p-7 rounded-3xl border border-cyan-500/30 bg-gradient-to-br from-slate-950 via-cyan-950/60 to-slate-900 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(6, 182, 212, 0.35);">
+                <div class="absolute -right-8 -top-8 w-44 h-44 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 group">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="group-hover:rotate-45 transition-transform duration-500">
+                                <circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/>
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 badge-pulse">
+                            🎯 99.4% ACCURACY
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">PERFECT SHAPE</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-cyan-950/60 text-cyan-300 border border-cyan-800/50">📐 Geometric Precision</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-blue-950/60 text-blue-300 border border-blue-800/50">🎯 Hand-Eye Control</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Test your hand precision. Draw circles, squares, stars, and hearts to calculate your exact mathematical deviation and shape perfection score.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-cyan-400 font-mono">Lab: Geometry HUD</span>
+                    <a href="perfect_shape/index.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-cyan-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Draw Now</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
             </div>
-            <h3 class="text-xl font-medium text-stone-800 mb-2">memory flags</h3>
-            <p class="text-stone-500 mb-6 text-sm">Flip cards, remember the flags, and match each country pair as the levels grow.</p>
-            <a href="memory_flags/memory_flags.html" class="inline-block px-6 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-700 transition">Play Now</a>
         </div>
 
+        <!-- 3. ONLY ONE RULE Card -->
+        <div class="game-card-wrapper" data-category="speed" data-title="only one rule fast cognitive reaction reflex arcade">
+            <div class="game-card h-full p-7 rounded-3xl border border-rose-500/40 bg-gradient-to-br from-slate-950 via-rose-950/60 to-purple-950 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(244, 63, 94, 0.35);">
+                <div class="absolute -right-8 -bottom-8 w-44 h-44 bg-rose-500/15 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-rose-500 to-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-rose-500/25">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="float-anim">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                        </div>
+                        <div class="rule-glitch px-3 py-1 rounded-full text-[11px] font-mono font-black bg-rose-500/20 text-rose-300 border border-rose-500/50 flex items-center gap-1">
+                            <span>⚠️</span> ADAPT INSTANTLY
+                        </div>
+                    </div>
 
-        <!-- The Stroop Runner Card -->
-        <div class="game-card p-8 rounded-3xl border border-stone-200">
-            <div class="w-12 h-12 bg-stone-900 rounded-2xl mb-6 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#eab308" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10" stroke="#ef4444"/>
-                    <path d="M12 6v6l4 2" stroke="#3b82f6"/>
-                </svg>
+                    <h3 class="text-2xl font-bold text-white mb-2">ONLY ONE RULE</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-rose-950/70 text-rose-300 border border-rose-800/50">⚡ 0.2s Reflex</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-amber-950/70 text-amber-300 border border-amber-800/50">🔥 Shifting Rules</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        A fast-paced cognitive reaction game. Follow the ONE rule. The rule morphs every few seconds. Hesitate for half a beat and it's game over!
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-rose-400 font-mono">Pace: Insane ⚡</span>
+                    <a href="only_one_rule/index.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 font-black rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-rose-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Survive</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
             </div>
-            <h3 class="text-xl font-medium text-stone-800 mb-2">The Stroop Runner</h3>
-            <p class="text-stone-500 mb-6 text-sm">Test your cognitive flexibility. Press the button that matches the ink color, ignoring the word.</p>
-            <a href="stroop_runner/stroop_runner.html" class="inline-block px-6 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-700 transition">Play Now</a>
         </div>
 
-        <!-- Sequence Conductor Card -->
-        <div class="game-card p-8 rounded-3xl border border-stone-200">
-            <div class="w-12 h-12 bg-stone-900 rounded-2xl mb-6 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-                    <polyline points="16 6 12 2 8 6"/>
-                    <line x1="12" y1="2" x2="12" y2="15"/>
-                </svg>
+        <!-- 4. Plant Detective Card -->
+        <div class="game-card-wrapper" data-category="science" data-title="plant detective botany classification biology forensics leaves species">
+            <div class="game-card h-full p-7 rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-slate-950 via-emerald-950/60 to-teal-950 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(16, 185, 129, 0.35);">
+                <div class="absolute -right-8 -top-8 w-44 h-44 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-emerald-500 to-teal-400 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/20 float-anim">
+                            🌿
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            🔬 33+ SPECIES
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">PLANT DETECTIVE</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">🌱 Botanical Forensics</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-teal-950/70 text-teal-300 border border-teal-800/50">🔎 Trait Analysis</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Unknown specimens arrive at containment bay 7. Examine leaf margins, venation, and floral morphology to uncover impostors and solve botanical mysteries.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-emerald-400 font-mono">Dossier: Lab HUD</span>
+                    <a href="plant_detective/index.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-300 hover:to-teal-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Investigate</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
             </div>
-            <h3 class="text-xl font-medium text-stone-800 mb-2">Sequence Conductor</h3>
-            <p class="text-stone-500 mb-6 text-sm">Train memory capacity, visual recognition, and cognitive flexibility.</p>
-            <a href="Sequence_Conductor/sequence_conduct.html" class="inline-block px-6 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-700 transition">Play Now</a>
         </div>
 
-        <!-- Geo-Drop Card -->
-        <div class="game-card p-8 rounded-3xl border border-stone-200">
-            <div class="w-12 h-12 bg-stone-900 rounded-2xl mb-6 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
-                </svg>
+        <!-- 5. ChronoTree Card -->
+        <div class="game-card-wrapper" data-category="science" data-title="chronotree evolution universal big bang cosmic timeline">
+            <div class="game-card h-full p-7 rounded-3xl border border-purple-500/30 bg-gradient-to-br from-slate-950 via-purple-950/60 to-fuchsia-950 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(168, 85, 247, 0.35);">
+                <div class="absolute -right-8 -bottom-8 w-44 h-44 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-cyan-400 via-purple-500 to-fuchsia-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-purple-500/25">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin-on-hover transition-transform duration-700">
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M12 3v18"/>
+                                <path d="M3 12h18"/>
+                                <path d="M12 8c2.5 0 4.5 1.8 4.5 4s-2 4-4.5 4"/>
+                                <path d="M12 8c-2.5 0-4.5 1.8-4.5 4s2 4 4.5 4"/>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40">
+                            ⏳ DEEP TIME
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2 serif tracking-wide">ChronoTree</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-purple-950/70 text-purple-300 border border-purple-800/50">🌌 Big Bang to AI</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-fuchsia-950/70 text-fuchsia-300 border border-fuchsia-800/50">🧬 Cosmic Synthesis</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Synthesize the universe from quark-gluon plasma to the dawn of intelligence in Cosmic Alchemist, or test your temporal intuition in Chrono-Order.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-purple-300 font-mono">Epochs: 13.8B Yrs</span>
+                    <a href="chrono_tree/index.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-cyan-400 via-purple-400 to-fuchsia-500 hover:from-cyan-300 hover:to-fuchsia-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-purple-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Evolve</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
             </div>
-            <h3 class="text-xl font-medium text-stone-800 mb-2">Geo-Drop</h3>
-            <p class="text-stone-500 mb-6 text-sm">Spatial memory and geographical precision challenge on a real scale map.</p>
-            <a href="Geo_drop/Geo_drop.html" class="inline-block px-6 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-700 transition">Play Now</a>
         </div>
 
-        <!-- Timeline Splicer Card -->
-        <div class="game-card p-8 rounded-3xl border border-stone-200">
-            <div class="w-12 h-12 bg-amber-500 rounded-2xl mb-6 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
+        <!-- 6. ISOFILTER: Nuclear Sorting Facility Card -->
+        <div class="game-card-wrapper" data-category="science" data-title="isofilter nuclear isotope sorting logic gates subatomic physics">
+            <div class="game-card h-full p-7 rounded-3xl border border-teal-500/30 bg-gradient-to-br from-slate-950 via-teal-950/60 to-slate-900 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(20, 184, 166, 0.35);">
+                <div class="absolute -right-8 -top-8 w-44 h-44 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-teal-500/25">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin-on-hover">
+                                <circle cx="12" cy="12" r="2"/>
+                                <path d="M12 2a10 10 0 0 0-8.66 5"/>
+                                <path d="M12 2a10 10 0 0 1 8.66 5"/>
+                                <path d="M2.5 14a10 10 0 0 0 9.5 8"/>
+                                <path d="M21.5 14a10 10 0 0 1-9.5 8"/>
+                                <circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-teal-500/20 text-teal-300 border border-teal-500/40">
+                            ☢️ REACTOR LAB
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">ISOFILTER</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-teal-950/70 text-teal-300 border border-teal-800/50">🔀 Nuclear Logic Gates</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">⏱️ Particle Routing</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Operate a subatomic isotope sorting machine. Configure dynamic logic gates to route nuclear particles into stable containment under intense pressure.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-teal-300 font-mono">Containment: Stable</span>
+                    <a href="isofilter/index.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-teal-400 to-emerald-400 hover:from-teal-300 hover:to-emerald-300 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-teal-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Route Atoms</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
             </div>
-            <h3 class="text-xl font-medium text-stone-800 mb-2">Timeline Splicer</h3>
-            <p class="text-stone-500 mb-6 text-sm">Test your historical knowledge and sequence synchronization.</p>
-            <a href="time_splicer/time_splice.html" class="inline-block px-6 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-700 transition">Play Now</a>
         </div>
 
-        <!-- Deduction Quest Card -->
-        <div class="game-card p-8 rounded-3xl border border-stone-200">
-            <div class="w-12 h-12 bg-stone-900 rounded-2xl mb-6 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 5v14"></path>
-                    <path d="M5 12h14"></path>
-                    <circle cx="12" cy="12" r="9"></circle>
-                </svg>
+        <!-- 7. LINKED: Four Degrees Card -->
+        <div class="game-card-wrapper" data-category="brain" data-title="linked four degrees connection semantic graph words concepts">
+            <div class="game-card h-full p-7 rounded-3xl border border-indigo-500/30 bg-gradient-to-br from-slate-950 via-indigo-950/60 to-blue-950 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(99, 102, 241, 0.35);">
+                <div class="absolute -right-8 -top-8 w-44 h-44 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-cyan-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="float-anim">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40">
+                            🔗 4 DEGREES
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">LINKED</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-indigo-950/70 text-indigo-300 border border-indigo-800/50">🌐 Semantic Web</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-cyan-950/70 text-cyan-300 border border-cyan-800/50">💡 Word Bridges</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Everything is connected. Discover the four degrees of connection between distant human concepts using live semantic validation vectors.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-indigo-300 font-mono">Graph: Infinite</span>
+                    <a href="linked/index.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-cyan-400 to-indigo-500 hover:from-cyan-300 hover:to-indigo-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-indigo-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Connect</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
             </div>
-            <h3 class="text-xl font-medium text-stone-800 mb-2">Deduction Quest</h3>
-            <p class="text-stone-500 mb-6 text-sm">Learn science & logic through deductive elimination.</p>
-            <a href="deduction/deduct.html" class="inline-block px-6 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-700 transition">Play Now</a>
         </div>
 
-        <!-- LINKED: Four Degrees Card -->
-        <div class="game-card p-8 rounded-3xl border border-stone-200 bg-gradient-to-br from-white/90 to-cyan-50/50">
-            <div class="w-12 h-12 bg-gradient-to-tr from-cyan-500 to-indigo-600 rounded-2xl mb-6 flex items-center justify-center shadow-md shadow-cyan-500/20">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                </svg>
+        <!-- 8. Atomic Hunt (Snake) Card -->
+        <div class="game-card-wrapper" data-category="science" data-title="atomic hunt periodic table snake chemistry elements hydrogen">
+            <div class="game-card h-full p-7 rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-slate-950 via-emerald-950/50 to-slate-900 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(45, 212, 191, 0.35);">
+                <div class="absolute -right-8 -bottom-8 w-44 h-44 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-teal-500 to-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-teal-500/25">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#2DD4BF" stroke-width="2">
+                                <ellipse cx="12" cy="12" rx="8" ry="4" class="spin-on-hover"/>
+                                <ellipse cx="12" cy="12" rx="4" ry="8"/>
+                                <circle cx="18" cy="12" r="2" fill="#2DD4BF"/>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-teal-500/20 text-teal-300 border border-teal-500/40">
+                            ⚛️ 118 ELEMENTS
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">Atomic Hunt</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-teal-950/70 text-teal-300 border border-teal-800/50">🐍 Chemistry Snake</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">💀 1-Mistake Death</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Start with Hydrogen. Follow the periodic table element by element (H &rarr; He &rarr; Li). Swallow the wrong atomic number, and it's instant meltdown.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-teal-300 font-mono">Speed: Accelerating</span>
+                    <a href="Snake/periodic_table_snake.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-teal-400 to-emerald-400 hover:from-teal-300 hover:to-emerald-300 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-teal-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Eat Elements</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
             </div>
-            <div class="flex items-center gap-2 mb-2">
-                <h3 class="text-xl font-bold text-stone-900">LINKED</h3>
-                <span class="px-2 py-0.5 bg-cyan-100 text-cyan-800 text-[10px] font-extrabold uppercase rounded-full tracking-wider">New</span>
-            </div>
-            <p class="text-stone-500 mb-6 text-sm">Everything is connected. Discover the four degrees of connection between distant concepts with live semantic validation.</p>
-            <a href="linked/index.html" class="inline-block px-6 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-700 transition">Play Now</a>
         </div>
 
-        <!-- ISOFILTER: Nuclear Sorting Facility Card -->
-        <div class="game-card p-8 rounded-3xl border border-stone-200 bg-gradient-to-br from-white/90 to-emerald-50/50">
-            <div class="w-12 h-12 bg-gradient-to-tr from-emerald-600 to-teal-500 rounded-2xl mb-6 flex items-center justify-center shadow-md shadow-emerald-500/20">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="2"/>
-                    <path d="M12 2a10 10 0 0 0-8.66 5"/>
-                    <path d="M12 2a10 10 0 0 1 8.66 5"/>
-                    <path d="M2.5 14a10 10 0 0 0 9.5 8"/>
-                    <path d="M21.5 14a10 10 0 0 1-9.5 8"/>
-                    <circle cx="12" cy="12" r="9" stroke-dasharray="2 3"/>
-                </svg>
+        <!-- 9. Stickman Runner Card -->
+        <div class="game-card-wrapper" data-category="speed" data-title="stickman runner split screen dual track coordination parkour">
+            <div class="game-card h-full p-7 rounded-3xl border border-orange-500/30 bg-gradient-to-br from-slate-950 via-orange-950/50 to-slate-900 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(249, 115, 22, 0.35);">
+                <div class="absolute -right-8 -top-8 w-44 h-44 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-orange-500 to-red-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-orange-500/25">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="float-anim">
+                                <circle cx="12" cy="5" r="2"/>
+                                <path d="M12 7v6"/>
+                                <path d="M12 10l3-3"/>
+                                <path d="M12 10l-3-3"/>
+                                <path d="M12 13l2 4"/>
+                                <path d="M12 13l-2 4"/>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-orange-500/20 text-orange-300 border border-orange-500/40">
+                            🏃 SPLIT-SCREEN
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">Stickman Runner</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-orange-950/70 text-orange-300 border border-orange-800/50">👐 Dual-Hand Sync</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-red-950/70 text-red-300 border border-red-800/50">🕹️ Endless Velocity</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Control two stickmen running on simultaneous independent split-screen tracks. Jump obstacles with both hands and test your hemispheric brain coordination.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-orange-400 font-mono">Controls: [A] & [L]</span>
+                    <a href="stickman_runner/split_screen_stickman_runner.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-400 hover:to-red-400 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-orange-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Sprint</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
             </div>
-            <div class="flex items-center gap-2 mb-2">
-                <h3 class="text-xl font-bold text-stone-900">ISOFILTER</h3>
-                <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-extrabold uppercase rounded-full tracking-wider">New</span>
-            </div>
-            <p class="text-stone-500 mb-6 text-sm">Operate a subatomic isotope processing machine. Route nuclear particles using configurable logic gates under time pressure.</p>
-            <a href="isofilter/index.html" class="inline-block px-6 py-2 bg-stone-900 text-white rounded-full text-sm hover:bg-stone-700 transition">Play Now</a>
         </div>
 
-        <!-- Empty State/Placeholder -->
-        <div class="p-8 rounded-3xl border-2 border-dashed border-stone-200 flex flex-col justify-center items-center text-center">
-            <span class="text-stone-300 text-4xl mb-4">+</span>
-            <p class="text-stone-400 text-sm">More Games coming soon...</p>
+        <!-- 10. The Stroop Runner Card -->
+        <div class="game-card-wrapper" data-category="brain" data-title="stroop runner cognitive ink color words optical illusion brain">
+            <div class="game-card h-full p-7 rounded-3xl border border-yellow-500/30 bg-gradient-to-br from-slate-950 via-slate-900 to-stone-900 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(234, 179, 8, 0.35);">
+                <div class="absolute -right-8 -bottom-8 w-44 h-44 bg-yellow-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-amber-500 via-rose-500 to-blue-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/25">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" stroke="#ef4444"/>
+                                <path d="M12 6v6l4 2" stroke="#38bdf8"/>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                            🧠 STROOP EFFECT
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">The Stroop Runner</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-rose-950/70 text-rose-300 border border-rose-800/50">🔴 Ink vs Text</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-blue-950/70 text-blue-300 border border-blue-800/50">⚡ Cognitive Trap</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Test your cognitive flexibility. Press the button matching the physical ink color while your brain desperately tries to read the distracting text.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-amber-300 font-mono">Brain Load: 99%</span>
+                    <a href="stroop_runner/stroop_runner.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-amber-400 to-rose-500 hover:from-amber-300 hover:to-rose-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-amber-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Test Brain</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 11. Sequence Conductor Card -->
+        <div class="game-card-wrapper" data-category="brain" data-title="sequence conductor music memory rhythm audio visual notes beats">
+            <div class="game-card h-full p-7 rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-slate-950 via-emerald-950/50 to-indigo-950 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(16, 185, 129, 0.35);">
+                <div class="absolute -right-8 -top-8 w-44 h-44 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-emerald-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/25 relative overflow-hidden">
+                            <!-- Mini interactive equalizer bars -->
+                            <div class="flex items-end gap-1 h-6 w-8 justify-center">
+                                <div class="eq-bar-1 w-1.5 bg-white rounded-t h-3"></div>
+                                <div class="eq-bar-2 w-1.5 bg-white rounded-t h-5"></div>
+                                <div class="eq-bar-3 w-1.5 bg-white rounded-t h-2"></div>
+                                <div class="eq-bar-4 w-1.5 bg-white rounded-t h-4"></div>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            🎵 AUDIO MEMORY
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">Sequence Conductor</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">🎼 Pitch Sequences</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-indigo-950/70 text-indigo-300 border border-indigo-800/50">🧠 Pattern Recall</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Train your memory capacity and acoustic recognition. Conduct rapidly escalating sonic sequences and reproduce complex rhythmic harmonies.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-emerald-300 font-mono">BPM: Dynamic</span>
+                    <a href="Sequence_Conductor/sequence_conduct.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-emerald-400 to-indigo-500 hover:from-emerald-300 hover:to-indigo-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Conduct</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 12. Geo-Drop Card -->
+        <div class="game-card-wrapper" data-category="skill" data-title="geo drop geography map pin precision distance kilometers countries">
+            <div class="game-card h-full p-7 rounded-3xl border border-sky-500/30 bg-gradient-to-br from-slate-950 via-sky-950/50 to-slate-900 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(56, 189, 248, 0.35);">
+                <div class="absolute -right-8 -bottom-8 w-44 h-44 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-sky-500 to-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-sky-500/25 relative overflow-hidden">
+                            <div class="radar-beam absolute inset-0 bg-gradient-to-tr from-transparent via-sky-300/30 to-transparent"></div>
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="relative z-10">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                <circle cx="12" cy="10" r="3"/>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40">
+                            📍 SATELLITE RADAR
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">Geo-Drop</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-sky-950/70 text-sky-300 border border-sky-800/50">🌍 Global Scale Map</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-blue-950/70 text-blue-300 border border-blue-800/50">📏 Km Proximity</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Spatial memory and geographical pinpoint challenge on a full-scale world map. Drop your marker as close to the target coordinates as humanly possible.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-sky-300 font-mono">Radar: Active</span>
+                    <a href="Geo_drop/Geo_drop.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-300 hover:to-blue-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-sky-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Drop Pin</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 13. Timeline Splicer Card -->
+        <div class="game-card-wrapper" data-category="brain" data-title="timeline splicer history chronology events paradox dates">
+            <div class="game-card h-full p-7 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-slate-950 via-amber-950/40 to-slate-900 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(245, 158, 11, 0.35);">
+                <div class="absolute -right-8 -top-8 w-44 h-44 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-500/25">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="spin-on-hover">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                            ⌛ CHRONO RIFT
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">Timeline Splicer</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-amber-950/70 text-amber-300 border border-amber-800/50">📜 Historical Epochs</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-orange-950/70 text-orange-300 border border-orange-800/50">⏳ Chronological Order</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Test your historical intuition and sequence synchronization. Splice ancient civilizational milestones into their precise spot on the spacetime continuum.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-amber-300 font-mono">Portal: Calibrated</span>
+                    <a href="time_splicer/time_splice.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-300 hover:to-orange-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-amber-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Splice Time</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 14. Deduction Quest Card -->
+        <div class="game-card-wrapper" data-category="brain" data-title="deduction quest detective logic elimination clues puzzle noir">
+            <div class="game-card h-full p-7 rounded-3xl border border-emerald-500/30 bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(16, 185, 129, 0.35);">
+                <div class="absolute -right-8 -bottom-8 w-44 h-44 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-emerald-500 to-cyan-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/25">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="float-anim">
+                                <path d="M12 5v14"></path>
+                                <path d="M5 12h14"></path>
+                                <circle cx="12" cy="12" r="9"></circle>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                            🕵️ NOIR LOGIC
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">Deduction Quest</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">🧩 Pure Logic</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-teal-950/70 text-teal-300 border border-teal-800/50">🔍 Matrix Clues</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Master scientific problem-solving through deductive elimination. Analyze interlocking clues and solve mysterious propositional logic cases.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-emerald-300 font-mono">Case: Open</span>
+                    <a href="deduction/deduct.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-emerald-400 to-teal-400 hover:from-emerald-300 hover:to-teal-300 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Solve Case</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 15. Memory Flags Card -->
+        <div class="game-card-wrapper" data-category="brain" data-title="memory flags countries world cards pairs flip game">
+            <div class="game-card h-full p-7 rounded-3xl border border-rose-500/30 bg-gradient-to-br from-slate-950 via-rose-950/40 to-indigo-950 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(244, 63, 94, 0.35);">
+                <div class="absolute -right-8 -top-8 w-44 h-44 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-rose-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-rose-500/25">
+                            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="float-anim">
+                                <path d="M6 20V4"/>
+                                <path d="M6 5h10l-2 4 2 4H6"/>
+                                <path d="M10 8h2"/>
+                                <path d="M10 11h2"/>
+                            </svg>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/40">
+                            🚩 190+ NATIONS
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">Memory Flags</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-rose-950/70 text-rose-300 border border-rose-800/50">🃏 3D Card Flip</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-indigo-950/70 text-indigo-300 border border-indigo-800/50">🌍 World Flags</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Flip cards, memorize national flags from around the globe, and match country pairs as grid dimensions expand each round.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-rose-300 font-mono">Mode: Progressive</span>
+                    <a href="memory_flags/memory_flags.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-rose-400 to-indigo-500 hover:from-rose-300 hover:to-indigo-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-rose-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Flip & Match</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 16. Empty State/Coming Soon Card -->
+        <div class="game-card-wrapper" data-category="all" data-title="lab coming soon ideas">
+            <div class="p-8 rounded-3xl border-2 border-dashed border-slate-800 bg-slate-900/30 flex flex-col justify-center items-center text-center h-full min-h-[300px] hover:border-slate-700 transition">
+                <div class="w-14 h-14 rounded-2xl bg-slate-800/50 flex items-center justify-center text-2xl text-slate-400 mb-4 animate-bounce">
+                    ✨
+                </div>
+                <h4 class="text-lg font-bold text-slate-300 mb-1">More Experiments in Lab</h4>
+                <p class="text-slate-500 text-xs max-w-xs">New physics engines, cellular automata, and neural puzzle experiments currently incubating.</p>
+            </div>
         </div>
 
     </main>
 
+    <!-- Zero State Search Notification -->
+    <div id="no-games-found" class="hidden text-center py-16 max-w-md mx-auto">
+        <div class="text-5xl mb-4">👾</div>
+        <h3 class="text-xl font-bold text-white mb-2">No matching arcade games found</h3>
+        <p class="text-slate-400 text-sm mb-4">Try searching for different keywords like "reflex", "stars", "draw", or "physics".</p>
+        <button id="clear-search-btn" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-full transition">Clear Search</button>
+    </div>
+
+    <!-- AUDIO ENGINE & INTERACTIVE CLIENT SCRIPTS -->
+    <script>
+        // Web Audio Synth Arcade Sound Effects
+        class ArcadeAudio {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    if (AudioContext) {
+                        this.ctx = new AudioContext();
+                    }
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playHover() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.05);
+                    gain.gain.setValueAtTime(0.02, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.05);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.05);
+                } catch(e) {}
+            }
+
+            playSelect() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.04);
+                        gain.gain.setValueAtTime(0.04, this.ctx.currentTime + idx * 0.04);
+                        gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + idx * 0.04 + 0.1);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(this.ctx.currentTime + idx * 0.04);
+                        osc.stop(this.ctx.currentTime + idx * 0.04 + 0.1);
+                    });
+                } catch(e) {}
+            }
+        }
+
+        const audio = new ArcadeAudio();
+
+        // Sound toggle
+        const soundToggleBtn = document.getElementById('sound-toggle-btn');
+        const soundIcon = document.getElementById('sound-icon');
+        soundToggleBtn.addEventListener('click', () => {
+            audio.enabled = !audio.enabled;
+            soundToggleBtn.querySelector('span:last-child').textContent = audio.enabled ? 'SFX: ON' : 'SFX: OFF';
+            soundIcon.textContent = audio.enabled ? '🔊' : '🔇';
+            if (audio.enabled) audio.playSelect();
+        });
+
+        // 3D Parallax Tilt & Cursor Follower Spotlight for every card
+        document.querySelectorAll('.game-card').forEach(card => {
+            card.addEventListener('mousemove', (e) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const centerX = rect.width / 2;
+                const centerY = rect.height / 2;
+                
+                const rotateX = ((y - centerY) / centerY) * -7;
+                const rotateY = ((x - centerX) / centerX) * 7;
+                
+                card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+
+            card.addEventListener('mouseenter', () => {
+                audio.playHover();
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+            });
+        });
+
+        // Play buttons sound trigger
+        document.querySelectorAll('.play-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                audio.playSelect();
+            });
+        });
+
+        // Category Filter & Search Logic
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const gameCards = document.querySelectorAll('.game-card-wrapper');
+        const searchInput = document.getElementById('game-search');
+        const noGamesFound = document.getElementById('no-games-found');
+        const clearSearchBtn = document.getElementById('clear-search-btn');
+
+        let currentCategory = 'all';
+
+        function updateFilter() {
+            const query = searchInput.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            gameCards.forEach(wrapper => {
+                const cat = wrapper.getAttribute('data-category');
+                const title = wrapper.getAttribute('data-title') || '';
+                
+                const matchesCat = (currentCategory === 'all' || cat === currentCategory || cat === 'all');
+                const matchesQuery = query === '' || title.toLowerCase().includes(query);
+
+                if (matchesCat && matchesQuery) {
+                    wrapper.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    wrapper.classList.add('hidden');
+                }
+            });
+
+            if (visibleCount === 0) {
+                noGamesFound.classList.remove('hidden');
+            } else {
+                noGamesFound.classList.add('hidden');
+            }
+        }
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentCategory = btn.getAttribute('data-category');
+                audio.playHover();
+                updateFilter();
+            });
+        });
+
+        searchInput.addEventListener('input', () => {
+            updateFilter();
+        });
+
+        clearSearchBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            currentCategory = 'all';
+            filterBtns.forEach(b => b.classList.remove('active'));
+            filterBtns[0].classList.add('active');
+            updateFilter();
+        });
+
+        // "Surprise Me / Spin Random" Arcade button
+        const spinRandomBtn = document.getElementById('spin-random-btn');
+        spinRandomBtn.addEventListener('click', () => {
+            audio.playSelect();
+            
+            // Filter only playable game cards
+            const playableCards = Array.from(document.querySelectorAll('.game-card-wrapper')).filter(wrapper => {
+                return wrapper.querySelector('a.play-btn');
+            });
+
+            if (playableCards.length === 0) return;
+
+            // Reset filters to show all cards first
+            searchInput.value = '';
+            currentCategory = 'all';
+            filterBtns.forEach(b => b.classList.remove('active'));
+            filterBtns[0].classList.add('active');
+            updateFilter();
+
+            // Rapid slot cycle highlight effect
+            let step = 0;
+            const totalSteps = 12;
+            const interval = setInterval(() => {
+                playableCards.forEach(c => c.querySelector('.game-card')?.classList.remove('lucky-highlight'));
+                const randomIdx = Math.floor(Math.random() * playableCards.length);
+                const chosen = playableCards[randomIdx].querySelector('.game-card');
+                chosen?.classList.add('lucky-highlight');
+                audio.playHover();
+
+                step++;
+                if (step >= totalSteps) {
+                    clearInterval(interval);
+                    audio.playSelect();
+                    // Smooth scroll to winner card
+                    chosen?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 90);
+        });
+    </script>
+
+    <!-- FIREBASE AUTHENTICATION LOGIC -->
     <script type="module">
         import { signUpUser, loginUser, logoutUser } from './firebase_setup.js';
 
-        // Modal Logic
         const modal = document.getElementById('auth-modal');
         const openLoginBtn = document.getElementById('open-login-btn');
         const closeModalBtn = document.getElementById('close-modal-btn');

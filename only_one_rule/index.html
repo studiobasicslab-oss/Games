@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ONLY ONE RULE | Fast-Paced Cognitive Reaction Game</title>
+    <meta name="description" content="A high-octane cognitive reaction arcade game. Follow the ONE rule. The rule changes every few seconds. Forget the past. Adapt instantly.">
+    <meta name="theme-color" content="#090a12">
+    <link rel="icon" type="image/svg+xml" href="assets/icon.svg">
+    <link rel="apple-touch-icon" href="assets/icon.svg">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-wrapper">
+        <!-- Background decorative grid / particles -->
+        <div class="bg-grid-layer"></div>
+        <div class="ambient-glow" id="ambient-glow"></div>
+
+        <!-- Top Header Navigation & Status -->
+        <header id="game-header">
+            <div class="header-left">
+                <a href="../index.html" class="back-link" title="Return to Arcade">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                    <span>ARCADE</span>
+                </a>
+                <div class="game-logo">ONLY ONE RULE</div>
+            </div>
+
+            <div class="header-right">
+                <button id="sound-btn" class="icon-btn" aria-label="Toggle Sound" title="Toggle Sound (M)">
+                    <svg id="sound-on-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                    </svg>
+                    <svg id="sound-off-icon" class="hidden" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                        <line x1="23" y1="9" x2="17" y2="15"></line>
+                        <line x1="17" y1="9" x2="23" y2="15"></line>
+                    </svg>
+                </button>
+                <button id="pause-btn" class="icon-btn hidden" aria-label="Pause Game" title="Pause Game (ESC / P)">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="6" y="4" width="4" height="16"></rect>
+                        <rect x="14" y="4" width="4" height="16"></rect>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- In-Game HUD (Visible during gameplay) -->
+        <section id="hud" class="hud-container hidden">
+            <!-- Left stats: Score & Highscore -->
+            <div class="hud-box hud-score">
+                <span class="hud-label">SCORE</span>
+                <span id="score-val" class="hud-number">0</span>
+            </div>
+
+            <!-- Central rule display container: Visual focal point -->
+            <div class="rule-master-container" id="rule-container">
+                <div class="rule-transition-tag" id="rule-tag">NEW RULE</div>
+                <div class="rule-card" id="rule-card">
+                    <div class="rule-badge" id="rule-action-badge">COLLECT</div>
+                    <div class="rule-text" id="rule-text">COLLECT RED</div>
+                    <div class="rule-visual-hints" id="rule-visual-hints"></div>
+                </div>
+                <!-- Rule countdown timer line -->
+                <div class="rule-timer-track">
+                    <div class="rule-timer-bar" id="rule-timer-bar"></div>
+                </div>
+            </div>
+
+            <!-- Right stats: Combo & Lives -->
+            <div class="hud-box hud-stats-right">
+                <div class="combo-pill" id="combo-pill">
+                    <span class="combo-flame">🔥</span>
+                    <span class="combo-text" id="combo-val">× 1</span>
+                </div>
+                <div class="lives-container" id="lives-container" aria-label="3 lives remaining">
+                    <span class="heart full" data-index="0">♥</span>
+                    <span class="heart full" data-index="1">♥</span>
+                    <span class="heart full" data-index="2">♥</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lane Indicators (Subtle guides at bottom/top of game field) -->
+        <div id="lane-guides" class="lane-guides hidden">
+            <div class="lane-col" data-lane="left"><span class="lane-tag">LEFT</span></div>
+            <div class="lane-col" data-lane="middle"><span class="lane-tag">MIDDLE</span></div>
+            <div class="lane-col" data-lane="right"><span class="lane-tag">RIGHT</span></div>
+        </div>
+
+        <!-- Main Interactive Arcade Canvas -->
+        <main id="game-stage">
+            <canvas id="game-canvas"></canvas>
+            <div id="floating-text-container" class="floating-text-container"></div>
+        </main>
+
+        <!-- OVERLAYS: Start Screen, Game Over, Pause -->
+        
+        <!-- 1. Start Screen -->
+        <div id="start-screen" class="screen-overlay active">
+            <div class="screen-card">
+                <div class="hero-badge">THE ARCADE EXPERIMENT</div>
+                <h1 class="hero-title">ONLY ONE RULE</h1>
+                <p class="hero-subtitle">Everything changes.<br>Can you keep up?</p>
+
+                <div class="instruction-box">
+                    <div class="instruction-item">
+                        <span class="step-num">1</span>
+                        <span>Read the rule.</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="step-num">2</span>
+                        <span>React quickly.</span>
+                    </div>
+                    <div class="instruction-item">
+                        <span class="step-num">3</span>
+                        <span>Forget the old rule.</span>
+                    </div>
+                </div>
+
+                <div class="start-action-row">
+                    <button id="start-btn" class="btn-primary">
+                        <span class="btn-text">START</span>
+                        <span class="btn-subtext">Press SPACE or Tap</span>
+                    </button>
+                </div>
+
+                <div class="start-stats-footer">
+                    <div class="stat-mini">
+                        <span class="stat-mini-label">BEST SCORE</span>
+                        <span class="stat-mini-val" id="start-best-score">0</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="stat-mini-label">LONGEST STREAK</span>
+                        <span class="stat-mini-val" id="start-best-combo">×0</span>
+                    </div>
+                    <div class="stat-mini">
+                        <span class="stat-mini-label">RULES CLEARED</span>
+                        <span class="stat-mini-val" id="start-best-rules">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Game Over Screen -->
+        <div id="gameover-screen" class="screen-overlay hidden">
+            <div class="screen-card">
+                <div class="gameover-header">
+                    <span class="gameover-tag">RUN TERMINATED</span>
+                    <h2 class="gameover-title">GAME OVER</h2>
+                </div>
+
+                <div class="gameover-score-hero">
+                    <span class="score-hero-label">FINAL SCORE</span>
+                    <span class="score-hero-number" id="gameover-score">0</span>
+                    <div class="new-record-pill hidden" id="new-record-pill">✨ NEW HIGH SCORE!</div>
+                </div>
+
+                <div class="gameover-stats-grid">
+                    <div class="summary-cell">
+                        <span class="cell-label">Best Score</span>
+                        <span class="cell-val" id="gameover-best-score">0</span>
+                    </div>
+                    <div class="summary-cell">
+                        <span class="cell-label">Best Combo</span>
+                        <span class="cell-val" id="gameover-best-combo">×1</span>
+                    </div>
+                    <div class="summary-cell">
+                        <span class="cell-label">Rules Survived</span>
+                        <span class="cell-val" id="gameover-rules-survived">0</span>
+                    </div>
+                    <div class="summary-cell">
+                        <span class="cell-label">Accuracy</span>
+                        <span class="cell-val" id="gameover-accuracy">0%</span>
+                    </div>
+                </div>
+
+                <div class="gameover-action-row">
+                    <button id="restart-btn" class="btn-primary">
+                        <span class="btn-text">PLAY AGAIN</span>
+                        <span class="btn-subtext">Press SPACE or Tap</span>
+                    </button>
+                    <button id="share-btn" class="btn-secondary">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="18" cy="5" r="3"></circle>
+                            <circle cx="6" cy="12" r="3"></circle>
+                            <circle cx="18" cy="19" r="3"></circle>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                        </svg>
+                        <span>Share Score</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Pause Screen -->
+        <div id="pause-screen" class="screen-overlay hidden">
+            <div class="screen-card pause-card">
+                <h2 class="pause-title">GAME PAUSED</h2>
+                <p class="pause-desc">Take a breath. The rule will still be active when you return.</p>
+                <div class="pause-buttons">
+                    <button id="resume-btn" class="btn-primary">RESUME</button>
+                    <button id="quit-btn" class="btn-secondary">QUIT TO MENU</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Entry -->
+    <script src="script.js"></script>
+</body>
+</html>

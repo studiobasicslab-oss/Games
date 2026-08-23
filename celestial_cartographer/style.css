@@ -1,0 +1,852 @@
+/* ==========================================================================
+   THE CELESTIAL CARTOGRAPHER - LUXURY ASTRONOMICAL STYLESHEET
+   ========================================================================== */
+
+:root {
+    --bg-space: #030614;
+    --bg-panel: rgba(8, 14, 30, 0.78);
+    --bg-panel-hover: rgba(14, 24, 52, 0.88);
+    --gold-primary: #ffd700;
+    --gold-brass: #d4af37;
+    --gold-dim: #997b26;
+    --cyan-glow: #38bdf8;
+    --sapphire: #60a5fa;
+    --ruby-star: #f43f5e;
+    --text-main: #f8fafc;
+    --text-muted: #94a3b8;
+    --text-gold: #fde047;
+    --border-brass: rgba(212, 175, 55, 0.35);
+    --border-brass-bright: rgba(255, 215, 0, 0.7);
+    --font-serif: 'Cinzel', serif;
+    --font-display: 'Cinzel Decorative', serif;
+    --font-sans: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --shadow-gold: 0 0 25px rgba(255, 215, 0, 0.25);
+    --shadow-cyan: 0 0 25px rgba(56, 189, 248, 0.25);
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--bg-space);
+    font-family: var(--font-sans);
+    color: var(--text-main);
+    touch-action: none;
+}
+
+/* App Container */
+.app-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Canvas Viewport */
+#sky-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    cursor: grab;
+}
+
+#sky-canvas:active {
+    cursor: grabbing;
+}
+
+/* ==========================================================================
+   HEADER & TOP HUD
+   ========================================================================== */
+
+.game-header {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.75rem;
+    background: linear-gradient(180deg, rgba(3, 6, 20, 0.85) 0%, rgba(3, 6, 20, 0.4) 75%, transparent 100%);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+.header-left, .header-center, .header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Back Link */
+.nav-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.9rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-brass);
+    border-radius: 9999px;
+    color: var(--gold-brass);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.25s ease;
+}
+
+.nav-back-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+    color: var(--gold-primary);
+    box-shadow: var(--shadow-gold);
+    transform: translateY(-1px);
+}
+
+/* Brand Title */
+.brand-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.pulse-star {
+    font-size: 1.2rem;
+    color: var(--gold-primary);
+    filter: drop-shadow(0 0 8px var(--gold-primary));
+    animation: starPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes starPulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px var(--gold-primary)); }
+    50% { transform: scale(1.2); filter: drop-shadow(0 0 14px var(--gold-primary)); }
+}
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-title {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    background: linear-gradient(135deg, #fff2cc 0%, #ffd700 60%, #b38728 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.brand-subtitle {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--sapphire);
+}
+
+/* Mode Pills */
+.mode-pills {
+    display: flex;
+    background: rgba(8, 14, 30, 0.85);
+    padding: 0.25rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-brass);
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+}
+
+.mode-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.95rem;
+    background: transparent;
+    border: none;
+    border-radius: 9999px;
+    color: var(--text-muted);
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.mode-pill svg {
+    stroke: currentColor;
+}
+
+.mode-pill:hover {
+    color: var(--text-main);
+}
+
+.mode-pill.active {
+    background: linear-gradient(135deg, #d4af37 0%, #997b26 100%);
+    color: #030614;
+    font-weight: 700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.mode-pill.active svg {
+    stroke: #030614;
+}
+
+/* Stat Pills & Icon Buttons */
+.stat-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.85rem;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-brass);
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-gold);
+}
+
+.icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-brass);
+    border-radius: 50%;
+    color: var(--gold-brass);
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(212, 175, 55, 0.25);
+    color: var(--gold-primary);
+    box-shadow: var(--shadow-gold);
+    transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   WAYFINDING & CHAPTER SUB-HEADER (CONTROL RIBBON)
+   ========================================================================== */
+
+.wayfinding-banner {
+    position: relative;
+    z-index: 15;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 2rem;
+    background: rgba(6, 11, 25, 0.82);
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    backdrop-filter: blur(8px);
+}
+
+.chapter-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.chapter-number {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    color: var(--cyan-glow);
+    text-transform: uppercase;
+}
+
+.chapter-heading {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--gold-primary);
+}
+
+.target-objective-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid var(--border-brass-bright);
+    padding: 0.45rem 1.25rem;
+    border-radius: 8px;
+}
+
+.objective-icon {
+    font-size: 1.2rem;
+}
+
+.objective-text {
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    max-width: 480px;
+}
+
+.chapter-stepper {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.step-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--gold-brass);
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.step-dot.completed {
+    background: var(--gold-primary);
+    box-shadow: 0 0 8px var(--gold-primary);
+}
+
+.step-dot.active {
+    background: var(--cyan-glow);
+    border-color: #ffffff;
+    box-shadow: 0 0 10px var(--cyan-glow);
+    transform: scale(1.25);
+}
+
+/* ==========================================================================
+   FLOATING OVERLAYS & CONTROLS
+   ========================================================================== */
+
+/* Astrolabe Orientation Dial (Bottom Left) */
+.astrolabe-widget {
+    position: absolute;
+    bottom: 2rem;
+    left: 2rem;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-brass);
+    border-radius: 16px;
+    padding: 1rem;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+.astrolabe-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-serif);
+    font-size: 0.8rem;
+    color: var(--gold-brass);
+    letter-spacing: 0.05em;
+}
+
+.dial-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.dial-slider {
+    -webkit-appearance: none;
+    width: 140px;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    outline: none;
+}
+
+.dial-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--gold-primary);
+    cursor: pointer;
+    box-shadow: 0 0 8px var(--gold-primary);
+}
+
+.dial-value {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-gold);
+    width: 45px;
+    text-align: right;
+}
+
+/* Pointer Star Wayfinder Guidance Pill (Bottom Center) */
+.pointer-guidance-pill {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(15, 23, 42, 0.88);
+    border: 1px solid var(--border-brass);
+    border-radius: 9999px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), var(--shadow-cyan);
+    backdrop-filter: blur(12px);
+    max-width: 680px;
+    animation: floatGently 4s infinite ease-in-out;
+}
+
+@keyframes floatGently {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, -6px); }
+}
+
+.pointer-pill-icon {
+    font-size: 1.3rem;
+}
+
+.pointer-pill-text {
+    font-size: 0.88rem;
+    line-height: 1.35;
+    color: #f1f5f9;
+}
+
+.pointer-pill-text strong {
+    color: var(--gold-primary);
+}
+
+.btn-pointer-action {
+    padding: 0.4rem 0.9rem;
+    background: linear-gradient(135deg, #38bdf8 0%, #2563eb 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.btn-pointer-action:hover {
+    box-shadow: var(--shadow-cyan);
+    transform: scale(1.05);
+}
+
+/* Planetarium / Tool Floating Palette (Bottom Right) */
+.tools-palette {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 20;
+    display: flex;
+    gap: 0.5rem;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-brass);
+    border-radius: 16px;
+    padding: 0.5rem;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.tool-toggle-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tool-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+}
+
+.tool-toggle-btn.active {
+    background: rgba(212, 175, 55, 0.18);
+    border-color: var(--border-brass-bright);
+    color: var(--gold-primary);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+}
+
+/* ==========================================================================
+   TIME ATTACK & DAILY STARGAZE HUD ELEMENTS
+   ========================================================================== */
+
+.timer-dial-hud {
+    position: absolute;
+    top: 7.5rem;
+    right: 2rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid var(--border-brass);
+    border-radius: 16px;
+    padding: 0.75rem 1.25rem;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+.timer-clock {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gold-primary);
+    letter-spacing: 0.05em;
+}
+
+.timer-clock.warning {
+    color: var(--ruby-star);
+    animation: timerFlash 0.8s infinite;
+}
+
+@keyframes timerFlash {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.08); }
+}
+
+.score-counter-hud {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.score-val {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    color: #ffffff;
+}
+
+.score-combo {
+    font-size: 0.75rem;
+    color: var(--cyan-glow);
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   MODAL WINDOWS & CODEX OVERLAYS
+   ========================================================================== */
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(3, 6, 20, 0.85);
+    backdrop-filter: blur(16px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-box {
+    position: relative;
+    width: 100%;
+    max-width: 780px;
+    max-height: 88vh;
+    background: linear-gradient(145deg, #090e24 0%, #040714 100%);
+    border: 1px solid var(--border-brass-bright);
+    border-radius: 24px;
+    padding: 2.25rem;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(212, 175, 55, 0.2);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border-brass);
+    color: var(--gold-brass);
+    font-size: 1.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+    background: rgba(212, 175, 55, 0.25);
+    color: var(--gold-primary);
+}
+
+.modal-title {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    color: var(--gold-primary);
+    letter-spacing: 0.04em;
+}
+
+.modal-subtitle {
+    font-size: 0.95rem;
+    color: var(--sapphire);
+    margin-top: -1rem;
+}
+
+/* Cultural Lore Tabs */
+.lore-tabs {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+    padding-bottom: 0.75rem;
+    overflow-x: auto;
+}
+
+.lore-tab-btn {
+    padding: 0.45rem 1rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-family: var(--font-serif);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.lore-tab-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.lore-tab-btn.active {
+    background: rgba(212, 175, 55, 0.15);
+    border-color: var(--gold-brass);
+    color: var(--gold-primary);
+}
+
+.lore-content-pane {
+    background: rgba(3, 6, 20, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 1.5rem;
+    line-height: 1.65;
+    color: #cbd5e1;
+    font-size: 0.95rem;
+}
+
+.star-catalog-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    font-size: 0.85rem;
+}
+
+.star-catalog-table th {
+    text-align: left;
+    padding: 0.6rem;
+    color: var(--gold-brass);
+    border-bottom: 1px solid var(--border-brass);
+    font-family: var(--font-serif);
+}
+
+.star-catalog-table td {
+    padding: 0.6rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+}
+
+.star-catalog-table tr:hover {
+    background: rgba(212, 175, 55, 0.08);
+}
+
+/* Chapter Selection Grid */
+.chapters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+    margin-top: 0.5rem;
+}
+
+.chapter-card {
+    background: rgba(8, 14, 30, 0.85);
+    border: 1px solid var(--border-brass);
+    border-radius: 16px;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.chapter-card:hover {
+    background: rgba(15, 25, 55, 0.95);
+    border-color: var(--gold-primary);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), var(--shadow-gold);
+    transform: translateY(-3px);
+}
+
+.chapter-card.completed {
+    border-color: #22c55e;
+}
+
+.card-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chapter-badge-era {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--cyan-glow);
+}
+
+.chapter-card-title {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--gold-primary);
+}
+
+.chapter-card-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* Constellation Complete Celebration Banner */
+.celebration-toast {
+    position: absolute;
+    top: 5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(-20px);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(135deg, rgba(8, 14, 30, 0.95) 0%, rgba(20, 35, 75, 0.95) 100%);
+    border: 2px solid var(--gold-primary);
+    border-radius: 9999px;
+    padding: 0.85rem 2rem;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.5);
+    backdrop-filter: blur(12px);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.celebration-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast-icon {
+    font-size: 1.8rem;
+    animation: spinSlow 8s infinite linear;
+}
+
+@keyframes spinSlow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.toast-text-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.toast-main {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: var(--gold-primary);
+}
+
+.toast-sub {
+    font-size: 0.8rem;
+    color: #e2e8f0;
+}
+
+/* Custom Constellation Sandbox Bar */
+.sandbox-toolbar {
+    position: absolute;
+    top: 7.5rem;
+    left: 2rem;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-brass);
+    border-radius: 12px;
+    padding: 0.5rem 1rem;
+    backdrop-filter: blur(8px);
+}
+
+.sandbox-btn {
+    padding: 0.4rem 0.85rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-brass);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sandbox-btn:hover {
+    background: rgba(212, 175, 55, 0.25);
+    color: var(--gold-primary);
+}
+
+/* Responsive Rules */
+@media (max-width: 900px) {
+    .game-header {
+        padding: 0.75rem 1rem;
+        flex-wrap: wrap;
+    }
+    .brand-subtitle { display: none; }
+    .wayfinding-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 0.6rem 1rem;
+    }
+    .pointer-guidance-pill {
+        width: 90%;
+        bottom: 5.5rem;
+        font-size: 0.8rem;
+    }
+    .astrolabe-widget {
+        bottom: 1rem;
+        left: 1rem;
+        padding: 0.6rem;
+    }
+    .tools-palette {
+        bottom: 1rem;
+        right: 1rem;
+    }
+}

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChronoTree | Universal Evolution Graph & Games</title>
+  <meta name="description" content="An interactive infinite branching graph, alchemy crafting synthesizer, and chronology puzzle game from the Big Bang to 2026.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Background Cosmic Starfield & Ambient Glows -->
+  <canvas id="starfield-canvas"></canvas>
+  <div class="nebula-glow nebula-1"></div>
+  <div class="nebula-glow nebula-2"></div>
+
+  <!-- Top Glassmorphic Navigation HUD -->
+  <header class="top-hud">
+    <div class="brand-section">
+      <div class="brand-icon">🌌</div>
+      <div>
+        <h1 class="brand-title">ChronoTree</h1>
+        <div class="brand-subtitle">Universal Evolution Graph (13.8 Ga → Today)</div>
+      </div>
+    </div>
+
+    <!-- Master Mode Navigation Switcher -->
+    <nav class="mode-nav" id="mode-nav">
+      <button class="mode-tab-btn active" data-mode="explorer">
+        <span>🌐</span>
+        <span>Universal Explorer</span>
+      </button>
+      <button class="mode-tab-btn" data-mode="alchemist">
+        <span>🧪</span>
+        <span>Cosmic Alchemist</span>
+        <span class="mode-badge" id="alchemist-count-badge">4/60</span>
+      </button>
+      <button class="mode-tab-btn" data-mode="chrono-order">
+        <span>⏳</span>
+        <span>Chrono-Order Game</span>
+      </button>
+    </nav>
+
+    <!-- Interactive Actions -->
+    <div class="hud-actions">
+      <!-- Search Box (in Explorer Mode) -->
+      <div class="search-wrapper" id="explorer-search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" class="search-input" placeholder="Search events..." autocomplete="off">
+      </div>
+
+      <button id="view-toggle-btn" class="hud-btn" title="Toggle between Scroll Tree and 2D Free-Pan Canvas">
+        <span>🗺️</span>
+        <span id="view-mode-label">Canvas View</span>
+      </button>
+
+      <button id="cruise-btn" class="hud-btn" title="Autopilot Cosmic Tour down Deep Time">
+        <span id="cruise-icon">▶️</span>
+        <span>Cruise</span>
+      </button>
+
+      <button id="audio-toggle-btn" class="hud-btn" title="Toggle Cosmic Soundscapes">
+        <span id="audio-icon">🔊</span>
+      </button>
+
+      <a href="../index.html" class="hud-btn" style="text-decoration: none;" title="Back to Arcade">
+        <span>🕹️</span>
+        <span>Arcade</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Autopilot Active Banner -->
+  <div id="autopilot-banner" class="autopilot-indicator">
+    <span>🚀</span>
+    <span>Cosmic Cruise Active — Cruising through Deep Time</span>
+    <button id="stop-cruise-btn" style="background:none; border:none; color:#fff; cursor:pointer; font-weight:bold; margin-left:6px;">✕</button>
+  </div>
+
+  <!-- ========================================================
+       MAIN APP CONTAINER (3 MODES)
+       ======================================================== -->
+  <main class="main-viewport">
+    
+    <!-- ========================================================
+         MODE 1: UNIVERSAL EXPLORER
+         ======================================================== -->
+    <section id="explorer-view" class="app-view active">
+      
+      <!-- Domain Filter Chips -->
+      <div class="explorer-filter-bar" id="explorer-filter-bar">
+        <div class="filter-chips" id="filter-chips">
+          <button class="chip-btn active" data-category="all"><span>✨ All Epochs</span></button>
+          <button class="chip-btn" data-category="cosmos"><span class="chip-dot" style="background: var(--cat-cosmos)"></span><span>Cosmos</span></button>
+          <button class="chip-btn" data-category="earth"><span class="chip-dot" style="background: var(--cat-earth)"></span><span>Earth</span></button>
+          <button class="chip-btn" data-category="life"><span class="chip-dot" style="background: var(--cat-life)"></span><span>Life</span></button>
+          <button class="chip-btn" data-category="human"><span class="chip-dot" style="background: var(--cat-human)"></span><span>Humanity</span></button>
+          <button class="chip-btn" data-category="tech"><span class="chip-dot" style="background: var(--cat-tech)"></span><span>Technology</span></button>
+          <button class="chip-btn" data-category="science"><span class="chip-dot" style="background: var(--cat-science)"></span><span>Science</span></button>
+        </div>
+      </div>
+
+      <!-- Infinite Scroll Chrono-Tree Stream -->
+      <div id="tree-scroll-container" class="tree-scroll-container">
+        <div class="tree-stream">
+          <div class="tree-central-trunk"></div>
+          <svg id="tree-filaments-svg"></svg>
+          <div class="tree-nodes-list" id="tree-nodes-list"></div>
+        </div>
+      </div>
+
+      <!-- Infinite 2D Free-Pan Canvas -->
+      <div id="canvas-mode-container" class="canvas-mode-container">
+        <div id="canvas-world" class="canvas-world">
+          <svg id="canvas-filaments-svg"></svg>
+          <div id="canvas-nodes-container"></div>
+        </div>
+        <div class="canvas-controls-overlay">
+          <div class="zoom-btn-group">
+            <button id="zoom-in-btn" class="zoom-btn" title="Zoom In">+</button>
+            <button id="zoom-reset-btn" class="zoom-btn" title="Reset View">⊙</button>
+            <button id="zoom-out-btn" class="zoom-btn" title="Zoom Out">−</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Quick Epoch Jump Scrubber Dock -->
+      <nav class="epoch-dock" id="epoch-dock">
+        <div class="epoch-dock-label">Epochs:</div>
+      </nav>
+    </section>
+
+    <!-- ========================================================
+         MODE 2: COSMIC ALCHEMIST (CRAFT & GROW THE UNIVERSE)
+         ======================================================== -->
+    <section id="alchemist-view" class="app-view">
+      <div class="alchemist-container">
+        
+        <!-- Left: Synthesis Fusion Reactor Workbench -->
+        <div class="alchemy-workbench-panel">
+          
+          <div class="workbench-header">
+            <div>
+              <h2 class="workbench-title">Cosmic Alchemist</h2>
+              <div class="workbench-subtitle">Synthesize elements & craft the universal evolutionary tree</div>
+            </div>
+            <div class="alchemist-stats-card">
+              <div class="stats-rank" id="alchemy-rank-title">✨ Stardust Initiate</div>
+              <div class="stats-progress-label">
+                <span id="alchemy-unlocked-text">4 of 60 Discovered</span>
+                <span id="alchemy-percent-text">6.6%</span>
+              </div>
+              <div class="stats-track">
+                <div class="stats-fill" id="alchemy-stats-fill" style="width: 6.6%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fusion Crucible / Reactor Stage -->
+          <div class="crucible-stage">
+            <div class="reactor-glow-core"></div>
+            
+            <div class="reactor-slots-row">
+              <!-- Slot 1 -->
+              <div class="fusion-slot" id="fusion-slot-1" data-slot="1">
+                <div class="slot-empty-hint">Drop Element 1</div>
+              </div>
+
+              <div class="fusion-plus-icon">+</div>
+
+              <!-- Slot 2 -->
+              <div class="fusion-slot" id="fusion-slot-2" data-slot="2">
+                <div class="slot-empty-hint">Drop Element 2</div>
+              </div>
+            </div>
+
+            <!-- Fusion Trigger Button -->
+            <div class="fusion-actions-row">
+              <button id="fuse-btn" class="fuse-btn">
+                <span>💥</span>
+                <span>Synthesize Discovery</span>
+              </button>
+              <button id="clear-slots-btn" class="clear-slots-btn" title="Clear Crucible">🧹 Clear</button>
+              <button id="oracle-hint-btn" class="oracle-hint-btn" title="Ask Cosmic Oracle for a Hint">💡 Oracle Hint</button>
+            </div>
+
+            <!-- Reaction Feedback Alert Banner -->
+            <div id="alchemy-reaction-banner" class="alchemy-reaction-banner">
+              <div class="reaction-icon" id="reaction-icon">✨</div>
+              <div>
+                <div class="reaction-title" id="reaction-title">Select two elements to fuse</div>
+                <div class="reaction-desc" id="reaction-desc">Combine elements in logical causal chains to expand reality.</div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Discovered Elements Inventory Tray -->
+          <div class="inventory-tray-header">
+            <div class="inventory-title-row">
+              <h3>📦 Discovered Cosmic Elements (<span id="inventory-count">4</span>)</h3>
+              <div class="inventory-search-wrap">
+                <input type="text" id="alchemy-search-input" placeholder="Filter elements..." class="alchemy-search-input">
+              </div>
+            </div>
+            <div class="alchemy-cat-filters" id="alchemy-cat-filters">
+              <button class="alch-cat-btn active" data-cat="all">All</button>
+              <button class="alch-cat-btn" data-cat="cosmos">Cosmos</button>
+              <button class="alch-cat-btn" data-cat="earth">Earth</button>
+              <button class="alch-cat-btn" data-cat="life">Life</button>
+              <button class="alch-cat-btn" data-cat="human">Human</button>
+              <button class="alch-cat-btn" data-cat="tech">Tech</button>
+              <button class="alch-cat-btn" data-cat="science">Science</button>
+            </div>
+          </div>
+
+          <div class="elements-inventory-grid" id="elements-inventory-grid">
+            <!-- Discovered elements injected via JS -->
+          </div>
+
+        </div>
+
+        <!-- Right: Live Tree Growth Garden -->
+        <div class="alchemy-tree-preview-panel">
+          <div class="tree-preview-header">
+            <h3 class="tree-preview-title">🌳 Sprouting Universal Tree</h3>
+            <span class="tree-preview-badge" id="tree-growth-badge">Epoch 1: Cosmic Dawn</span>
+          </div>
+          <div class="alchemy-tree-scroll" id="alchemy-tree-scroll">
+            <div class="alchemy-tree-list" id="alchemy-tree-list"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================
+         MODE 3: CHRONO-ORDER (DEEP TIME TRIVIA & PARADOXES)
+         ======================================================== -->
+    <section id="chrono-order-view" class="app-view">
+      <div class="chrono-game-container">
+        
+        <!-- Game HUD -->
+        <div class="chrono-game-hud">
+          <div class="chrono-hud-box">
+            <span class="hud-label">Score</span>
+            <span class="hud-value score" id="chrono-score">0</span>
+          </div>
+          <div class="chrono-hud-box">
+            <span class="hud-label">Streak</span>
+            <span class="hud-value streak" id="chrono-streak">🔥 0x</span>
+          </div>
+          <div class="chrono-hud-box">
+            <span class="hud-label">Question</span>
+            <span class="hud-value" id="chrono-round-counter">1 / 10</span>
+          </div>
+          <div class="chrono-hud-box">
+            <span class="hud-label">Lives</span>
+            <span class="hud-value lives" id="chrono-lives">❤️❤️❤️</span>
+          </div>
+        </div>
+
+        <!-- Question Card Stage -->
+        <div class="chrono-stage">
+          <div class="question-badge" id="chrono-badge">MIND BENDER</div>
+          <h2 class="chrono-question-title" id="chrono-question-text">Loading deep time conundrum...</h2>
+
+          <!-- Duel Cards Container -->
+          <div class="duel-cards-grid">
+            
+            <!-- Option A Card -->
+            <button class="duel-card" id="duel-card-a" data-choice="A">
+              <div class="duel-icon" id="duel-icon-a">🦈</div>
+              <div class="duel-name" id="duel-name-a">Sharks</div>
+              <div class="duel-epoch" id="duel-epoch-a">???</div>
+              <div class="duel-select-pill">Choose Option A</div>
+            </button>
+
+            <div class="duel-vs-circle">VS</div>
+
+            <!-- Option B Card -->
+            <button class="duel-card" id="duel-card-b" data-choice="B">
+              <div class="duel-icon" id="duel-icon-b">🌲</div>
+              <div class="duel-name" id="duel-name-b">Trees & Forests</div>
+              <div class="duel-epoch" id="duel-epoch-b">???</div>
+              <div class="duel-select-pill">Choose Option B</div>
+            </button>
+
+          </div>
+
+          <!-- Explanation Reveal Card -->
+          <div class="chrono-explanation-card" id="chrono-explanation-card">
+            <div class="explanation-status" id="explanation-status">
+              <span id="result-emoji">🎉</span>
+              <span id="result-status-text">Brilliant! That's correct!</span>
+            </div>
+            <p class="explanation-text" id="explanation-body-text"></p>
+            <button id="chrono-next-btn" class="chrono-next-btn">
+              <span>Next Paradox</span>
+              <span>➔</span>
+            </button>
+          </div>
+
+          <!-- Game Over / Victory Modal -->
+          <div class="chrono-finish-card" id="chrono-finish-card">
+            <div class="finish-icon" id="finish-icon">🏆</div>
+            <h2 class="finish-title" id="finish-title">Chrono-Master!</h2>
+            <p class="finish-desc" id="finish-desc">You conquered the deep time chronology challenge.</p>
+            <div class="finish-score-row">
+              <span class="finish-score-label">Final Score:</span>
+              <span class="finish-score-value" id="finish-final-score">2,450 pts</span>
+            </div>
+            <button id="chrono-restart-btn" class="chrono-next-btn" style="margin-top: 16px;">
+              <span>Play Again</span>
+              <span>🔄</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Telemetry Details Drawer / Inspector Modal -->
+  <div id="inspector-backdrop" class="inspector-backdrop">
+    <aside class="inspector-drawer" id="inspector-drawer">
+      <button id="close-inspector-btn" class="inspector-close-btn" title="Close Drawer">✕</button>
+      
+      <div class="drawer-badge-row">
+        <div class="drawer-icon" id="drawer-icon">💥</div>
+        <div>
+          <h2 class="drawer-title" id="drawer-title">Event Title</h2>
+          <div class="drawer-epoch" id="drawer-epoch">13.8 Billion Years Ago</div>
+        </div>
+      </div>
+
+      <!-- Cosmic Timeline Gauge -->
+      <div class="cosmic-gauge-card">
+        <div class="gauge-label-row">
+          <span>Cosmic Timeline Progress</span>
+          <span id="gauge-percent-label">0.00%</span>
+        </div>
+        <div class="gauge-track">
+          <div class="gauge-fill" id="gauge-fill"></div>
+        </div>
+      </div>
+
+      <!-- Main Overview -->
+      <div>
+        <div class="drawer-section-title">Historical Impact & Overview</div>
+        <p class="drawer-desc" id="drawer-desc"></p>
+      </div>
+
+      <!-- Fun Fact / Deep Cosmic Lore -->
+      <div class="drawer-funfact" id="drawer-funfact"></div>
+
+      <!-- Predecessor Roots (Parent Connections) -->
+      <div id="drawer-parents-section">
+        <div class="drawer-section-title">Preceding Causes & Ancestral Roots</div>
+        <div class="branch-links-grid" id="drawer-parents-list"></div>
+      </div>
+
+      <!-- Successor Branches (Child Events) -->
+      <div id="drawer-children-section">
+        <div class="drawer-section-title">Subsequent Breakthroughs & Sprouting Branches</div>
+        <div class="branch-links-grid" id="drawer-children-list"></div>
+      </div>
+
+      <!-- Key Concept Tags -->
+      <div>
+        <div class="drawer-section-title">Key Domain Tags</div>
+        <div class="tags-list" id="drawer-tags-list"></div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- Scripts -->
+  <script src="data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
