@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Packet Run: The Microarchitect | CPU Pipeline & Dispatch Simulator</title>
+    <meta name="description" content="Master CPU microarchitecture: Route instructions through superscalar ALUs, avoid RAW data hazards, predict branch loops, and optimize multi-level cache hierarchies.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Silicon PCB & Particle Canvas -->
+    <canvas id="vfx-canvas"></canvas>
+
+    <div class="app-wrapper">
+        <!-- ==========================================
+             TOP HUD HEADER
+             ========================================== -->
+        <header class="hud-header">
+            <div class="logo-group">
+                <div class="logo-badge">⚡</div>
+                <div class="logo-text">
+                    <h1>PACKET RUN</h1>
+                    <p>The Microarchitect</p>
+                </div>
+            </div>
+
+            <!-- Stats & Live Pipeline Metrics -->
+            <div class="hud-stats-group">
+                <div class="hud-pill" title="Current Clock Cycle">
+                    ⏱️ Cycle: <span class="val" id="hud-clock-cycle">0</span>
+                </div>
+                <div class="hud-pill highlight" title="Instructions Per Clock Cycle (IPC)">
+                    🚀 IPC: <span class="val" id="hud-ipc">0.00</span>
+                </div>
+                <div class="hud-pill" title="Total Retired Instructions">
+                    ✓ Retired: <span class="val" id="hud-retired">0</span>
+                </div>
+                <div class="hud-pill hazard" title="Pipeline Hazard Stalls (RAW / Structural)">
+                    ⚠️ Stalls: <span class="val" id="hud-stalls">0</span>
+                </div>
+                <div class="hud-pill danger" title="Branch Misprediction Pipeline Flushes">
+                    💥 Flushes: <span class="val" id="hud-flushes">0</span>
+                </div>
+                <div class="hud-pill" title="Cache Hit Rate (L1 + L2)">
+                    💾 Cache Hit: <span class="val" id="hud-cache-hit">100%</span>
+                </div>
+                <div class="hud-pill" title="Branch Predictor Accuracy">
+                    🎯 Branch: <span class="val" id="hud-branch-acc">100%</span>
+                </div>
+                <div class="hud-pill highlight" title="Optimization Score">
+                    🏆 Score: <span class="val" id="hud-score">0</span>
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="hud-actions">
+                <button class="icon-btn" id="btn-help" title="Microarchitecture Guide & Rules">❓</button>
+                <button class="icon-btn" id="btn-toggle-audio" title="Toggle Synthesizer Audio">🔊</button>
+                <a href="../index.html" class="icon-btn" title="Back to Games Portal" style="text-decoration: none;">🏠</a>
+            </div>
+        </header>
+
+        <!-- ==========================================
+             GAME MODE NAVIGATION
+             ========================================== -->
+        <nav class="mode-nav">
+            <button class="mode-nav-btn active" data-mode="campaign">
+                <span>🎯</span> Microarchitect Campaign (12 Stages)
+            </button>
+            <button class="mode-nav-btn" data-mode="endless">
+                <span>⚡</span> Endless Clock Overclock
+            </button>
+            <button class="mode-nav-btn" data-mode="sandbox">
+                <span>💻</span> Assembly Code Sandbox Lab
+            </button>
+        </nav>
+
+        <!-- ==========================================
+             STAGE BANNER & CLOCK CONTROLS
+             ========================================== -->
+        <div class="stage-banner">
+            <div class="stage-info">
+                <h2 id="level-title">Stage 01: Dual ALU Ignition</h2>
+                <p id="level-desc">Route instructions through the execution units without pipeline stalls.</p>
+                <div class="stage-meta">
+                    <span class="stage-target" id="level-target">Target IPC: ≥ 1.0</span>
+                    <span class="stage-tips" id="level-tips">💡 Reorder independent instructions to fill both ALUs!</span>
+                </div>
+            </div>
+
+            <div class="clock-controls">
+                <button class="ctrl-btn" id="btn-step" title="Advance 1 Clock Cycle">⏯️ Step Cycle</button>
+                <button class="ctrl-btn primary" id="btn-run" title="Start Clock Oscillator">▶️ Run Clock</button>
+                <button class="ctrl-btn" id="btn-pause" title="Pause Clock">⏸️ Pause</button>
+                <button class="ctrl-btn" id="btn-reset" title="Reset Level">🔄 Reset</button>
+
+                <div class="speed-group">
+                    <button class="btn-speed active" id="btn-speed-1x" title="1x Speed (700ms)">1x</button>
+                    <button class="btn-speed" id="btn-speed-2x" title="2x Speed (350ms)">2x</button>
+                    <button class="btn-speed" id="btn-speed-5x" title="5x Speed (120ms)">5x</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             SANDBOX ASSEMBLY PANEL (Hidden by default)
+             ========================================== -->
+        <div id="sandbox-panel" class="panel-card" style="display: none;">
+            <div class="panel-title">
+                <span>💻 Custom Assembly Compiler</span>
+                <button class="ctrl-btn primary" id="btn-assemble-run" style="padding: 0.3rem 0.8rem;">⚙️ Assemble & Run</button>
+            </div>
+            <div class="sandbox-editor">
+                <textarea id="sandbox-asm-code" class="sandbox-textarea" placeholder="Enter assembly code here...
+; Example:
+ADD R0, #10, #20
+MUL R1, #3, #5
+LOAD R2, [0x00]
+ADD R3, R0, R1
+STORE R3, [0x04]">ADD R0, #10, #20
+MUL R1, #3, #5
+LOAD R2, [0x00]
+ADD R3, R0, R1
+STORE R3, [0x04]</textarea>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             MAIN CPU WORKSPACE
+             ========================================== -->
+        <main class="cpu-workspace">
+            <!-- Left: Fetch Buffer & Out-of-Order Reservation Station -->
+            <section class="panel-card">
+                <div class="panel-title">
+                    <span>1. Fetch & Decode Queue</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">In-Order</span>
+                </div>
+                <div class="inst-list" id="fetch-queue-list">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="panel-title" style="margin-top: 0.5rem;">
+                    <span>2. Reservation Stations (OoO)</span>
+                    <span style="font-size: 0.7rem; color: var(--accent);">Drag to Reorder</span>
+                </div>
+                <div class="dispatch-window-container" id="dispatch-window-list">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Center: Superscalar Execution Units & Branch Predictor -->
+            <section class="panel-card">
+                <div class="panel-title">
+                    <span>3. Superscalar Execution Units</span>
+                    <span style="font-size: 0.75rem; color: var(--primary);">Parallel Pipelines</span>
+                </div>
+
+                <div class="exec-units-grid">
+                    <div class="unit-box idle" id="unit-alu0">
+                        <div class="unit-name">ALU 0 <span class="badge-idle">IDLE</span></div>
+                        <div class="unit-inst text-muted">— Ready —</div>
+                        <div class="unit-cycles">0 cyc</div>
+                    </div>
+                    <div class="unit-box idle" id="unit-alu1">
+                        <div class="unit-name">ALU 1 <span class="badge-idle">IDLE</span></div>
+                        <div class="unit-inst text-muted">— Ready —</div>
+                        <div class="unit-cycles">0 cyc</div>
+                    </div>
+                    <div class="unit-box idle" id="unit-lsu">
+                        <div class="unit-name">LSU (Memory) <span class="badge-idle">IDLE</span></div>
+                        <div class="unit-inst text-muted">— Ready —</div>
+                        <div class="unit-cycles">0 cyc</div>
+                    </div>
+                    <div class="unit-box idle" id="unit-bru">
+                        <div class="unit-name">BRU (Branch) <span class="badge-idle">IDLE</span></div>
+                        <div class="unit-inst text-muted">— Ready —</div>
+                        <div class="unit-cycles">0 cyc</div>
+                    </div>
+                </div>
+
+                <!-- 2-bit Branch Predictor State Machine Widget -->
+                <div class="branch-predictor-widget" style="margin-top: 1rem;">
+                    <div class="dial-wrapper">
+                        <div class="dial-needle" id="branch-predictor-dial"></div>
+                    </div>
+                    <div class="dial-info">
+                        <h4>2-Bit Saturating Branch Predictor</h4>
+                        <p id="branch-predictor-state-text">Weakly Taken (10)</p>
+                        <span style="font-size: 0.7rem; color: var(--text-muted);">Predicts loop jumps to avoid 3-cycle pipeline flush</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right: Architectural Registers & Memory Hierarchy -->
+            <section class="panel-card">
+                <div class="panel-title">
+                    <span>4. Register File (R0-R7)</span>
+                    <span style="font-size: 0.75rem; color: var(--success);">32-Bit</span>
+                </div>
+                <div class="registers-grid" id="registers-grid">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="panel-title" style="margin-top: 0.5rem;">
+                    <span>5. Cache Memory Hierarchy</span>
+                    <span style="font-size: 0.7rem; color: var(--primary);">L1 ➔ L2 ➔ RAM</span>
+                </div>
+                <div class="cache-tier">
+                    <div class="tier-title">L1 Data Cache (1 Cycle Hit)</div>
+                    <div class="cache-list" id="l1-cache-list"></div>
+                </div>
+                <div class="cache-tier" style="margin-top: 0.4rem;">
+                    <div class="tier-title">L2 Cache (3 Cycle Hit)</div>
+                    <div class="cache-list" id="l2-cache-list"></div>
+                </div>
+                <div class="cache-tier" style="margin-top: 0.4rem;">
+                    <div class="tier-title">Main RAM (8 Cycle Latency)</div>
+                    <div class="ram-grid" id="ram-memory-grid"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ==========================================
+         VICTORY / COMPLETION MODAL
+         ========================================== -->
+    <div class="modal-backdrop" id="modal-victory" style="display: none;">
+        <div class="modal-box">
+            <h2 id="victory-title">⚡ STAGE OPTIMIZATION COMPLETE!</h2>
+            <p id="victory-msg">Superb dispatching! You achieved target IPC without excessive pipeline bubbles.</p>
+            <div class="modal-stats" id="victory-stats"></div>
+            <div class="modal-actions">
+                <button class="ctrl-btn" id="btn-retry-level">🔄 Retry Stage</button>
+                <button class="ctrl-btn primary" id="btn-next-level">Next Stage ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         HELP / CODEX MODAL
+         ========================================== -->
+    <div class="modal-backdrop" id="modal-help" style="display: none;">
+        <div class="modal-box">
+            <h2>🧠 Microarchitecture Codex & Rules</h2>
+            <p><b>1. Out-of-Order (OoO) Dispatch:</b> Drag and reorder instructions in the Reservation Station to bypass instructions waiting for operands (RAW hazards).</p>
+            <p><b>2. RAW Hazards (Read-After-Write):</b> An instruction cannot execute if its source register is still being calculated by an active ALU or LSU.</p>
+            <p><b>3. Branch Prediction:</b> The 2-bit predictor guesses whether jumps are Taken or Not Taken. Mispredictions flush the pipeline, wasting 3 cycles!</p>
+            <p><b>4. Cache Hierarchy:</b> L1 Cache responds in 1 cycle. L2 Cache responds in 3 cycles. Main RAM misses take 8 cycles.</p>
+            <p><b>5. IPC Metric:</b> Instructions Per Cycle = (Retired Instructions / Clock Cycles). Keep it as high as possible!</p>
+            <div class="modal-actions">
+                <button class="ctrl-btn primary" id="btn-close-help">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Engines -->
+    <script src="js/audio_engine.js"></script>
+    <script src="js/vfx_engine.js"></script>
+    <script src="js/cpu_core.js"></script>
+    <script src="js/levels.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

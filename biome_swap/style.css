@@ -1,0 +1,629 @@
+/* ==========================================================================
+   Biome Swap: The Keystone Balance - Bioluminescent Ecology Stylesheet
+   ========================================================================== */
+
+:root {
+    --bg-dark: #07130e;
+    --card-bg: rgba(13, 29, 21, 0.78);
+    --card-border: rgba(16, 185, 129, 0.25);
+    --primary: #10b981;
+    --primary-glow: rgba(16, 185, 129, 0.4);
+    --accent: #38bdf8;
+    --accent-glow: rgba(56, 189, 248, 0.4);
+    --gold: #facc15;
+    --danger: #ef4444;
+    --text-main: #ecfdf5;
+    --text-muted: #6ee7b7;
+    --font-ui: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-ui);
+    overflow-x: hidden;
+    min-height: 100vh;
+    background-image: 
+        radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(56, 189, 248, 0.08) 0%, transparent 50%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 36px 36px, 36px 36px;
+}
+
+#vfx-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.app-wrapper {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    padding: 1rem 1.5rem;
+    max-width: 1560px;
+    margin: 0 auto;
+    gap: 1rem;
+}
+
+/* ==========================================================================
+   TOP HUD HEADER
+   ========================================================================== */
+.hud-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    backdrop-filter: blur(14px);
+    border-radius: 16px;
+    padding: 0.85rem 1.5rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.logo-group {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.logo-badge {
+    font-size: 1.8rem;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid var(--primary);
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    box-shadow: 0 0 16px var(--primary-glow);
+}
+
+.logo-text h1 {
+    font-size: 1.2rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #10b981, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.logo-text p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.hud-stats-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.hud-pill {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.4rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.hud-pill .val {
+    font-family: var(--font-mono);
+    color: var(--primary);
+    font-weight: 800;
+}
+
+.hud-pill.highlight {
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.hud-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.icon-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-main);
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 0 12px var(--primary-glow);
+}
+
+/* Mode Nav */
+.mode-nav {
+    display: flex;
+    gap: 0.5rem;
+    background: rgba(13, 29, 21, 0.6);
+    padding: 0.4rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mode-nav-btn {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--font-ui);
+    font-weight: 700;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.mode-nav-btn:hover {
+    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.mode-nav-btn.active {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(56, 189, 248, 0.25));
+    color: #ffffff;
+    border: 1px solid var(--primary);
+    box-shadow: 0 0 12px var(--primary-glow);
+}
+
+/* Stage Banner */
+.stage-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 1rem 1.5rem;
+    backdrop-filter: blur(12px);
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.stage-info h2 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.stage-info p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+}
+
+.stage-meta {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+}
+
+.stage-target {
+    color: var(--gold);
+    font-family: var(--font-mono);
+    font-weight: 700;
+}
+
+.stage-hint {
+    color: var(--accent);
+}
+
+.sim-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ctrl-btn {
+    padding: 0.55rem 1.1rem;
+    font-family: var(--font-ui);
+    font-weight: 800;
+    font-size: 0.8rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ctrl-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.ctrl-btn.primary {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 0 14px var(--primary-glow);
+}
+
+.ctrl-btn.primary:hover {
+    filter: brightness(1.15);
+    box-shadow: 0 0 20px var(--primary-glow);
+}
+
+/* ==========================================================================
+   MAIN ECOSYSTEM WORKSPACE
+   ========================================================================== */
+.eco-workspace {
+    display: grid;
+    grid-template-columns: 280px 1fr 340px;
+    gap: 1rem;
+    flex: 1;
+}
+
+@media (max-width: 1200px) {
+    .eco-workspace {
+        grid-template-columns: 1fr;
+    }
+}
+
+.panel-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    padding: 1.2rem;
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.panel-title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(16, 185, 129, 0.15);
+    padding-bottom: 0.5rem;
+}
+
+/* Trophic Pyramid Bars */
+.trophic-pyramid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.pyramid-tier {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.tier-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.tier-bar-bg {
+    height: 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.tier-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.4s cubic-bezier(0.2, 0, 0.2, 1);
+}
+
+.tier-bar-fill.apex { background: #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.5); }
+.tier-bar-fill.pred { background: #f97316; box-shadow: 0 0 8px rgba(249, 115, 22, 0.5); }
+.tier-bar-fill.herb { background: #facc15; box-shadow: 0 0 8px rgba(250, 204, 21, 0.5); }
+.tier-bar-fill.prod { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.5); }
+
+/* ==========================================================================
+   2D ECOSYSTEM GRID (4x4)
+   ========================================================================== */
+.ecosystem-grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    aspect-ratio: 1;
+    max-width: 540px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.grid-tile {
+    background: rgba(20, 40, 30, 0.8);
+    border: 2px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.2, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.grid-tile:hover {
+    border-color: var(--primary);
+    transform: scale(1.04);
+    box-shadow: 0 0 16px var(--primary-glow);
+}
+
+.grid-tile.wetland {
+    border-color: #38bdf8;
+    background: rgba(14, 50, 70, 0.8);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+
+.grid-tile.invasive-alert {
+    border-color: #ef4444;
+    animation: pulse-danger 1.5s infinite;
+}
+
+.tile-icon {
+    font-size: 1.8rem;
+    margin: 0.2rem 0;
+    transition: transform 0.2s ease;
+}
+
+.grid-tile:hover .tile-icon {
+    transform: scale(1.2);
+}
+
+.tile-trophic-meters {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.meter-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.6rem;
+    font-family: var(--font-mono);
+}
+
+.meter-lbl {
+    color: var(--text-muted);
+    font-weight: 700;
+    width: 12px;
+}
+
+.meter-bar {
+    flex: 1;
+    height: 4px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.meter-bar .fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.meter-bar .fill.prod { background: #10b981; }
+.meter-bar .fill.herb { background: #facc15; }
+.meter-bar .fill.apex { background: #ef4444; }
+.meter-bar .fill.inv { background: #dc2626; }
+
+/* ==========================================================================
+   OPERATOR CARDS HAND
+   ========================================================================== */
+.cards-hand-container {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+}
+
+.op-card {
+    min-width: 170px;
+    max-width: 190px;
+    background: rgba(14, 34, 25, 0.9);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    border-radius: 12px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.op-card:hover:not(.disabled) {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px var(--primary-glow);
+}
+
+.op-card.selected {
+    border-color: var(--gold);
+    background: rgba(250, 204, 21, 0.12);
+    box-shadow: 0 0 16px rgba(250, 204, 21, 0.4);
+    transform: translateY(-6px);
+}
+
+.op-card.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-icon {
+    font-size: 1.5rem;
+}
+
+.card-cost {
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 0.75rem;
+    color: var(--gold);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.card-title {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.card-desc {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+/* Cascade Log */
+.cascade-log-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cascade-entry {
+    background: rgba(16, 185, 129, 0.1);
+    border-left: 3px solid var(--primary);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    line-height: 1.4;
+}
+
+/* Modals */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.modal-box {
+    background: #0d2219;
+    border: 1px solid var(--primary);
+    box-shadow: 0 0 32px var(--primary-glow);
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 580px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.modal-box h2 {
+    font-size: 1.3rem;
+    color: var(--primary);
+    font-weight: 900;
+}
+
+.modal-box p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-main);
+}
+
+.modal-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stat-pill {
+    font-size: 0.85rem;
+}
+
+.stat-pill b {
+    color: var(--primary);
+    font-family: var(--font-mono);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.empty-hint {
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+@keyframes pulse-danger {
+    0%, 100% { box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+    50% { box-shadow: 0 0 16px rgba(239, 68, 68, 0.8); }
+}

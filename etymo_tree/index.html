@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etymo-Tree: The Root Shifter | Historical Linguistics Word Puzzle</title>
+    <meta name="description" content="Reconstruct Proto-Indo-European roots, apply historical sound laws like Grimm's Law, and expose deceptive false friend cognates across centuries of language evolution.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Illuminated Constellation Canvas -->
+    <canvas id="vfx-canvas"></canvas>
+
+    <div class="app-wrapper">
+        <!-- ==========================================
+             TOP HUD HEADER
+             ========================================== -->
+        <header class="hud-header">
+            <div class="logo-group">
+                <div class="logo-badge">📜</div>
+                <div class="logo-text">
+                    <h1>ETYMO-TREE</h1>
+                    <p>The Root Shifter</p>
+                </div>
+            </div>
+
+            <!-- Stats & Live Philology Metrics -->
+            <div class="hud-stats-group">
+                <div class="hud-pill" title="Current Linguistic Cipher">
+                    🧩 Cipher: <span class="val" id="hud-puzzle-index">1/8</span>
+                </div>
+                <div class="hud-pill highlight" title="Philological Deductive Score">
+                    🏆 Score: <span class="val" id="hud-score">0</span>
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="hud-actions">
+                <button class="icon-btn" id="btn-help" title="Linguistics Codex & Rules">❓</button>
+                <button class="icon-btn" id="btn-toggle-audio" title="Toggle Lyre Audio">🔊</button>
+                <a href="../index.html" class="icon-btn" title="Back to Games Portal" style="text-decoration: none;">🏠</a>
+            </div>
+        </header>
+
+        <!-- ==========================================
+             GAME MODE NAVIGATION
+             ========================================== -->
+        <nav class="mode-nav">
+            <button class="mode-nav-btn active" data-mode="campaign">
+                <span>🌳</span> Root Deciphering Campaign
+            </button>
+            <button class="mode-nav-btn" data-mode="speed">
+                <span>⚡</span> Phonetic Speed Shifter
+            </button>
+            <button class="mode-nav-btn" data-mode="tree">
+                <span>🔬</span> Comparative Language Tree Sandbox
+            </button>
+        </nav>
+
+        <!-- ==========================================
+             CONCEPT BANNER
+             ========================================== -->
+        <div class="concept-banner">
+            <div class="concept-info">
+                <h2 id="concept-title">Father (Ancestral Kin)</h2>
+                <p id="concept-meaning">Concept Core: "Male parent / elder patriarch"</p>
+            </div>
+
+            <div class="root-morph-display">
+                <span class="morph-lbl">Phonetic Morph Output</span>
+                <span class="morph-val" id="transformed-word-display">—</span>
+            </div>
+        </div>
+
+        <div class="status-msg info" id="status-message">
+            Select a reconstructed Proto-Indo-European (PIE) root hypothesis below.
+        </div>
+
+        <!-- ==========================================
+             MAIN LINGUISTICS WORKSPACE
+             ========================================== -->
+        <main class="etymo-workspace">
+            <!-- Left: Candidate Proto-Roots -->
+            <section class="panel-card">
+                <div class="panel-title">
+                    <span>1. Reconstruct Proto-Root</span>
+                    <span style="font-size: 0.75rem; color: var(--primary);">PIE (*Root)</span>
+                </div>
+                <div class="root-candidates-list" id="root-candidates-list">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Center: Cognate Matrix & False Friend Traps -->
+            <section class="panel-card">
+                <div class="panel-title">
+                    <span>2. Modern Cognates & Traps</span>
+                    <span style="font-size: 0.75rem; color: var(--accent);">Identify False Friends</span>
+                </div>
+                <div class="cognates-words-grid" id="cognates-words-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Right: Historical Sound Law Shifter Console -->
+            <section class="panel-card">
+                <div class="panel-title">
+                    <span>3. Sound Law Shifter</span>
+                    <span style="font-size: 0.75rem; color: var(--primary);">Phonetic Rules</span>
+                </div>
+                <div class="sound-laws-list" id="sound-laws-list">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ==========================================
+         VICTORY MODAL
+         ========================================== -->
+    <div class="modal-backdrop" id="modal-victory" style="display: none;">
+        <div class="modal-box">
+            <h2 id="victory-title">📜 PROTO-ROOT DECIPHERED!</h2>
+            <p id="victory-msg">Brilliant philological deduction!</p>
+            <div class="modal-explanation" id="victory-explanation"></div>
+            <div class="modal-actions">
+                <button class="ctrl-btn" id="btn-retry-puzzle">🔄 Replay Puzzle</button>
+                <button class="ctrl-btn primary" id="btn-next-puzzle">Next Root ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         HELP & CODEX MODAL
+         ========================================== -->
+    <div class="modal-backdrop" id="modal-help" style="display: none;">
+        <div class="modal-box">
+            <h2>📜 Comparative Linguistics Codex & Rules</h2>
+            <p><b>1. Proto-Indo-European (PIE):</b> The prehistoric ancestor language spoken ~6,000 years ago, giving birth to English, Spanish, Greek, Sanskrit, Russian, and Gaelic.</p>
+            <p><b>2. Grimm's Law:</b> Proto-Indo-European voiceless stops (*p, *t, *k) shifted into Proto-Germanic voiceless fricatives (*f, *th, *h). For example: *ph₂tḗr ➔ Father (Latin retained Pater).</p>
+            <p><b>3. False Friends:</b> Beware of surface lookalikes that share no genetic lineage (e.g. Mbabaram 'dog' or Semitic 'ab'). Click "Flag Trap" on deceptive terms!</p>
+            <p><b>4. How to Play:</b> Select the correct ancestral root hypothesis (*), apply the matching branch sound law, and isolate false friends to complete the cipher!</p>
+            <div class="modal-actions">
+                <button class="ctrl-btn primary" id="btn-close-help">Understood!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/audio_engine.js"></script>
+    <script src="js/vfx_engine.js"></script>
+    <script src="js/etymo_database.js"></script>
+    <script src="js/linguistics_engine.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

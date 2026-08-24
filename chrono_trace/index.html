@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChronoTrace: The Anachronism Paradox | Historical Timeline Pathfinding</title>
+    <meta name="description" content="ChronoTrace: Navigate fractured chronological webs, deduce hidden historical timestamps, evade anachronism paradoxes, and weave valid causal paths from Origin to Culmination.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Particle Canvas -->
+    <canvas id="vfx-canvas"></canvas>
+
+    <div class="app-wrapper">
+        <!-- ==========================================
+             TOP HUD HEADER
+             ========================================== -->
+        <header class="hud-header">
+            <div class="logo-group" id="btn-logo-home" title="ChronoTrace: The Anachronism Paradox">
+                <div class="logo-badge">⏳</div>
+                <div class="logo-text">
+                    <h1>CHRONOTRACE</h1>
+                    <p>The Anachronism Paradox</p>
+                </div>
+            </div>
+
+            <!-- Stats & Meters -->
+            <div class="hud-stats-group">
+                <div class="hud-pill" title="Player Level & Title">
+                    ⚡ Lvl <span class="val" id="hud-level-val">1</span> · <span id="hud-weaver-title" style="color: var(--primary);">Novice Weaver</span>
+                </div>
+                <div class="hud-pill highlight" title="Timeline Resonance Score">
+                    🏆 <span class="val" id="hud-score-val">0</span> pts
+                </div>
+                <div class="hud-pill paradox" title="Anachronism Paradoxes Triggered">
+                    💥 Paradoxes: <span class="val" id="hud-paradox-val" style="color: #ff0055;">0</span>
+                </div>
+                <div class="hud-pill" title="Time Elapsed">
+                    ⏱️ <span class="val" id="hud-timer-display">00:00</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="hud-actions">
+                <button class="icon-btn" id="btn-codex" title="Historical Codex Archive">📚</button>
+                <button class="icon-btn" id="btn-help" title="Rules & How to Play">❓</button>
+                <button class="icon-btn" id="btn-toggle-audio" title="Toggle Audio Synthesizer">🔊</button>
+                <a href="../index.html" class="icon-btn" title="Back to Games Portal" style="text-decoration: none;">🏠</a>
+            </div>
+        </header>
+
+        <!-- ==========================================
+             GAME MODE NAVIGATION
+             ========================================== -->
+        <nav class="mode-nav">
+            <button class="mode-nav-btn active" data-mode="daily">
+                <span>📅</span> Daily Timeline Web
+            </button>
+            <button class="mode-nav-btn" data-mode="campaign">
+                <span>📜</span> Causal Chains (Campaign)
+            </button>
+            <button class="mode-nav-btn" data-mode="fog">
+                <span>🌫️</span> Fog of Time (Rogue-lite)
+            </button>
+            <button class="mode-nav-btn" data-mode="codex">
+                <span>🏛️</span> Historical Codex
+            </button>
+        </nav>
+
+        <!-- ==========================================
+             MODE SPECIFIC SUB-BARS
+             ========================================== -->
+        <!-- Daily Mode Sub-bar -->
+        <div class="sub-hud-bar" id="daily-hud-bar">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-weight: 700; color: var(--text-muted);">Select Puzzle Date:</span>
+                <input type="date" id="daily-date-picker">
+            </div>
+            <div>
+                <span style="color: var(--primary); font-weight: 600;">Rule:</span>
+                <span>Connect nodes such that Year(A) ≤ Year(B) to avoid Paradox Rift collapse.</span>
+            </div>
+        </div>
+
+        <!-- Campaign Mode Sub-bar (Chapter Carousel) -->
+        <div class="sub-hud-bar" id="campaign-chapter-bar" style="display: none;">
+            <div class="campaign-chapter-list" id="campaign-chapter-list">
+                <!-- Populated dynamically by JS -->
+            </div>
+        </div>
+
+        <!-- Fog Mode Sub-bar (HP & Relics) -->
+        <div class="sub-hud-bar" id="fog-hud-bar" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-weight: 700; color: var(--danger);">Rift Stability (HP):</span>
+                <span id="hud-fog-hp" style="font-family: var(--font-mono); font-weight: 800; color: var(--primary);">3/3</span>
+            </div>
+            <div class="relics-bar">
+                <span style="font-weight: 700; color: var(--text-muted); font-size: 0.8rem;">Relics:</span>
+                <button class="relic-card-btn" data-relic="lens" title="Reveal the year of 1 adjacent event">
+                    🔍 Lens <span class="relic-badge-count" id="relic-count-lens">2</span>
+                </button>
+                <button class="relic-card-btn" data-relic="shield" title="Absorb 1 Anachronism Paradox without HP loss">
+                    🛡️ Shield <span class="relic-badge-count" id="relic-count-shield">1</span>
+                </button>
+                <button class="relic-card-btn" data-relic="anchor" title="Rewind your previous step safely">
+                    ⏳ Anchor <span class="relic-badge-count" id="relic-count-anchor">1</span>
+                </button>
+                <button class="relic-card-btn" data-relic="glimpse" title="Illuminate all valid forward paths for current node">
+                    👁️ Glimpse <span class="relic-badge-count" id="relic-count-glimpse">1</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             MAIN GAME CONTAINER
+             ========================================== -->
+        <main class="game-workspace" id="graph-main-container">
+            <!-- Left: Interactive Graph Viewport Area -->
+            <section class="graph-viewport-area">
+                <div class="mission-banner">
+                    <h2 id="mission-mode-title">Daily Timeline Web</h2>
+                    <p id="mission-mode-sub">Weave a continuous causal route from Origin to Culmination.</p>
+                </div>
+
+                <!-- Floating Zoom / Control Buttons -->
+                <div class="graph-floating-tools">
+                    <button class="tool-btn" id="btn-zoom-in" title="Zoom In">➕</button>
+                    <button class="tool-btn" id="btn-zoom-out" title="Zoom Out">➖</button>
+                    <button class="tool-btn" id="btn-zoom-reset" title="Reset View">🎯</button>
+                    <button class="tool-btn" id="btn-undo-step" title="Undo Last Step">↩️</button>
+                    <button class="tool-btn" id="btn-reset-path" title="Reset Path">🔄</button>
+                </div>
+
+                <!-- SVG Graph Viewport -->
+                <div id="graph-viewport">
+                    <svg id="graph-svg-layer"></svg>
+                </div>
+
+                <!-- Active Path Sequence Bottom Strip -->
+                <div class="active-path-strip-container" id="active-path-strip">
+                    <!-- Populated dynamically by JS -->
+                </div>
+            </section>
+
+            <!-- Right: Node Inspector Sidebar -->
+            <aside class="inspector-sidebar">
+                <div class="inspect-card" id="node-inspect-card">
+                    <div class="inspect-header">
+                        <div class="inspect-icon" id="inspect-icon">⏳</div>
+                        <div class="inspect-header-text">
+                            <div class="inspect-era-badge" id="inspect-era">Classical Antiquity</div>
+                            <h3 id="inspect-title">Select or Hover a Node</h3>
+                        </div>
+                    </div>
+
+                    <div class="inspect-year-pill" id="inspect-year">??? Hidden Timestamp</div>
+                    <p class="inspect-desc" id="inspect-desc">Hover over or tap any node in the temporal web to inspect historical context, era tags, and lore.</p>
+                    <div class="inspect-lore" id="inspect-lore">"History is a vast interconnected tapestry of human thought and discovery."</div>
+
+                    <div class="inspect-tags-container" id="inspect-tags">
+                        <span class="inspect-tag">#Timeline</span>
+                        <span class="inspect-tag">#CausalDAG</span>
+                    </div>
+                </div>
+
+                <div class="inspector-actions">
+                    <button class="btn-secondary" id="btn-sidebar-undo" onclick="window.chronoTraceApp.undoLastStep()">Undo Step</button>
+                    <button class="btn-secondary" id="btn-sidebar-reset" onclick="window.chronoTraceApp.resetCurrentPath()">Reset Path</button>
+                </div>
+            </aside>
+        </main>
+
+        <!-- ==========================================
+             HISTORICAL CODEX VIEW (MUSEUM)
+             ========================================== -->
+        <main class="codex-view" id="codex-container" style="display: none;">
+            <div class="codex-header">
+                <div>
+                    <h2>Historical Codex of Ages</h2>
+                    <p style="color: var(--text-muted); font-size: 0.9rem;">Encyclopedia of timeline nodes discovered and stabilized during your journeys.</p>
+                </div>
+                <div class="hud-pill highlight">
+                    Unlocked: <span class="val" id="codex-unlocked-count">0 / 80</span>
+                </div>
+            </div>
+
+            <div class="codex-grid" id="codex-grid">
+                <!-- Populated dynamically by JS -->
+            </div>
+        </main>
+    </div>
+
+    <!-- ==========================================
+         MODAL: VICTORY & TIMELINE STABILIZATION
+         ========================================== -->
+    <div class="modal-wrapper" id="modal-victory">
+        <div class="modal-backdrop"></div>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>🌟 Timeline Stabilized!</h2>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                You have woven a seamless chronological bridge from the Origin to the Culmination Event without fracturing the space-time continuum.
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+                <div class="hud-pill highlight" style="justify-content: center; padding: 0.75rem;">
+                    Resonance Score: <span class="val" id="victory-score-val" style="font-size: 1.1rem;">1250 pts</span>
+                </div>
+                <div class="hud-pill" style="justify-content: center; padding: 0.75rem;">
+                    Nodes Traversed: <span class="val" id="victory-nodes-count">6</span>
+                </div>
+                <div class="hud-pill paradox" style="justify-content: center; padding: 0.75rem;">
+                    Paradoxes: <span class="val" id="victory-paradox-count">0</span>
+                </div>
+                <div class="hud-pill" style="justify-content: center; padding: 0.75rem;">
+                    Thematic Synergy: <span class="val" id="victory-synergy-val" style="color: var(--gold);">+200 pts</span>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="font-family: var(--font-heading); margin-bottom: 0.5rem;">Chronological Path Traversed:</h4>
+                <div class="victory-timeline-list" id="victory-timeline-sequence">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; margin-top: 0.5rem;">
+                <button class="btn-primary" id="btn-share-daily-card">📋 Copy Share Card</button>
+                <button class="btn-secondary modal-close-btn" style="flex: 1;">Continue Weaving</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL: TIMELINE COLLAPSE (DEFEAT)
+         ========================================== -->
+    <div class="modal-wrapper" id="modal-collapse">
+        <div class="modal-backdrop"></div>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 style="color: var(--danger);">💥 Timeline Collapsed!</h2>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+                The space-time continuum fractured from excessive anachronism paradoxes. The causal fabric could not withstand the temporal strain.
+            </p>
+
+            <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                <button class="btn-primary" onclick="window.chronoTraceApp.resetCurrentPath(); window.chronoTraceApp.closeAllModals();">🔄 Re-Stabilize Timeline</button>
+                <button class="btn-secondary modal-close-btn">Return to Hub</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         MODAL: HOW TO PLAY & RULES
+         ========================================== -->
+    <div class="modal-wrapper" id="modal-help">
+        <div class="modal-backdrop"></div>
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>⏳ How to Play ChronoTrace</h2>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.88rem; line-height: 1.5; color: var(--text-main);">
+                <div>
+                    <h4 style="color: var(--primary); font-family: var(--font-heading); margin-bottom: 0.25rem;">1. The Premise</h4>
+                    <p style="color: var(--text-muted);">History has fractured into a tangled web of events. As a <strong>Time Weaver</strong>, you must navigate from an <strong>Origin Event</strong> (Start Node) to a <strong>Culmination Event</strong> (End Node).</p>
+                </div>
+
+                <div>
+                    <h4 style="color: var(--gold); font-family: var(--font-heading); margin-bottom: 0.25rem;">2. The Rule of Directionality</h4>
+                    <p style="color: var(--text-muted);">A step from Event A to Event B is valid <strong>if and only if Year(A) ≤ Year(B)</strong>. Node timestamps are initially hidden (<code>???</code>) and revealed upon traversal.</p>
+                </div>
+
+                <div>
+                    <h4 style="color: var(--danger); font-family: var(--font-heading); margin-bottom: 0.25rem;">3. Anachronism Paradoxes (Traps)</h4>
+                    <p style="color: var(--text-muted);">If you connect a node from 1969 to a neighbor node that occurred in 1945, the connection fractures, inflicting a <strong>Timeline Paradox penalty</strong>.</p>
+                </div>
+
+                <div>
+                    <h4 style="color: var(--secondary); font-family: var(--font-heading); margin-bottom: 0.25rem;">4. Thematic Synergies & Bonuses</h4>
+                    <p style="color: var(--text-muted);">Linking consecutive events of matching categories (🔬 Science, ⚔️ Politics, 🎨 Culture, 🧭 Discovery) triggers <strong>Resonance Multipliers</strong> and massive score boosts.</p>
+                </div>
+
+                <div>
+                    <h4 style="color: var(--blue); font-family: var(--font-heading); margin-bottom: 0.25rem;">5. Game Modes & Relics</h4>
+                    <p style="color: var(--text-muted);"><strong>Daily Web:</strong> 1 global puzzle per day with shareable cards.<br><strong>Causal Chains:</strong> 12 handcrafted story chapters.<br><strong>Fog of Time:</strong> Rogue-lite mode with fog-of-war and power-up Relics (Chronometer Lens, Paradox Shield, Temporal Anchor).</p>
+                </div>
+            </div>
+
+            <button class="btn-primary modal-close-btn" style="margin-top: 0.5rem;">Understood, Let's Weave!</button>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- Script Imports -->
+    <script src="data/events_database.js"></script>
+    <script src="js/audio_engine.js"></script>
+    <script src="js/vfx_engine.js"></script>
+    <script src="js/graph_engine.js"></script>
+    <script src="js/game_modes.js"></script>
+    <script src="js/progression.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

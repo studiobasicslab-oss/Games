@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biome Swap: The Keystone Balance | Ecological Trophic Cascade Simulator</title>
+    <meta name="description" content="Rebuild collapsing ecosystems through keystone species reintroductions, trophic cascades, solar energy budgeting, and invasive species biocontrols.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Spore & Bioluminescent Canvas -->
+    <canvas id="vfx-canvas"></canvas>
+
+    <div class="app-wrapper">
+        <!-- ==========================================
+             TOP HUD HEADER
+             ========================================== -->
+        <header class="hud-header">
+            <div class="logo-group">
+                <div class="logo-badge">🌿</div>
+                <div class="logo-text">
+                    <h1>BIOME SWAP</h1>
+                    <p>The Keystone Balance</p>
+                </div>
+            </div>
+
+            <!-- Stats & Live Ecological Metrics -->
+            <div class="hud-stats-group">
+                <div class="hud-pill" title="Simulation Day">
+                    📅 Day: <span class="val" id="hud-day">1</span>
+                </div>
+                <div class="hud-pill highlight" title="Solar Energy Flux Available">
+                    ⚡ Solar: <span class="val" id="hud-energy">100 kcal</span>
+                </div>
+                <div class="hud-pill highlight" title="Biodiversity Index (Shannon-Wiener inspired)">
+                    🦋 Biodiversity: <span class="val" id="hud-biodiversity">50/100</span>
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="hud-actions">
+                <button class="icon-btn" id="btn-help" title="Ecology Rules & Cascade Codex">❓</button>
+                <button class="icon-btn" id="btn-toggle-audio" title="Toggle Nature Audio">🔊</button>
+                <a href="../index.html" class="icon-btn" title="Back to Games Portal" style="text-decoration: none;">🏠</a>
+            </div>
+        </header>
+
+        <!-- ==========================================
+             GAME MODE NAVIGATION
+             ========================================== -->
+        <nav class="mode-nav">
+            <button class="mode-nav-btn active" data-mode="campaign">
+                <span>🐺</span> Keystone Campaign (12 Scenarios)
+            </button>
+            <button class="mode-nav-btn" data-mode="survival">
+                <span>🛡️</span> Biosphere Survival: Invasive Defense
+            </button>
+            <button class="mode-nav-btn" data-mode="sandbox">
+                <span>🔬</span> Ecosystem Free Sandbox
+            </button>
+        </nav>
+
+        <!-- ==========================================
+             SCENARIO BANNER & CONTROLS
+             ========================================== -->
+        <div class="stage-banner">
+            <div class="stage-info">
+                <h2 id="scenario-title">Scenario 01: Yellowstone Riparian Crisis</h2>
+                <p id="scenario-desc">Reintroduce wolves to trigger the legendary willow-beaver trophic cascade.</p>
+                <div class="stage-meta">
+                    <span class="stage-target" id="scenario-target">Target Biodiversity: ≥ 65 | Max Days: 12</span>
+                    <span class="stage-hint" id="scenario-hint">💡 Hint: Select an Operator Card below, then click a tile on the grid!</span>
+                </div>
+            </div>
+
+            <div class="sim-controls">
+                <button class="ctrl-btn primary" id="btn-step-day" title="Advance to Next Day">☀️ Next Day</button>
+                <button class="ctrl-btn" id="btn-auto-sim" title="Toggle Real-Time Simulation">▶️ Real-Time Sim</button>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             MAIN ECOSYSTEM WORKSPACE
+             ========================================== -->
+        <main class="eco-workspace">
+            <!-- Left: Trophic Pyramid (Thermodynamic Lindeman 10% rule) -->
+            <section class="panel-card">
+                <div class="panel-title">
+                    <span>1. Trophic Pyramid</span>
+                    <span style="font-size: 0.75rem; color: var(--gold);">Lindeman 10%</span>
+                </div>
+                <div class="trophic-pyramid">
+                    <div class="pyramid-tier">
+                        <div class="tier-label"><span>Apex Predators (Keystones)</span><span style="color:#ef4444;">1 kcal</span></div>
+                        <div class="tier-bar-bg"><div class="tier-bar-fill apex" id="pyramid-apex-bar" style="width: 10%;"></div></div>
+                    </div>
+                    <div class="pyramid-tier">
+                        <div class="tier-label"><span>Mesopredators / Raptors</span><span style="color:#f97316;">10 kcal</span></div>
+                        <div class="tier-bar-bg"><div class="tier-bar-fill pred" id="pyramid-predators-bar" style="width: 20%;"></div></div>
+                    </div>
+                    <div class="pyramid-tier">
+                        <div class="tier-label"><span>Primary Consumers (Herbivores)</span><span style="color:#facc15;">100 kcal</span></div>
+                        <div class="tier-bar-bg"><div class="tier-bar-fill herb" id="pyramid-herbivores-bar" style="width: 50%;"></div></div>
+                    </div>
+                    <div class="pyramid-tier">
+                        <div class="tier-label"><span>Primary Producers (Plants/Kelp)</span><span style="color:#10b981;">1000 kcal</span></div>
+                        <div class="tier-bar-bg"><div class="tier-bar-fill prod" id="pyramid-producers-bar" style="width: 70%;"></div></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Center: 4x4 Ecosystem Grid & Operator Cards Hand -->
+            <section class="panel-card" style="align-items: center;">
+                <div class="panel-title" style="width: 100%;">
+                    <span>2. Ecosystem Habitat Grid (4x4)</span>
+                    <span style="font-size: 0.75rem; color: var(--primary);">Click Tile to Deploy</span>
+                </div>
+
+                <div class="ecosystem-grid-container" id="ecosystem-grid">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="panel-title" style="width: 100%; margin-top: 0.5rem;">
+                    <span>3. Operator Cards Hand</span>
+                    <span style="font-size: 0.75rem; color: var(--gold);">Solar Powered</span>
+                </div>
+                <div class="cards-hand-container" id="cards-hand" style="width: 100%;">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- Right: Active Trophic Cascades & Invasive Radar -->
+            <section class="panel-card">
+                <div class="panel-title">
+                    <span>4. Trophic Cascades Log</span>
+                    <span style="font-size: 0.75rem; color: var(--primary);">Chain Reactions</span>
+                </div>
+                <div class="cascade-log-list" id="cascade-log-list">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ==========================================
+         VICTORY MODAL
+         ========================================== -->
+    <div class="modal-backdrop" id="modal-victory" style="display: none;">
+        <div class="modal-box">
+            <h2 id="victory-title">🌿 ECOSYSTEM RESTORATION COMPLETE!</h2>
+            <p id="victory-msg">Splendid ecological stewardship! You restored the keystone balance.</p>
+            <div class="modal-stats" id="victory-stats"></div>
+            <div class="modal-actions">
+                <button class="ctrl-btn" id="btn-retry-scenario">🔄 Replay Scenario</button>
+                <button class="ctrl-btn primary" id="btn-next-scenario">Next Scenario ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         HELP & CODEX MODAL
+         ========================================== -->
+    <div class="modal-backdrop" id="modal-help" style="display: none;">
+        <div class="modal-box">
+            <h2>🌍 Keystone Ecology Codex & Rules</h2>
+            <p><b>1. Trophic Cascades:</b> Keystone species trigger powerful top-down chain reactions. For example, adding wolves stops deer overgrazing, letting willow trees regrow, which brings back beavers and creates wetlands!</p>
+            <p><b>2. Lindeman's 10% Rule:</b> Energy decreases by ~90% at each step up the food pyramid. You cannot sustain apex predators without a massive foundation of producers and herbivores.</p>
+            <p><b>3. Invasive Species:</b> Toxic invaders (cane toads, lionfish, kudzu) spread aggressively unless combated with targeted Biocontrol agents and controlled burns.</p>
+            <p><b>4. How to Play:</b> Select an Operator Card from your hand, then click a tile on the 4x4 grid to introduce species or restoration interventions!</p>
+            <div class="modal-actions">
+                <button class="ctrl-btn primary" id="btn-close-help">Understood!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/audio_engine.js"></script>
+    <script src="js/vfx_engine.js"></script>
+    <script src="js/cards_data.js"></script>
+    <script src="js/scenarios.js"></script>
+    <script src="js/ecology_engine.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

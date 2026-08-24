@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="cyberpunk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lexicon Dash | The Ultimate Rapid-Fire Vocabulary & Trivia Gauntlet</title>
+    <meta name="description" content="Lexicon Dash: 50+ categories across 4 tiers, real-time 3-layer validation, Daily Gridlock puzzles, Speed Gauntlet arcade, and real-time multiplayer arena with slam buzzers.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Top HUD Bar -->
+    <header class="hud-header">
+        <div class="logo-group" id="logo-btn" title="Lexicon Dash Home">
+            <div class="logo-badge">⚡ LD</div>
+            <div class="logo-text">
+                <h1>LEXICON DASH</h1>
+                <p>Rapid-Fire Vocabulary Gauntlet</p>
+            </div>
+        </div>
+
+        <div class="hud-stats">
+            <div class="stat-pill dust" id="hud-dust-pill" title="Star Dust Currency">
+                ⭐ <span id="hud-dust-val">150</span>
+            </div>
+            <div class="stat-pill level" id="hud-level-pill" title="Player Level">
+                ⚡ Lvl <span id="hud-level-val">1</span>
+            </div>
+            <div class="stat-pill elo" id="hud-elo-pill" title="Arena ELO Rating">
+                🏆 <span id="hud-elo-val">1000</span>
+            </div>
+        </div>
+
+        <div class="hud-actions">
+            <button class="icon-btn" id="btn-shop" title="Cosmetic Shop (Themes & Avatars)">🛍️</button>
+            <button class="icon-btn" id="btn-profile" title="Mastery Badges & Stats">🏅</button>
+            <button class="icon-btn" id="btn-help" title="Rules & How to Play">❓</button>
+            <button class="icon-btn" id="btn-audio" title="Toggle Sound">🔊</button>
+        </div>
+    </header>
+
+    <!-- Game Mode Navigation -->
+    <nav class="mode-nav">
+        <button class="nav-tab active" id="tab-daily" data-mode="daily">
+            <span>🧩</span> Daily Gridlock
+        </button>
+        <button class="nav-tab" id="tab-gauntlet" data-mode="gauntlet">
+            <span>🔥</span> Speed Gauntlet
+        </button>
+        <button class="nav-tab" id="tab-arena" data-mode="arena">
+            <span>⚔️</span> Multiplayer Arena
+        </button>
+    </nav>
+
+    <!-- Main Game Container -->
+    <main class="main-container" id="game-container">
+        
+        <!-- ==========================================
+             VIEW 1: DAILY GRIDLOCK
+             ========================================== -->
+        <section class="game-view active" id="view-daily">
+            <div class="grid-controls-bar">
+                <div>
+                    <h2 style="font-size: 1.3rem; font-weight: 800;">Daily Gridlock Matrix</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);">Fill every cell. Words cannot be reused across the grid.</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button class="btn-secondary" id="daily-grid-size-toggle" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Size: 3x3</button>
+                    <button class="btn-secondary" id="daily-date-picker-btn" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">📅 Today</button>
+                    <button class="btn-primary" id="daily-share-btn" style="padding: 0.4rem 0.9rem; font-size: 0.85rem;">📋 Share Card</button>
+                </div>
+            </div>
+
+            <!-- Grid Container populated by JS -->
+            <div class="grid-matrix-container" id="daily-matrix"></div>
+
+            <div style="margin-top: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                <div id="daily-stats-summary" style="font-weight: 700; color: var(--accent);">
+                    Score: <span id="daily-score-val">0</span> pts | Time: <span id="daily-timer-val">00:00</span>
+                </div>
+                <button class="btn-secondary" id="daily-reset-btn">Reset Grid</button>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 2: SPEED GAUNTLET
+             ========================================== -->
+        <section class="game-view" id="view-gauntlet">
+            <div class="gauntlet-header">
+                <div class="letter-spotlight">
+                    <div class="target-letter-badge" id="gauntlet-letter">M</div>
+                    <div>
+                        <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Target Letter</div>
+                        <h2 style="font-size: 1.2rem; font-weight: 800;">Starts with "<span id="gauntlet-letter-text">M</span>"</h2>
+                    </div>
+                </div>
+
+                <div class="gauntlet-timer-container">
+                    <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Time Remaining</div>
+                    <div class="timer-digits" id="gauntlet-timer">60s</div>
+                </div>
+
+                <div style="text-align: right;">
+                    <div class="combo-gauge" id="gauntlet-combo-gauge">
+                        <span>🔥</span> Streak: <span id="gauntlet-streak-val">0</span>x
+                    </div>
+                    <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-top: 4px;">
+                        Score: <span id="gauntlet-score">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Cards (5 dynamically drawn cards) -->
+            <div class="gauntlet-cards-grid" id="gauntlet-cards-container"></div>
+
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <button class="btn-primary" id="gauntlet-start-btn" style="font-size: 1.1rem; padding: 0.85rem 2.5rem;">
+                    🚀 START 60s BLITZ
+                </button>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             VIEW 3: MULTIPLAYER ARENA
+             ========================================== -->
+        <section class="game-view" id="view-arena">
+            <div class="arena-header">
+                <div>
+                    <span style="font-size: 0.75rem; font-weight: 800; color: var(--accent); text-transform: uppercase;">Real-Time Tournament</span>
+                    <h2 style="font-size: 1.3rem; font-weight: 800;">Round <span id="arena-round-num">1</span> / 3</h2>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1.25rem;">
+                    <div style="text-align: center;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">LETTER</span>
+                        <div style="font-size: 1.6rem; font-weight: 900; color: var(--accent);" id="arena-current-letter">S</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">TIMER</span>
+                        <div class="timer-digits" id="arena-timer" style="font-size: 1.6rem;">45s</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="arena-emergency-banner" class="emergency-banner" style="display: none;">
+                🚨 SLAM BUZZER HIT! 15 SECONDS TO FINISH! 🚨
+            </div>
+
+            <div class="arena-layout">
+                <!-- Human Player Category Submission Board -->
+                <div class="glass-panel" style="padding: 1.25rem;">
+                    <h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 0.75rem; color: var(--accent);">Your Categories (6 Slots)</h3>
+                    <div id="arena-slots-container" style="display: flex; flex-direction: column; gap: 0.65rem;"></div>
+
+                    <div class="buzzer-container">
+                        <button class="slam-buzzer-btn" id="arena-buzzer-btn">🚨 SLAM BUZZER 🚨</button>
+                    </div>
+                </div>
+
+                <!-- Opponents Live Dashboard -->
+                <div class="glass-panel" style="padding: 1.25rem;">
+                    <h3 style="font-size: 1rem; font-weight: 800; margin-bottom: 0.75rem; color: #a855f7;">Lobby Opponents</h3>
+                    <div class="bot-roster" id="arena-bot-roster"></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ==========================================
+         MODALS
+         ========================================== -->
+    
+    <!-- Cosmetic Shop Modal -->
+    <div class="modal-overlay" id="modal-shop">
+        <div class="modal-content">
+            <button class="modal-close" data-close="modal-shop">&times;</button>
+            <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 0.5rem;">🛍️ Cosmetic Shop</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.25rem;">Customize your theme and avatar using Star Dust!</p>
+
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent); margin-bottom: 0.5rem;">UI Themes</h3>
+            <div id="shop-themes-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.5rem;"></div>
+
+            <h3 style="font-size: 1rem; font-weight: 700; color: #a855f7; margin-bottom: 0.5rem;">Player Avatars</h3>
+            <div id="shop-avatars-container" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem;"></div>
+        </div>
+    </div>
+
+    <!-- Profile & Badges Modal -->
+    <div class="modal-overlay" id="modal-profile">
+        <div class="modal-content">
+            <button class="modal-close" data-close="modal-profile">&times;</button>
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
+                <div style="font-size: 3rem; background: var(--bg-input); border-radius: 16px; padding: 0.5rem;" id="profile-avatar-display">🦊</div>
+                <div>
+                    <h2 style="font-size: 1.3rem; font-weight: 800;">Player Profile</h2>
+                    <p style="color: var(--text-muted); font-size: 0.85rem;">Level <span id="profile-level">1</span> • ELO <span id="profile-elo">1000</span></p>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center; margin-bottom: 1.25rem;">
+                <div class="glass-panel" style="padding: 0.6rem;">
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Words Found</div>
+                    <div style="font-size: 1.1rem; font-weight: 800;" id="stat-words-found">0</div>
+                </div>
+                <div class="glass-panel" style="padding: 0.6rem;">
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Max Streak</div>
+                    <div style="font-size: 1.1rem; font-weight: 800;" id="stat-max-streak">0x</div>
+                </div>
+                <div class="glass-panel" style="padding: 0.6rem;">
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Arena Wins</div>
+                    <div style="font-size: 1.1rem; font-weight: 800;" id="stat-arena-wins">0</div>
+                </div>
+            </div>
+
+            <h3 style="font-size: 1rem; font-weight: 700; color: #fbbf24; margin-bottom: 0.5rem;">Mastery Badges</h3>
+            <div class="badges-grid" id="profile-badges-container"></div>
+        </div>
+    </div>
+
+    <!-- Peer Review & Voting Modal -->
+    <div class="modal-overlay" id="modal-peer-review">
+        <div class="modal-content">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: #f59e0b; margin-bottom: 0.5rem;">⚖️ Peer Review & Challenge Phase</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+                Review flagged submissions and vote to Accept or Reject questionable words!
+            </p>
+            <div id="peer-review-disputes-list" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.25rem;"></div>
+            <button class="btn-primary" id="peer-review-continue-btn" style="width: 100%;">Proceed to Standings</button>
+        </div>
+    </div>
+
+    <!-- Arena Standings Summary Modal -->
+    <div class="modal-overlay" id="modal-standings">
+        <div class="modal-content" style="text-align: center;">
+            <h2 style="font-size: 1.5rem; font-weight: 900; margin-bottom: 0.5rem;" id="standings-title">🏆 Match Standings</h2>
+            <div id="standings-leaderboard" style="display: flex; flex-direction: column; gap: 0.5rem; margin: 1.25rem 0;"></div>
+            <div id="standings-rewards" style="margin-bottom: 1.25rem; font-weight: 700; color: #fbbf24;"></div>
+            <button class="btn-primary" id="standings-action-btn">Next Round</button>
+        </div>
+    </div>
+
+    <!-- How to Play / Rules Modal -->
+    <div class="modal-overlay" id="modal-help">
+        <div class="modal-content">
+            <button class="modal-close" data-close="modal-help">&times;</button>
+            <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 0.75rem;">📖 How to Play Lexicon Dash</h2>
+            <div style="font-size: 0.88rem; line-height: 1.6; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.75rem;">
+                <p><strong style="color: var(--text-main);">1. The Goal:</strong> Submit valid words starting with the specified letter for each category slot before time runs out.</p>
+                <p><strong style="color: var(--text-main);">2. 4-Tier Categories:</strong> Foundational ($1.0\times$), Pop Culture ($1.25\times$), STEM & Geography ($1.5\times$), and Niche/Expert ($2.0\times$).</p>
+                <p><strong style="color: var(--text-main);">3. 3-Layer Validation:</strong> Exact Set match ($100\%$), Levenshtein edit distance ($90\%$), and Live Fallback enrichment.</p>
+                <p><strong style="color: var(--text-main);">4. Rarity Multiplier:</strong> Rare and obscure words award up to $+96\%$ bonus points and Star Dust!</p>
+                <p><strong style="color: var(--text-main);">5. Arena Slam Buzzer:</strong> Be the first to fill all slots and slam the buzzer to inflict a 15-second panic clock on your opponents.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container"></div>
+
+    <!-- Game Scripts (Cache-Busted) -->
+    <script src="lexicon_database.js?v=3.0"></script>
+    <script src="validation_engine.js?v=3.0"></script>
+    <script src="audio_engine.js?v=3.0"></script>
+    <script src="vfx_engine.js?v=3.0"></script>
+    <script src="progression.js?v=3.0"></script>
+    <script src="game_modes.js?v=3.0"></script>
+    <script src="main.js?v=3.0"></script>
+</body>
+</html>

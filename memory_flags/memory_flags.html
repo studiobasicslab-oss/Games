@@ -754,6 +754,7 @@
     ];
 
     let currentLevel = 1;
+    let totalScore = 0;
     let unlockedCountries = JSON.parse(localStorage.getItem('explorer_unlocked_countries')) || [];
     let discoveredThisLevel = [];
     let bestTimeRecord = JSON.parse(localStorage.getItem('explorer_best_time')) || {};
@@ -1331,9 +1332,17 @@
       resetTimer();
       SoundEffects.playWin();
       
-      if (window._$syncDataState) {
-          const h = btoa(totalScore + "_ARCADE_SECURE");
-          window._$syncDataState('memory_flags', totalScore, h);
+      const config = LEVEL_CONFIGS.find(c => c.level === currentLevel) || { pairs: 18 };
+      const levelScore = Math.max(100, (config.pairs * 200) - (secondsElapsed * 5) - (flipCount * 2));
+      totalScore += levelScore;
+
+      try {
+        if (typeof window._$syncDataState === 'function') {
+            const h = btoa(totalScore + "_ARCADE_SECURE");
+            window._$syncDataState('memory_flags', totalScore, h);
+        }
+      } catch (err) {
+        console.warn("Arcade sync error skipped:", err);
       }
 
       const end = Date.now() + 1200;

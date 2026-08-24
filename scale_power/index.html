@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scale: The Power of Ten | Cosmic to Subatomic Zoom & Fermi Duel</title>
+    <meta name="description" content="Seamlessly zoom across 44 orders of magnitude from subatomic quarks to the observable universe, master fundamental forces physics, and conquer Fermi estimation duels.">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Cosmic Particle & Procedural Viewport Canvas -->
+    <canvas id="vfx-canvas"></canvas>
+
+    <div class="app-wrapper">
+        <!-- ==========================================
+             TOP HUD HEADER
+             ========================================== -->
+        <header class="hud-header">
+            <div class="logo-group">
+                <div class="logo-badge">🌌</div>
+                <div class="logo-text">
+                    <h1>SCALE</h1>
+                    <p>The Power of Ten</p>
+                </div>
+            </div>
+
+            <!-- Stats & Live Scale Metrics -->
+            <div class="hud-stats-group">
+                <div class="hud-pill highlight" title="Current Scale Order of Magnitude">
+                    🔬 Scale: <span class="val" id="hud-exponent-val">10⁰ m</span>
+                </div>
+                <div class="hud-pill highlight" title="Fermi Estimation Score">
+                    🏆 Fermi Score: <span class="val" id="hud-score">0</span>
+                </div>
+            </div>
+
+            <!-- Header Action Buttons -->
+            <div class="hud-actions">
+                <button class="icon-btn" id="btn-help" title="Physics & Scale Codex">❓</button>
+                <button class="icon-btn" id="btn-toggle-audio" title="Toggle Cosmic Audio">🔊</button>
+                <a href="../index.html" class="icon-btn" title="Back to Games Portal" style="text-decoration: none;">🏠</a>
+            </div>
+        </header>
+
+        <!-- ==========================================
+             GAME MODE NAVIGATION
+             ========================================== -->
+        <nav class="mode-nav">
+            <button class="mode-nav-btn active" data-mode="odyssey">
+                <span>🚀</span> Power of Ten Odyssey (Campaign)
+            </button>
+            <button class="mode-nav-btn" data-mode="fermi">
+                <span>🎯</span> Order-of-Magnitude Fermi Duel
+            </button>
+            <button class="mode-nav-btn" data-mode="explorer">
+                <span>🔭</span> Free Universal Scale Explorer
+            </button>
+        </nav>
+
+        <!-- ==========================================
+             LOGARITHMIC SCALE CONTROLLER
+             ========================================== -->
+        <div class="scale-controller-panel">
+            <div class="scale-slider-header">
+                <h3>Logarithmic Spatial Slingshot (10⁻¹⁸ m ➔ 10²⁶ m)</h3>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Use Slider or Scroll Wheel to Zoom</span>
+            </div>
+            <div class="scale-slider-wrapper">
+                <input type="range" min="-18" max="26" value="0" step="1" id="scale-zoom-slider" class="scale-slider">
+            </div>
+            <div class="scale-caliper-labels">
+                <span>10⁻¹⁸m (Quarks)</span>
+                <span>10⁻¹⁵m (Protons)</span>
+                <span>10⁻¹⁰m (Atoms)</span>
+                <span>10⁻⁶m (Cells)</span>
+                <span>10⁰m (Human)</span>
+                <span>10⁷m (Earth)</span>
+                <span>10⁹m (Sun)</span>
+                <span>10²¹m (Milky Way)</span>
+                <span>10²⁶m (Universe)</span>
+            </div>
+        </div>
+
+        <!-- ==========================================
+             MAIN SCALE WORKSPACE
+             ========================================== -->
+        <main class="scale-workspace">
+            <!-- Left: Object Dossier & Fundamental Force -->
+            <section class="panel-card">
+                <div class="panel-title">
+                    <span>1. Scale Dossier</span>
+                    <span style="font-size: 0.75rem; color: var(--primary);">Physical Object</span>
+                </div>
+
+                <div class="object-dossier">
+                    <h2 id="object-name">Human Being</h2>
+                    <div class="object-size-badge" id="object-size">Dimension: 10⁰ m (1.7 Meters)</div>
+                    <p class="object-desc" id="object-desc">Macroscopic multicellular organism composed of ~37 trillion cells.</p>
+                </div>
+
+                <div class="force-card">
+                    <h4>Dominant Governing Force</h4>
+                    <div class="force-name" id="force-name" style="color: var(--primary);">Electromagnetism & Chemistry</div>
+                    <div class="force-range" id="force-range">Active: 10⁻¹³ to 10⁴ m</div>
+                    <div class="force-meter-bg">
+                        <div class="force-meter-fill" id="force-meter-fill" style="width: 40%; background: var(--primary);"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right: Fermi Showdown Duel Card -->
+            <section class="panel-card" id="fermi-challenge-card">
+                <div class="panel-title">
+                    <span>2. Order-of-Magnitude Fermi Duel</span>
+                    <span style="font-size: 0.75rem; color: var(--accent);">Spatial Estimation</span>
+                </div>
+
+                <div class="fermi-card">
+                    <div class="fermi-question" id="fermi-question">
+                        Estimate the diameter of a Red Blood Cell in meters (Power of 10):
+                    </div>
+                    <div class="fermi-result info" id="fermi-result-msg">
+                        Adjust the scale slider above to your best estimation, then click Submit Estimation!
+                    </div>
+                    <div class="fermi-actions">
+                        <button class="ctrl-btn primary" id="btn-submit-fermi">🎯 Submit Estimation</button>
+                        <button class="ctrl-btn" id="btn-next-fermi" style="display: none;">Next Challenge ➔</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ==========================================
+         HELP & CODEX MODAL
+         ========================================== -->
+    <div class="modal-backdrop" id="modal-help" style="display: none;">
+        <div class="modal-box">
+            <h2>🌌 Universal Scale Codex & Rules</h2>
+            <p><b>1. Powers of Ten:</b> Each integer step on the slider represents a 10-fold expansion or reduction in physical dimension ($10^x\text{ m}$).</p>
+            <p><b>2. Fundamental Forces:</b>
+                <br>• <b>Strong Nuclear Force ($10^{-18}$ to $10^{-14}$m):</b> Binds quarks into protons/neutrons.
+                <br>• <b>Electromagnetism ($10^{-13}$ to $10^4$m):</b> Dictates chemistry, molecular biology, and everyday matter.
+                <br>• <b>Gravity ($10^5$ to $10^{23}$m):</b> Governs planets, stars, and galaxies.
+                <br>• <b>Dark Energy ($10^{24}$ to $10^{26}$m):</b> Drives cosmic metric expansion across galaxy clusters.</p>
+            <p><b>3. Fermi Problems:</b> In physics, estimating within 1 order of magnitude ($10^{\pm 1}$) is considered exceptional accuracy!</p>
+            <div class="modal-actions">
+                <button class="ctrl-btn primary" id="btn-close-help">Understood!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/audio_engine.js"></script>
+    <script src="js/vfx_engine.js"></script>
+    <script src="js/scale_database.js"></script>
+    <script src="js/fermi_engine.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
