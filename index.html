@@ -215,7 +215,7 @@
         <div>
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-500/30 text-indigo-300 text-xs font-mono mb-3">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                <span>BASIC STUDIO ARCADE • 15 EXPERIMENTAL TITLES</span>
+                <span id="header-arcade-counter">BASIC STUDIO ARCADE • 24 EXPERIMENTAL TITLES</span>
             </div>
             <h1 class="serif text-5xl sm:text-6xl md:text-7xl text-white tracking-tight">The Arcade</h1>
             <p class="text-lg text-slate-400 italic mt-2">Puzzles, reflexes, cognition, and mathematical play.</p>
@@ -235,7 +235,7 @@
         <!-- Category Filter Pills -->
         <div class="flex flex-wrap gap-2 justify-center md:justify-start" id="filter-container">
             <button class="filter-btn active px-4 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 transition" data-category="all">
-                All Games <span class="opacity-60 ml-1">(15)</span>
+                All Games <span class="opacity-60 ml-1" id="all-games-count">(24)</span>
             </button>
             <button class="filter-btn px-4 py-2 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 hover:text-white border border-slate-700/80 transition" data-category="speed">
                 ⚡ Reflex & Speed
@@ -260,6 +260,286 @@
 
     <!-- MAIN ARCADE CARDS GRID -->
     <main id="games-grid" class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+
+        <!-- 0. POLYGLOT CONVOY: Speed Translation & Typing -->
+        <div class="game-card-wrapper" data-category="speed brain skill" data-title="polyglot convoy speed translation typing foreign languages spanish french german japanese italian latin wpm accuracy teleprinter">
+            <div class="game-card h-full p-7 rounded-3xl border border-cyan-500/50 bg-gradient-to-br from-slate-950 via-cyan-950/80 to-blue-950 text-white flex flex-col justify-between overflow-hidden shadow-2xl relative" style="--card-glow: rgba(6, 182, 212, 0.55);">
+                <div class="absolute -right-8 -top-8 w-48 h-48 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-8 -bottom-8 w-44 h-44 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-cyan-400 via-sky-400 to-amber-400 rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-cyan-500/30 group">
+                            🌐
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-gradient-to-r from-cyan-500/20 to-amber-500/20 text-cyan-300 border border-cyan-500/50 badge-pulse tracking-wide">
+                            🔥 NEW RELEASE // 6 LANGUAGES
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-black text-white mb-2 tracking-wide flex items-center gap-2">
+                        POLYGLOT CONVOY
+                    </h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-cyan-950/70 text-cyan-300 border border-cyan-800/50">⚡ Speed Typing (WPM)</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-sky-950/70 text-sky-300 border border-sky-800/50">🇪🇸 🇫🇷 🇩🇪 🇯🇵 🇮🇹 🏛️</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-amber-950/70 text-amber-300 border border-amber-800/50">📜 False Friends & Idioms</span>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-6 font-light">
+                        Speed-translate incoming diplomatic dispatches on a high-velocity teleprinter. Build lightning WPM velocity across Spanish, French, German, Japanese Romaji, Italian, and Latin.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-800/80">
+                    <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                        <span class="text-cyan-400">●</span> 15 Courier Routes
+                    </div>
+                    <a href="polyglot_convoy/index.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-sky-400 to-amber-400 hover:from-cyan-300 hover:to-amber-300 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5">
+                        START CONVOY ➔
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 0. SPECTRO-SCOUT: Exoplanet Light Hunter -->
+        <div class="game-card-wrapper" data-category="science brain skill" data-title="spectro scout exoplanet light hunter spectroscopy fraunhofer absorption doppler redshift blueshift jwst biosignatures atmosphere">
+            <div class="game-card h-full p-7 rounded-3xl border border-pink-500/50 bg-gradient-to-br from-slate-950 via-purple-950/80 to-pink-950 text-white flex flex-col justify-between overflow-hidden shadow-2xl relative" style="--card-glow: rgba(236, 72, 153, 0.55);">
+                <div class="absolute -right-8 -top-8 w-48 h-48 bg-pink-400/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-8 -bottom-8 w-44 h-44 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-cyan-400 via-purple-400 to-pink-500 rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-pink-500/30 group">
+                            🌈
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-gradient-to-r from-pink-500/20 to-cyan-500/20 text-pink-300 border border-pink-500/50 badge-pulse tracking-wide">
+                            🔥 NEW RELEASE // 15 EXOPLANETS
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-black text-white mb-2 tracking-wide flex items-center gap-2">
+                        SPECTRO-SCOUT
+                    </h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-pink-950/70 text-pink-300 border border-pink-800/50">🔬 Fraunhofer Barcodes</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-cyan-950/70 text-cyan-300 border border-cyan-800/50">⚡ Doppler Shift Dial</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">🌿 Alien Biosignatures</span>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-6 font-light">
+                        Peer through deep-space spectrometers across 15 exoplanetary systems. Align Doppler redshifts, overlay chemical absorption barcodes (Water, Oxygen, Methane, Sodium), and identify alien biosignatures.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-800/80">
+                    <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                        <span class="text-pink-400">●</span> 15 Target Systems
+                    </div>
+                    <a href="spectro_scout/index.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 hover:from-cyan-300 hover:to-pink-400 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-pink-500/25 transition-all transform hover:-translate-y-0.5">
+                        SCAN SPECTRUM ➔
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 0. CRIPTO-CIPHER: Cold War Signal Interceptor -->
+        <div class="game-card-wrapper" data-category="brain skill" data-title="cripto cipher cold war signal interceptor cryptanalysis frequency analysis caesar vigenere enigma substitution teleprinter">
+            <div class="game-card h-full p-7 rounded-3xl border border-emerald-500/50 bg-gradient-to-br from-slate-950 via-teal-950/80 to-emerald-950 text-white flex flex-col justify-between overflow-hidden shadow-2xl relative" style="--card-glow: rgba(16, 185, 129, 0.55);">
+                <div class="absolute -right-8 -top-8 w-48 h-48 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-8 -bottom-8 w-44 h-44 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-emerald-400 via-teal-400 to-amber-400 rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-emerald-500/30 group">
+                            📻
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-gradient-to-r from-emerald-500/20 to-amber-500/20 text-emerald-300 border border-emerald-500/50 badge-pulse tracking-wide">
+                            🔥 NEW RELEASE // 15 INTERCEPTS
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-black text-white mb-2 tracking-wide flex items-center gap-2">
+                        CRIPTO-CIPHER
+                    </h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">📊 Frequency Spectrum</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-teal-950/70 text-teal-300 border border-teal-800/50">🔑 Vigenère & Enigma</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-amber-950/70 text-amber-300 border border-amber-800/50">📜 Cold War SIGINT</span>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-6 font-light">
+                        Intercept encrypted radio feeds on a CRT teleprinter. Leverage letter frequency histograms, deduce Vigenère keywords, step mechanical Enigma rotors, and crack 15 historical Cold War cables.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-800/80">
+                    <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                        <span class="text-emerald-400">●</span> 15 Espionage Cables
+                    </div>
+                    <a href="cripto_cipher/index.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 via-teal-400 to-amber-400 hover:from-emerald-300 hover:to-amber-300 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5">
+                        INTERCEPT SIGNAL ➔
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 0. GRAVITY SLINGSHOT: Deep Space Astrogator -->
+        <div class="game-card-wrapper" data-category="science brain skill" data-title="gravity slingshot deep space astrogator orbital mechanics kepler hohmann transfer oberth effect delta-v voyager lagrange">
+            <div class="game-card h-full p-7 rounded-3xl border border-sky-500/50 bg-gradient-to-br from-slate-950 via-sky-950/80 to-indigo-950 text-white flex flex-col justify-between overflow-hidden shadow-2xl relative" style="--card-glow: rgba(56, 189, 248, 0.55);">
+                <div class="absolute -right-8 -top-8 w-48 h-48 bg-sky-400/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-8 -bottom-8 w-44 h-44 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-sky-400 via-cyan-400 to-indigo-500 rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-sky-500/30 group">
+                            🛰️
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-gradient-to-r from-sky-500/20 to-cyan-500/20 text-sky-300 border border-sky-500/50 badge-pulse tracking-wide">
+                            🔥 NEW RELEASE // 12 MISSIONS
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-black text-white mb-2 tracking-wide flex items-center gap-2">
+                        GRAVITY SLINGSHOT
+                    </h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-sky-950/70 text-sky-300 border border-sky-800/50">🪐 N-Body Orbit Physics</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-cyan-950/70 text-cyan-300 border border-cyan-800/50">⚡ Δv Fuel Planner</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-indigo-950/70 text-indigo-300 border border-indigo-800/50">🚀 Oberth & Kepler</span>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-6 font-light">
+                        Master orbital mechanics and Kepler's laws. Pilot deep-space scientific probes, execute Hohmann transfers, harness Oberth maneuvers, and perform gravitational slingshots under strict delta-v propellant budgets.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-800/80">
+                    <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                        <span class="text-sky-400">●</span> 12 Grand Tour Missions
+                    </div>
+                    <a href="gravity_slingshot/index.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-sky-400 via-cyan-400 to-teal-400 hover:from-sky-300 hover:to-teal-300 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-sky-500/25 transition-all transform hover:-translate-y-0.5">
+                        LAUNCH PROBE ➔
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 0. TOKAMAK FORGE: Nuclear Fusion & Stellar Nucleosynthesis -->
+        <div class="game-card-wrapper" data-category="science brain skill" data-title="tokamak forge nuclear fusion stellar nucleosynthesis periodic table isotope radioactive decay half-life triple alpha iron peak q-factor">
+            <div class="game-card h-full p-7 rounded-3xl border border-purple-500/50 bg-gradient-to-br from-slate-950 via-purple-950/80 to-cyan-950 text-white flex flex-col justify-between overflow-hidden shadow-2xl relative" style="--card-glow: rgba(168, 85, 247, 0.55);">
+                <div class="absolute -right-8 -top-8 w-48 h-48 bg-purple-400/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-8 -bottom-8 w-44 h-44 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-cyan-400 via-purple-400 to-pink-500 rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-purple-500/30 group">
+                            ⚛️
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-gradient-to-r from-purple-500/20 to-cyan-500/20 text-purple-300 border border-purple-500/50 badge-pulse tracking-wide">
+                            🔥 NEW RELEASE // 12 ERAS
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-black text-white mb-2 tracking-wide flex items-center gap-2">
+                        TOKAMAK FORGE
+                    </h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-purple-950/70 text-purple-300 border border-purple-800/50">💥 Nuclear Fusion Drop</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-cyan-950/70 text-cyan-300 border border-cyan-800/50">⏳ Half-Life Decay Clocks</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-amber-950/70 text-amber-300 border border-amber-800/50">⚡ Magnetic Pinch Pulse</span>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-6 font-light">
+                        Step inside a magnetic confinement torus. Drop isotopes, manage radioactive half-life decay timers, trigger Triple-Alpha Hoyle resonances, and fuse elements from Hydrogen to Gold and Uranium across 12 cosmic eras.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-800/80">
+                    <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                        <span class="text-purple-400">●</span> 12 Stellar Eras
+                    </div>
+                    <a href="tokamak_forge/index.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 hover:from-cyan-300 hover:to-pink-400 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-purple-500/25 transition-all transform hover:-translate-y-0.5">
+                        IGNITE REACTOR ➔
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 0. PHARMACO-RUSH: Clinical Pharmacology & Emergency Triage -->
+        <div class="game-card-wrapper" data-category="science brain speed" data-title="pharmaco rush clinical pharmacology emergency triage trauma bay icu ekg epinephrine naloxone adenosine vitals defibrillation">
+            <div class="game-card h-full p-7 rounded-3xl border border-cyan-500/50 bg-gradient-to-br from-slate-950 via-teal-950/80 to-blue-950 text-white flex flex-col justify-between overflow-hidden shadow-2xl relative" style="--card-glow: rgba(6, 182, 212, 0.55);">
+                <div class="absolute -right-8 -top-8 w-48 h-48 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-8 -bottom-8 w-44 h-44 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-cyan-500/30 group">
+                            💉
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 text-cyan-300 border border-cyan-500/50 badge-pulse tracking-wide">
+                            🔥 NEW RELEASE // 15 CASES
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-black text-white mb-2 tracking-wide flex items-center gap-2">
+                        PHARMACO-RUSH
+                    </h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-cyan-950/70 text-cyan-300 border border-cyan-800/50">🫀 Live EKG Oscilloscope</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">💊 30+ Pharmaceuticals</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-purple-950/70 text-purple-300 border border-purple-800/50">⚡ ACLS Shock Triage</span>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-6 font-light">
+                        Step into a high-stakes trauma bay. Interpret live ECG lead telemetry, balance receptor kinetics (α1, β1, GABA-A, μ-opioid), compound IV syringes, and stabilize patients across 15 genuine clinical cases.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-800/80">
+                    <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                        <span class="text-cyan-400">●</span> 15 Clinical Scenarios
+                    </div>
+                    <a href="pharmaco_rush/index.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-400 via-teal-400 to-emerald-400 hover:from-cyan-300 hover:to-emerald-300 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-cyan-500/25 transition-all transform hover:-translate-y-0.5">
+                        RESUSCITATE ➔
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 0. KERNEL DETECTIVE: Cyber Forensics -->
+        <div class="game-card-wrapper" data-category="science brain skill" data-title="kernel detective cyber forensics terminal hex editor packet dissector disassembler x86 logic gates reverse engineering memory mmu spectre rowhammer">
+            <div class="game-card h-full p-7 rounded-3xl border border-emerald-500/50 bg-gradient-to-br from-slate-950 via-teal-950/80 to-cyan-950 text-white flex flex-col justify-between overflow-hidden shadow-2xl relative" style="--card-glow: rgba(0, 240, 255, 0.55);">
+                <div class="absolute -right-8 -top-8 w-48 h-48 bg-emerald-400/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-8 -bottom-8 w-44 h-44 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-emerald-400 via-teal-400 to-cyan-400 rounded-2xl flex items-center justify-center text-slate-950 font-black text-2xl shadow-lg shadow-emerald-500/30 group">
+                            🕵️‍♂️
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 text-emerald-300 border border-emerald-500/50 badge-pulse tracking-wide">
+                            🔥 NEW RELEASE // 20 CASES
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-black text-white mb-2 tracking-wide flex items-center gap-2">
+                        KERNEL DETECTIVE
+                    </h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">💾 Hex & Disasm</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-cyan-950/70 text-cyan-300 border border-cyan-800/50">⚡ Logic & RFCs</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-purple-950/70 text-purple-300 border border-purple-800/50">🧠 Ring 0 Rootkits</span>
+                    </div>
+                    <p class="text-slate-300 text-sm leading-relaxed mb-6 font-light">
+                        Step into an offline digital forensics terminal. Inspect punched tape, sniff rogue TCP/IP packets, disassemble malicious firmware, and analyze Spectre cache timing across 20 authentic computer science cases.
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-between pt-4 border-t border-slate-800/80">
+                    <div class="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                        <span class="text-emerald-400">●</span> 20 Genuine CS Cases
+                    </div>
+                    <a href="kernel_detective/index.html" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-bold text-sm tracking-wide shadow-lg shadow-emerald-500/25 transition-all transform hover:-translate-y-0.5">
+                        INVESTIGATE ➔
+                    </a>
+                </div>
+            </div>
+        </div>
 
         <!-- 1. PACKET RUN: The Microarchitect -->
         <div class="game-card-wrapper" data-category="science brain speed" data-title="packet run the microarchitect cpu low level computing execution data pipelines alu registers cache branch prediction out of order">
@@ -1087,7 +1367,75 @@
             </div>
         </div>
 
-        <!-- 16. Empty State/Coming Soon Card -->
+        <!-- 16. Geo Detective Card -->
+        <div class="game-card-wrapper" data-category="brain" data-title="geo detective earth case files maps mystery clues geography world exploration sleuth puzzle">
+            <div class="game-card h-full p-7 rounded-3xl border border-amber-500/30 bg-gradient-to-br from-slate-950 via-amber-950/40 to-slate-950 text-white flex flex-col justify-between overflow-hidden shadow-xl" style="--card-glow: rgba(245, 158, 11, 0.35);">
+                <div class="absolute -right-8 -top-8 w-44 h-44 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="w-14 h-14 bg-gradient-to-tr from-amber-400 to-yellow-600 rounded-2xl flex items-center justify-center text-slate-950 text-2xl shadow-lg shadow-amber-500/25">
+                            🌍
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                            🔍 MAPS DETECTIVE
+                        </span>
+                    </div>
+
+                    <h3 class="text-2xl font-bold text-white mb-2">Geo Detective</h3>
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-amber-950/70 text-amber-300 border border-amber-800/50">🛰️ Earth Case Files</span>
+                        <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-cyan-950/70 text-cyan-300 border border-cyan-800/50">🧩 Progressive Recon</span>
+                    </div>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                        Deduce real-world mysteries, inspect satellite recon and street views, and unravel multi-stage international cases step-by-step.
+                    </p>
+                </div>
+
+                <div class="pt-4 border-t border-white/10 flex items-center justify-between">
+                    <span class="text-xs text-amber-300 font-mono">Status: Classified</span>
+                    <a href="geo_detective/index.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-amber-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                        <span>Open Dossier</span>
+                        <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 17. The Sunday Puzzle Card -->
+        <div class="game-card-wrapper relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden group hover:shadow-2xl hover:shadow-amber-900/20 transition-all duration-500 border border-amber-900/30 bg-gradient-to-b from-[#231e17] to-[#171410]" data-category="puzzle logic" data-title="the sunday puzzle broadsheet crossword logic riddle detective">
+            <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
+            <div class="relative z-10">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 rounded-2xl bg-amber-950/80 border border-amber-800/40 flex items-center justify-center text-2xl shadow-inner group-hover:scale-110 transition-transform">
+                        📰
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                        ☕ SUNDAY EDITION
+                    </span>
+                </div>
+
+                <h3 class="text-2xl font-bold text-white mb-2">The Sunday Puzzle</h3>
+                <div class="flex flex-wrap gap-1.5 mb-3">
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-amber-950/70 text-amber-300 border border-amber-800/50">🧩 Broadsheet Puzzles</span>
+                    <span class="px-2 py-0.5 rounded-md text-[10px] font-mono bg-emerald-950/70 text-emerald-300 border border-emerald-800/50">🕵️ Deduction & Crossword</span>
+                </div>
+                <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-6">
+                    A weekly cozy ritual: Mini Crossword, Who Ate the Cake logic grid, Five Letters word ladder, visual anomalies, and the Sunday Mystery.
+                </p>
+            </div>
+
+            <div class="pt-4 border-t border-white/10 flex items-center justify-between relative z-10">
+                <span class="text-xs text-amber-300 font-mono">EST. 2026 • Issue #35</span>
+                <a href="the_sunday_puzzle/index.html" class="play-btn px-5 py-2.5 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm transition-all shadow-lg shadow-amber-500/25 hover:-translate-y-0.5 flex items-center gap-1.5 group">
+                    <span>Open Paper</span>
+                    <span class="group-hover:translate-x-1 transition-transform">&rarr;</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 18. Empty State/Coming Soon Card -->
         <div class="game-card-wrapper" data-category="all" data-title="lab coming soon ideas">
             <div class="p-8 rounded-3xl border-2 border-dashed border-slate-800 bg-slate-900/30 flex flex-col justify-center items-center text-center h-full min-h-[300px] hover:border-slate-700 transition">
                 <div class="w-14 h-14 rounded-2xl bg-slate-800/50 flex items-center justify-center text-2xl text-slate-400 mb-4 animate-bounce">
@@ -1224,6 +1572,13 @@
         const clearSearchBtn = document.getElementById('clear-search-btn');
 
         let currentCategory = 'all';
+
+        // Dynamically calculate and sync total playable titles
+        const totalPlayable = Array.from(gameCards).filter(w => !w.getAttribute('data-title')?.includes('lab coming soon ideas')).length;
+        const headerArcadeCounter = document.getElementById('header-arcade-counter');
+        const allGamesCount = document.getElementById('all-games-count');
+        if (headerArcadeCounter) headerArcadeCounter.textContent = `BASIC STUDIO ARCADE • ${totalPlayable} EXPERIMENTAL TITLES`;
+        if (allGamesCount) allGamesCount.textContent = `(${totalPlayable})`;
 
         function updateFilter() {
             const query = searchInput.value.toLowerCase().trim();

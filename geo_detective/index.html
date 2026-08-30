@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GEO DETECTIVE: Earth Case Files | The Arcade</title>
+    <meta name="description" content="A real-world geolocation detective puzzle game. Deduce clues, explore Earth through Google Maps and tactical recon, and crack international mystery cases.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Leaflet Map CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#080b11] text-slate-200 antialiased selection:bg-amber-500 selection:text-slate-950 min-h-screen flex flex-col justify-between">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl sticky top-0 z-40 px-4 lg:px-8 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <a href="../index.html" class="flex items-center gap-2 text-slate-400 hover:text-white transition group">
+                <span class="text-xs font-mono px-2 py-1 rounded bg-slate-800 group-hover:bg-slate-700 text-slate-300 transition">← ARCADE</span>
+            </a>
+            <div class="h-5 w-[1px] bg-slate-800 hidden sm:block"></div>
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-slate-950 font-black text-sm shadow-md shadow-amber-500/20">
+                    🌍
+                </div>
+                <div>
+                    <h1 class="text-sm sm:text-base font-bold tracking-tight text-white flex items-center gap-2">
+                        GEO DETECTIVE
+                        <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">CASE FILES</span>
+                    </h1>
+                    <p class="text-[11px] text-slate-400 hidden sm:block">Real-World Geolocation Mystery Investigation</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3">
+            <button id="btn-open-cases" class="px-3 sm:px-4 py-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-500/50 text-xs font-mono font-medium text-slate-200 hover:text-amber-300 transition flex items-center gap-1.5 shadow-sm">
+                <span>📁 Case Archive</span>
+            </button>
+            <button id="btn-toggle-audio" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-slate-600 text-xs font-mono text-slate-300 transition">
+                🔊 Sound: ON
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN INVESTIGATION DESK -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- LEFT COLUMN: ACTIVE CASE DOSSIER (7 COLS) -->
+        <section class="lg:col-span-7 flex flex-col gap-5">
+
+            <!-- Active Case Header Banner -->
+            <div class="dossier-card p-5 sm:p-6">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span id="case-num-badge" class="text-xs font-mono font-bold px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 tracking-wider">
+                            CASE #017
+                        </span>
+                        <span id="case-category-badge" class="text-[11px] font-mono px-2.5 py-1 rounded bg-cyan-950/80 text-cyan-300 border border-cyan-800/50">
+                            👤 Missing Person
+                        </span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="case-region-badge" class="text-[11px] font-mono text-slate-400">
+                            📍 Central Europe
+                        </span>
+                        <span id="case-difficulty-badge" class="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                            Diff: Normal
+                        </span>
+                    </div>
+                </div>
+
+                <h2 id="case-title" class="text-2xl sm:text-3xl font-bold font-serif tracking-tight text-white mb-2">
+                    The Missing Camera
+                </h2>
+                <p id="case-briefing-text" class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    A photographer disappeared in Europe. His final roll of 35mm film holds the coordinates of his whereabouts.
+                </p>
+
+                <!-- Investigation Progress Bar -->
+                <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-mono">
+                    <span id="clue-step-counter" class="text-amber-400 font-bold">CLUE 01 / 04</span>
+                    <div class="w-48 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div id="case-progress-bar" class="h-full bg-gradient-to-r from-amber-400 to-yellow-500 w-1/4 transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Clue Terminal & Deduce Prompt -->
+            <div class="dossier-card p-5 sm:p-6">
+                <div class="flex items-center justify-between mb-3">
+                    <span id="clue-badge-type" class="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold bg-amber-950/60 px-2 py-0.5 rounded border border-amber-800/40">
+                        Interception Note
+                    </span>
+                    <span class="text-[11px] font-mono text-slate-400">STATUS: ACTIVE INQUIRY</span>
+                </div>
+
+                <h3 id="clue-title-text" class="text-lg font-bold text-white mb-3">
+                    The River's Bend & The King
+                </h3>
+
+                <!-- Clue Narrative (Typewriter animated) -->
+                <div class="p-4 sm:p-5 rounded-xl bg-slate-950/90 border border-slate-800 relative mb-5">
+                    <div class="absolute -top-2.5 left-4 px-2 py-0.5 rounded bg-slate-900 text-[10px] font-mono text-slate-400 border border-slate-800">
+                        FIELD INTERCEPT
+                    </div>
+                    <p id="clue-narrative-text" class="text-slate-200 text-sm sm:text-base leading-relaxed font-serif italic min-h-[64px]">
+                        “I will meet you where the Vltava river bends sharply beneath the ancient castle, in the City of a Hundred Spires...”
+                    </p>
+                </div>
+
+                <!-- Clue Task / Question Prompt -->
+                <div class="mb-4">
+                    <label id="clue-prompt-question" class="block text-xs font-mono text-slate-300 font-semibold mb-2">
+                        Identify the European capital city and the famous 14th-century stone bridge where Viktor met his contact:
+                    </label>
+
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input 
+                            type="text" 
+                            id="player-answer-input" 
+                            class="flex-1 px-4 py-3 rounded-xl bg-slate-900/90 border border-slate-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/20 text-white placeholder:text-slate-600 text-sm font-medium outline-none transition"
+                            placeholder="e.g., Prague, Charles Bridge..."
+                            autocomplete="off"
+                            spellcheck="false"
+                        >
+                        <button 
+                            id="btn-submit-answer" 
+                            class="px-6 py-3 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm font-mono transition-all shadow-lg shadow-amber-500/25 hover:-translate-y-0.5 active:translate-y-0"
+                        >
+                            SUBMIT DEDUCTION ➔
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dynamic Feedback Banner -->
+                <div id="clue-feedback-banner" class="hidden"></div>
+
+                <!-- Quick External Recon Launchers -->
+                <div class="pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-[11px] font-mono text-slate-400">EXTERNAL SATELLITE RECON:</span>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button id="btn-open-gmaps" class="px-3 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[11px] font-mono text-amber-300 transition flex items-center gap-1">
+                            Google Maps ↗
+                        </button>
+                        <button id="btn-open-streetview" class="px-3 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[11px] font-mono text-cyan-300 transition flex items-center gap-1">
+                            Street View ↗
+                        </button>
+                        <button id="btn-open-earth" class="px-3 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-[11px] font-mono text-emerald-300 transition flex items-center gap-1">
+                            Google Earth ↗
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HQ Intel & Progressive Hints Box -->
+            <div class="dossier-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm">💡</span>
+                        <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-200">HQ Intelligence Wire (Hints)</h4>
+                    </div>
+                    <button id="btn-request-hint" class="px-3 py-1 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 rounded-lg text-xs font-mono transition">
+                        Request Intel Brief (1/3)
+                    </button>
+                </div>
+                <div id="hints-container" class="space-y-2">
+                    <div class="text-xs text-slate-500 italic">No HQ intelligence requested yet. Press the button above if you need a field tip.</div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN: TACTICAL MAP & EVIDENCE LOG (5 COLS) -->
+        <section class="lg:col-span-5 flex flex-col gap-5">
+
+            <!-- Interactive Tactical Recon Map -->
+            <div class="dossier-card p-4 sm:p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span class="text-xs font-mono font-bold uppercase tracking-wider text-white">RECON SATELLITE HUD</span>
+                    </div>
+                    <span id="map-live-coords" class="text-[10px] font-mono text-amber-400">50.0875° N, 14.4213° E</span>
+                </div>
+
+                <!-- Leaflet Container -->
+                <div id="recon-map" class="w-full h-64 sm:h-72 rounded-xl overflow-hidden border border-slate-800 relative z-0"></div>
+
+                <!-- Layer Switchers -->
+                <div class="mt-3 flex items-center justify-between">
+                    <span class="text-[10px] font-mono text-slate-500">MAP LAYER:</span>
+                    <div class="flex gap-1">
+                        <button class="map-layer-btn active" data-layer="dark">Tactical Dark</button>
+                        <button class="map-layer-btn" data-layer="satellite">Satellite</button>
+                        <button class="map-layer-btn" data-layer="street">Street</button>
+                        <button class="map-layer-btn" data-layer="topo">Topo</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Verified Field Evidence & Waypoint Log -->
+            <div class="dossier-card p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm">📌</span>
+                        <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-200">Verified Waypoints</h4>
+                    </div>
+                    <span class="text-[10px] font-mono text-slate-400">DOSSIER LOG</span>
+                </div>
+                <div id="evidence-items-list" class="max-h-56 overflow-y-auto pr-1">
+                    <div class="text-center py-6 text-slate-500 text-xs italic">
+                        Awaiting first verified field deduction...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Field Detective Notebook Scratchpad -->
+            <div class="dossier-card p-5">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm">📝</span>
+                        <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-slate-200">Detective Field Notebook</h4>
+                    </div>
+                    <span class="text-[10px] font-mono text-emerald-400">AUTO-SAVED</span>
+                </div>
+                <p class="text-[11px] text-slate-400 mb-2">Jot down coordinates, decoded anagrams, suspect statements, or map observations:</p>
+                <textarea 
+                    id="field-notebook-textarea" 
+                    rows="3"
+                    class="w-full p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-mono text-slate-200 placeholder:text-slate-600 focus:border-amber-400 focus:outline-none resize-none transition"
+                    placeholder="E.g. Charles Bridge -> Clementinum -> Astronomical Clock..."
+                ></textarea>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- FOOTER / STATS BAR -->
+    <footer class="border-t border-slate-800/80 bg-slate-950/80 px-4 lg:px-8 py-3 mt-8">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-400">
+            <div class="flex items-center gap-4 sm:gap-6">
+                <div>
+                    <span class="text-slate-500">RANK:</span>
+                    <span id="stat-detective-rank" class="text-amber-300 font-bold ml-1">Field Trainee</span>
+                </div>
+                <div>
+                    <span class="text-slate-500">CASES SOLVED:</span>
+                    <span id="stat-cases-solved" class="text-emerald-400 font-bold ml-1">0 / 6</span>
+                </div>
+                <div>
+                    <span class="text-slate-500">CLUES CRACKED:</span>
+                    <span id="stat-clues-solved" class="text-cyan-400 font-bold ml-1">0</span>
+                </div>
+            </div>
+            <div class="text-[11px] text-slate-500">
+                Built for Explorers & Geolocation Detectives
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODAL: CASE ARCHIVE SELECTOR -->
+    <div id="case-selector-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden">
+        <div class="dossier-card max-w-3xl w-full max-h-[85vh] flex flex-col p-6 overflow-hidden animate-fade-in">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+                <div>
+                    <h3 class="text-xl font-bold font-serif text-white">Classified Case Archive</h3>
+                    <p class="text-xs text-slate-400">Select an unsolved investigation dossier from around the globe</p>
+                </div>
+                <button id="btn-close-cases" class="w-8 h-8 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center text-sm font-mono border border-slate-700">
+                    ✕
+                </button>
+            </div>
+            <div id="case-selector-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 overflow-y-auto py-4 pr-1">
+                <!-- Injected via app.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: GRAND CASE SOLVED REVEAL MURDER BOARD -->
+    <div id="solved-modal" class="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-lg flex items-center justify-center p-4 hidden">
+        <div class="dossier-card max-w-2xl w-full max-h-[90vh] flex flex-col p-6 sm:p-8 overflow-y-auto animate-fade-in border-amber-500/40">
+            
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-600 text-3xl shadow-xl shadow-amber-500/30 mb-3 animate-bounce">
+                    🎉
+                </div>
+                <div id="solved-case-number" class="text-xs font-mono font-bold tracking-widest text-amber-400 uppercase">CASE #017</div>
+                <h2 id="solved-case-title" class="text-2xl sm:text-3xl font-serif font-bold text-white mt-1">The Missing Camera</h2>
+                <div class="mt-2 inline-block px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-mono font-bold">
+                    ✓ CASE SOLVED & CLOSED
+                </div>
+            </div>
+
+            <!-- Red-String Conspiracy Murder Board Chain -->
+            <div class="mb-6 p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-amber-500/30">
+                <div class="text-[11px] font-mono text-amber-400 font-bold uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span>🧵</span> THE INVESTIGATION TRAIL REVEAL
+                </div>
+                <div id="reveal-chain-container" class="flex flex-col gap-1">
+                    <!-- Steps injected via app.js -->
+                </div>
+            </div>
+
+            <!-- Historical Debrief -->
+            <div class="mb-6">
+                <h4 class="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider mb-2">INTELLIGENCE CASE DEBRIEF</h4>
+                <p id="solved-debrief-text" class="text-xs sm:text-sm text-slate-300 leading-relaxed bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                    Case summary and historical geographical context.
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button id="btn-modal-next-case" class="flex-1 py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold rounded-xl text-xs sm:text-sm font-mono transition-all shadow-lg shadow-amber-500/25">
+                    PROCEED TO NEXT CASE ➔
+                </button>
+                <button id="btn-close-solved-modal" class="px-5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono text-slate-300 transition">
+                    Review Dossier
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/audio_engine.js"></script>
+    <script src="js/cases.js"></script>
+    <script src="js/map_engine.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

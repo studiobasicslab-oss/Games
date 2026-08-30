@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PHARMACO-RUSH: Emergency Triage & Clinical Pharmacology Simulator</title>
+    <meta name="description" content="Step into an emergency trauma bay. Interpret live ECG telemetry and vital signs, calculate precise drug doses, and stabilize critical patients across authentic clinical pharmacology cases.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="er-shell">
+        <!-- TOP NAVIGATION & STATS HUD -->
+        <header class="er-header">
+            <div class="brand-section">
+                <div class="brand-icon">💉</div>
+                <div class="brand-title">
+                    <h1>PHARMACO-RUSH</h1>
+                    <span class="brand-sub">TRAUMA BAY & CLINICAL PHARMACOLOGY // ICU-OS v3.2</span>
+                </div>
+            </div>
+
+            <div class="header-stats">
+                <div class="stat-chip">
+                    <span>CASES:</span>
+                    <span class="val" id="hud-solved">0 / 15</span>
+                </div>
+                <div class="stat-chip">
+                    <span>SCORE:</span>
+                    <span class="val" id="hud-score">0 PTS</span>
+                </div>
+                <button class="header-btn" id="btn-pharmacopeia" title="Open Drug Database Archive">
+                    <span>📖</span>
+                    <span class="hidden sm:inline">PHARMACOPEIA</span>
+                </button>
+                <button class="header-btn" id="btn-audio-toggle" title="Toggle Sound Synthesizer">
+                    <span>🔊</span>
+                    <span class="hidden sm:inline">SFX: ON</span>
+                </button>
+                <a href="../index.html" class="header-btn" title="Exit to Games Portal">
+                    <span>🏠</span>
+                    <span class="hidden sm:inline">ARCADE</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- MAIN 3-COLUMN WORKSPACE -->
+        <main class="er-grid">
+            <!-- COLUMN 1: CASE DOSSIER & TRIAGE QUEUE -->
+            <aside class="er-panel col-left">
+                <div class="panel-title">
+                    <span>📁 TRAUMA DOSSIERS</span>
+                    <span class="text-xs text-cyan-400">15 CASES</span>
+                </div>
+                <div class="case-scroll-list" id="case-list">
+                    <!-- Populated dynamically via app.js -->
+                </div>
+            </aside>
+
+            <!-- COLUMN 2: ICU TELEMETRY, VITALS & PATIENT PROFILE -->
+            <section class="er-panel col-middle">
+                <!-- LIVE ECG OSCILLOSCOPE & MONITOR -->
+                <div class="telemetry-card">
+                    <div class="canvas-container">
+                        <canvas id="ekg-canvas"></canvas>
+                        <div class="telemetry-overlay-info">
+                            <span class="lead-tag">LEAD II</span>
+                            <span class="rhythm-tag" id="rhythm-name">Sinus Tachycardia (138 bpm)</span>
+                        </div>
+                    </div>
+
+                    <!-- 4-TILE VITALS MONITOR -->
+                    <div class="vitals-grid">
+                        <div class="vital-tile green">
+                            <span class="vital-label">HEART RATE (HR)</span>
+                            <span class="vital-num" id="val-hr">138</span>
+                            <span class="vital-sub">BPM // PULSE</span>
+                        </div>
+                        <div class="vital-tile cyan">
+                            <span class="vital-label">BLOOD PRESSURE</span>
+                            <span class="vital-num" id="val-bp">72/40</span>
+                            <span class="vital-sub" id="val-map">MAP 51</span>
+                        </div>
+                        <div class="vital-tile blue">
+                            <span class="vital-label">OXYGEN SAT (SpO2)</span>
+                            <span class="vital-num" id="val-spo2">82%</span>
+                            <span class="vital-sub">ROOM AIR</span>
+                        </div>
+                        <div class="vital-tile amber">
+                            <span class="vital-label">BLOOD GLUCOSE</span>
+                            <span class="vital-num" id="val-glucose">105</span>
+                            <span class="vital-sub">MG / DL</span>
+                        </div>
+                    </div>
+
+                    <!-- SECONDARY VITALS & STABILITY PROGRESS -->
+                    <div class="mt-4 flex flex-wrap justify-between items-center text-xs font-mono text-slate-400 px-1">
+                        <div class="flex gap-4">
+                            <span>RESP RATE: <strong class="text-white" id="val-rr">28</strong> /min</span>
+                            <span>CORE TEMP: <strong class="text-white" id="val-temp">37.1°C</strong></span>
+                        </div>
+                        <div id="shock-warning" class="hidden text-rose-400 font-bold badge-pulse">
+                            🚨 CRITICAL HYPOPERFUSION
+                        </div>
+                    </div>
+
+                    <div class="stability-section mt-3">
+                        <div class="flex justify-between text-xs font-mono">
+                            <span class="text-slate-400">HOMEOSTASIS & STABILITY RECOVERY</span>
+                            <span class="text-emerald-400 font-bold" id="stability-text">0%</span>
+                        </div>
+                        <div class="stability-bar-bg">
+                            <div class="stability-bar-fill" id="stability-fill"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PATIENT CLINICAL DOSSIER -->
+                <div class="dossier-box">
+                    <div class="dossier-header">
+                        <h3 class="dossier-name" id="patient-name">Marcus V., Age 24</h3>
+                        <span class="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40" id="patient-case-badge">
+                            CASE #01 // ANAPHYLAXIS
+                        </span>
+                    </div>
+
+                    <p class="text-slate-300 text-sm leading-relaxed" id="patient-presentation">
+                        Collapses in a bakery 10 minutes after eating a pastry. Stridor, diffuse urticaria (hives), facial angioedema, labored breathing.
+                    </p>
+
+                    <div class="dossier-findings">
+                        <div class="finding-item">
+                            <strong>PUPILS:</strong> <span class="text-slate-200" id="patient-pupils">Normal (3mm)</span>
+                        </div>
+                        <div class="finding-item">
+                            <strong>LUNGS:</strong> <span class="text-slate-200" id="patient-lungs">Severe expiratory wheezing & stridor</span>
+                        </div>
+                    </div>
+
+                    <div class="finding-item">
+                        <strong>TOXIDROME / SUSPECTED PATHOLOGY:</strong>
+                        <span class="text-cyan-300 font-mono block mt-1" id="patient-toxidrome">IgE-Mediated Massive Histamine Release & Bronchospasm</span>
+                    </div>
+
+                    <div>
+                        <span class="text-xs font-mono uppercase text-slate-400 block mb-1">STABILIZATION TARGETS:</span>
+                        <div class="target-pills-wrap" id="targets-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PHARMACY & DRUG ADMINISTERING INTERFACE -->
+                <div class="er-panel pharmacy-panel">
+                    <div class="panel-title">
+                        <span>🧪 PHARMACY CRASH CART & COMPOUNDER</span>
+                        <span class="text-xs text-emerald-400">SELECT DRUG & DOSAGE</span>
+                    </div>
+
+                    <!-- Category Tabs -->
+                    <div class="category-tabs-wrap">
+                        <button class="cat-tab active" data-cat="all">ALL AGENTS</button>
+                        <button class="cat-tab" data-cat="pressors">⚡ PRESSORS & ACLS</button>
+                        <button class="cat-tab" data-cat="cardiac">❤️ CARDIAC & RHYTHM</button>
+                        <button class="cat-tab" data-cat="antidotes">🚨 ANTIDOTES & TOX</button>
+                        <button class="cat-tab" data-cat="metabolic">🍬 METABOLIC & FLUIDS</button>
+                        <button class="cat-tab" data-cat="sedation">💉 ANALGESIA & SEDATION</button>
+                        <button class="cat-tab" data-cat="electrical">⚡ ELECTRICAL (DEFIB)</button>
+                    </div>
+
+                    <!-- Drug Grid -->
+                    <div class="drug-grid-container" id="drug-grid">
+                        <!-- Populated dynamically via app.js -->
+                    </div>
+
+                    <!-- Active Drug Configuration & Dosage Slider -->
+                    <div class="drug-control-card">
+                        <div class="selected-drug-title">
+                            <div>
+                                <span id="selected-drug-name">Epinephrine (Adrenaline)</span>
+                                <span class="text-xs font-normal text-slate-400 block font-mono" id="selected-drug-category">Resuscitation & Pressors</span>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-md text-[10px] font-mono bg-cyan-950/80 text-cyan-300 border border-cyan-800/50" id="selected-drug-badge">
+                                ⚡ First-Line ACLS
+                            </span>
+                        </div>
+
+                        <div class="text-xs text-slate-300 leading-relaxed">
+                            <strong>Indication:</strong> <span id="selected-drug-indication">Cardiac arrest (ACLS), severe Anaphylaxis, refractory Bradycardia.</span>
+                        </div>
+                        <div class="text-xs text-amber-300/90 leading-relaxed font-mono">
+                            💡 <span id="selected-drug-pearl">Stimulates α1 (vasoconstriction), β1 (increased cardiac output), and β2 (bronchodilation in anaphylaxis).</span>
+                        </div>
+
+                        <!-- Dosage Slider -->
+                        <div class="dosage-slider-wrap">
+                            <div class="dosage-display-row font-mono">
+                                <span class="text-slate-400">ADMINISTRATION DOSE:</span>
+                                <span class="text-cyan-300 font-bold"><span id="dose-val-display">1.0</span> <span id="dose-unit-display">mg</span></span>
+                            </div>
+                            <input type="range" id="dose-slider" class="dose-slider" min="0.1" max="3.0" step="0.1" value="1.0">
+                        </div>
+
+                        <!-- Route Selector -->
+                        <div>
+                            <span class="text-xs font-mono uppercase text-slate-400 block mb-1">DELIVERY ROUTE:</span>
+                            <div class="route-buttons-row" id="route-select-container">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- PUSH INJECTION BUTTON -->
+                        <button class="btn-push-administer" id="btn-administer">
+                            <span>💉</span>
+                            <span>ADMINISTER DOSE TO PATIENT</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- COLUMN 3: ACTIVE INFUSIONS & REAL-TIME EVENT TELEMETRY -->
+            <aside class="er-panel col-right">
+                <div class="panel-title">
+                    <span>🩸 CIRCULATING INFUSIONS</span>
+                </div>
+                <div class="active-drugs-wrap" id="active-drugs-list">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div class="panel-title mt-4">
+                    <span>📜 CLINICAL EVENT LOG</span>
+                </div>
+                <div class="event-logs-feed" id="event-logs-list">
+                    <!-- Populated dynamically -->
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- RESULT & DEBRIEF MODAL -->
+    <div class="modal-overlay hidden" id="modal-result">
+        <div class="modal-box text-center">
+            <span class="badge mb-3 inline-block" id="result-badge">CASE COMPLETED</span>
+            <h2 class="text-3xl font-black text-white mb-2" id="result-title">PATIENT STABILIZED</h2>
+            <div class="text-sm font-mono text-cyan-400 mb-4" id="result-score-bonus">+1000 PTS</div>
+            
+            <div class="text-left bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 leading-relaxed mb-6">
+                <div class="text-amber-400 font-bold font-mono mb-1">CLINICAL DEBRIEF & PEARL:</div>
+                <p id="result-debrief">Epinephrine activates α1 to reverse vasodilatory shock, β1 to restore cardiac output, and β2 to relax constricted bronchioles.</p>
+            </div>
+
+            <div class="flex justify-center gap-3">
+                <button class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-sm transition" id="btn-retry-case">
+                    🔄 RETRY CASE
+                </button>
+                <button class="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-slate-950 font-black rounded-xl text-sm transition shadow-lg shadow-emerald-500/30" id="btn-next-case">
+                    NEXT CASE ➔
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHARMACOPEIA ARCHIVE MODAL -->
+    <div class="modal-overlay hidden" id="modal-pharmacopeia">
+        <div class="modal-box large">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-xl font-bold text-white">📖 CLINICAL PHARMACOPEIA</h3>
+                    <p class="text-xs text-slate-400 font-mono">Formulary mechanism of action, therapeutic windows & contraindications</p>
+                </div>
+                <button class="text-slate-400 hover:text-white text-2xl font-bold leading-none" id="btn-close-pharm-modal">&times;</button>
+            </div>
+
+            <div id="pharmacopeia-content" class="max-h-[60vh] overflow-y-auto pr-2">
+                <!-- Populated dynamically via app.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

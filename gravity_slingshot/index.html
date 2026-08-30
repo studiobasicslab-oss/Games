@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GRAVITY SLINGSHOT: Deep Space Astrogator & Orbital Mechanics</title>
+    <meta name="description" content="Master orbital mechanics and Kepler's laws. Pilot deep space scientific probes across 12 planetary missions, execute Hohmann transfers, harness Oberth maneuvers, and perform gravitational slingshots under strict delta-v propellant budgets.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="slingshot-shell">
+        <!-- TOP NAVIGATION & HUD -->
+        <header class="slingshot-header">
+            <div class="brand-section">
+                <div class="brand-icon">🛰️</div>
+                <div class="brand-title">
+                    <h1>GRAVITY SLINGSHOT</h1>
+                    <span class="brand-sub">ORBITAL ASTRODYNAMICS & TRAJECTORY SLINGSHOT // ASTRO-OS v4.1</span>
+                </div>
+            </div>
+
+            <div class="header-stats">
+                <div class="stat-chip">
+                    <span>MISSIONS:</span>
+                    <span class="val" id="hud-solved">0 / 12</span>
+                </div>
+                <div class="stat-chip">
+                    <span>SCORE:</span>
+                    <span class="val" id="hud-score">0 PTS</span>
+                </div>
+                <button class="header-btn" id="btn-astrodynamics-codex" title="Astrodynamics & Keplerian Formulas Codex">
+                    <span>📐</span>
+                    <span class="hidden sm:inline">ASTRODYNAMICS CODEX</span>
+                </button>
+                <button class="header-btn" id="btn-audio-toggle" title="Toggle Thruster Sound Synthesizer">
+                    <span>🔊</span>
+                    <span class="hidden sm:inline">SFX: ON</span>
+                </button>
+                <a href="../index.html" class="header-btn" title="Exit to Games Portal">
+                    <span>🏠</span>
+                    <span class="hidden sm:inline">ARCADE</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- MAIN 3-COLUMN WORKSPACE -->
+        <main class="slingshot-grid">
+            <!-- COLUMN 1: FLIGHT MISSIONS DOSSIER -->
+            <aside class="slingshot-panel col-left">
+                <div class="panel-title">
+                    <span>🪐 FLIGHT MISSIONS</span>
+                    <span class="text-xs text-sky-400">12 VOYAGES</span>
+                </div>
+                <div class="mission-scroll-list" id="mission-list">
+                    <!-- Populated dynamically via app.js -->
+                </div>
+            </aside>
+
+            <!-- COLUMN 2: FLIGHT SIMULATOR CANVAS & CONTROLS -->
+            <section class="slingshot-panel col-middle items-center">
+                <div class="flight-card w-full">
+                    <div class="canvas-wrap">
+                        <canvas id="flight-canvas"></canvas>
+                    </div>
+
+                    <!-- FLIGHT CONTROLS TOOLBAR -->
+                    <div class="flight-toolbar">
+                        <!-- Attitude RCS & Burn Buttons -->
+                        <div class="control-btn-group">
+                            <button class="f-btn" id="btn-rotate-left" title="Rotate Attitude Left (A / Left Arrow)">⟲ ROT L [A]</button>
+                            <button class="btn-thrust" id="btn-thrust" title="Fire Main Rocket Thruster (W / Up Arrow / Space)">
+                                <span>🔥</span>
+                                <span>BURN THRUSTER</span>
+                                <span class="text-[10px] font-mono opacity-80">[W/SPACE]</span>
+                            </button>
+                            <button class="f-btn" id="btn-rotate-right" title="Rotate Attitude Right (D / Right Arrow)">⟳ ROT R [D]</button>
+                        </div>
+
+                        <!-- Time Warp & Zoom -->
+                        <div class="control-btn-group">
+                            <span class="text-[11px] font-mono text-slate-400 mr-1">WARP:</span>
+                            <button class="f-btn active" id="btn-warp-1x">1X</button>
+                            <button class="f-btn" id="btn-warp-5x">5X</button>
+                            <button class="f-btn" id="btn-warp-25x">25X</button>
+                            <div class="border-l border-slate-700 h-6 mx-1"></div>
+                            <button class="f-btn" id="btn-zoom-in" title="Zoom In">+</button>
+                            <button class="f-btn" id="btn-zoom-out" title="Zoom Out">-</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- COLUMN 3: FLIGHT TELEMETRY & OBJECTIVES -->
+            <aside class="slingshot-panel col-right">
+                <div class="panel-title">
+                    <span>📡 FLIGHT TELEMETRY</span>
+                </div>
+
+                <!-- 4-TILE STATS -->
+                <div class="telemetry-grid-tiles">
+                    <div class="tel-tile cyan">
+                        <div class="tel-label">ORBITAL VELOCITY</div>
+                        <div class="tel-val" id="val-speed">0 m/s</div>
+                        <div class="text-[11px] text-slate-400 font-mono">RELATIVE TO FRAME</div>
+                    </div>
+                    <div class="tel-tile blue">
+                        <div class="tel-label">Δv PROPELLANT</div>
+                        <div class="tel-val" id="val-deltav">450 m/s</div>
+                        <div class="prog-bar-bg mt-1">
+                            <div class="prog-bar-fill" id="deltav-fill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="tel-tile amber">
+                        <div class="tel-label">PRIMARY DISTANCE</div>
+                        <div class="tel-val" id="val-primary-dist">180 km</div>
+                        <div class="text-[11px] text-slate-400 font-mono">RADIAL VECTOR r</div>
+                    </div>
+                    <div class="tel-tile purple">
+                        <div class="tel-label">TIME WARP</div>
+                        <div class="tel-val" id="val-timewarp">1X</div>
+                        <div class="text-[11px] text-slate-400 font-mono">SIM RATE</div>
+                    </div>
+                </div>
+
+                <!-- MISSION BRIEFING & OBJECTIVE -->
+                <div class="mission-briefing-card mt-2">
+                    <div class="mission-briefing-header">
+                        <h3 class="mission-title-lg" id="mission-title">Low Earth Orbit Circularization</h3>
+                        <span class="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-sky-500/20 text-sky-300 border border-sky-500/40" id="mission-badge">
+                            MISSION #01
+                        </span>
+                    </div>
+
+                    <div>
+                        <span class="text-[11px] font-mono uppercase text-slate-400 block mb-1">TRAJECTORY OBJECTIVE:</span>
+                        <p class="text-sm text-cyan-300 font-medium leading-snug" id="mission-goal">
+                            Circularize orbit around Earth with Eccentricity e < 0.15 without atmospheric re-entry.
+                        </p>
+                    </div>
+
+                    <div class="era-prog-wrap mt-2">
+                        <div class="flex justify-between text-xs font-mono">
+                            <span class="text-slate-400">ORBITAL CAPTURE STABILITY:</span>
+                            <span class="text-cyan-400 font-bold" id="capture-progress-text">0%</span>
+                        </div>
+                        <div class="prog-bar-bg mt-1">
+                            <div class="prog-bar-fill" id="capture-progress-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-slate-900/60 rounded-xl border border-slate-800 text-xs text-slate-300 leading-relaxed mt-1">
+                        <strong class="text-amber-400 font-mono block mb-1">ASTRODYNAMICS PEARL:</strong>
+                        <p id="mission-pearl">Kepler's 1st Law: Orbits are ellipses. A burn at apoapsis raises the opposite side (periapsis), circularizing the orbit.</p>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- RESULT MODAL -->
+    <div class="modal-overlay hidden" id="modal-result">
+        <div class="modal-box text-center">
+            <span class="badge mb-3 inline-block" id="result-badge">MISSION ACCOMPLISHED</span>
+            <h2 class="text-3xl font-black text-white mb-2" id="result-title">ORBITAL CAPTURE CONFIRMED!</h2>
+            <div class="text-sm font-mono text-sky-400 mb-4" id="result-bonus">+1500 PTS // TRAJECTORY MASTER</div>
+            
+            <div class="text-left bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 leading-relaxed mb-6">
+                <div class="text-amber-400 font-bold font-mono mb-1">ASTRODYNAMICS DEBRIEF:</div>
+                <p id="result-pearl">Kepler's 1st Law: Orbits are ellipses. A burn at apoapsis raises the opposite side (periapsis), circularizing the orbit.</p>
+            </div>
+
+            <div class="flex justify-center gap-3">
+                <button class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-sm transition" id="btn-retry-mission">
+                    🔄 RE-LAUNCH PROBE
+                </button>
+                <button class="px-6 py-2.5 bg-gradient-to-r from-sky-400 via-cyan-400 to-teal-400 hover:from-sky-300 hover:to-teal-300 text-slate-950 font-black rounded-xl text-sm transition shadow-lg shadow-sky-500/30" id="btn-next-mission">
+                    NEXT MISSION ➔
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ASTRODYNAMICS CODEX MODAL -->
+    <div class="modal-overlay hidden" id="modal-codex">
+        <div class="modal-box large">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-xl font-bold text-white">📐 ASTRODYNAMICS & KEPLERIAN MECHANICS CODEX</h3>
+                    <p class="text-xs text-slate-400 font-mono">Orbital mechanics formulas, Hohmann transfers & gravity assist physics</p>
+                </div>
+                <button class="text-slate-400 hover:text-white text-2xl font-bold leading-none" id="btn-close-codex">&times;</button>
+            </div>
+
+            <div id="codex-content" class="max-h-[60vh] overflow-y-auto pr-2">
+                <!-- Populated dynamically via app.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kernel Detective: Cyber Forensics | Offline Digital Forensics Simulator</title>
+    <meta name="description" content="A narrative-driven detective simulator where you solve authentic digital forensics crimes using genuine computer science concepts—from binary & logic gates to memory forensics and kernel rootkits.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="crt-screen">
+    <!-- Retro CRT Scanline & Phosphor Overlay -->
+    <div class="crt-overlay"></div>
+    <div class="crt-scanlines"></div>
+
+    <div class="workstation-container">
+        <!-- ==========================================
+             TOP FORENSIC HUD
+             ========================================== -->
+        <header class="workstation-header">
+            <div class="header-brand">
+                <div class="brand-badge">⚡ FORENSIC-OS</div>
+                <div class="brand-title">
+                    <h1>KERNEL DETECTIVE</h1>
+                    <span class="sub-text">CYBER FORENSICS SIMULATOR // VER 4.09</span>
+                </div>
+            </div>
+
+            <div class="header-stats">
+                <div class="stat-pill">
+                    <span class="stat-lbl">RANK:</span>
+                    <span class="stat-val highlight" id="hud-rank">TRAINEE DETECTIVE</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="stat-lbl">CASES CLOSED:</span>
+                    <span class="stat-val" id="hud-solved-count">0 / 20</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="stat-lbl">SCORE:</span>
+                    <span class="stat-val gold" id="hud-score">0 PTS</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button class="icon-action-btn" id="btn-all-manuals" title="RFC & Technical Manuals Archive">📚 RFC ARCHIVE</button>
+                <button class="icon-action-btn" id="btn-toggle-audio" title="Toggle Sound Synthesizer">🔊</button>
+                <a href="../index.html" class="icon-action-btn home-link" title="Exit to Games Portal">🏠 ARCADE</a>
+            </div>
+        </header>
+
+        <!-- ==========================================
+             MAIN 3-PANE WORKSPACE
+             ========================================== -->
+        <main class="workstation-grid">
+            <!-- PANE 1: CASE DOSSIER & NAVIGATION -->
+            <aside class="pane pane-cases">
+                <div class="pane-header">
+                    <h3>📁 EVIDENCE LOCKER & DOSSIERS</h3>
+                    <span class="badge">ACTS I - V</span>
+                </div>
+                <div class="case-nav-list" id="case-nav-list">
+                    <!-- Populated dynamically via app.js -->
+                </div>
+            </aside>
+
+            <!-- PANE 2: ACTIVE DIAGNOSTIC TOOL WORKBENCH -->
+            <section class="pane pane-workbench">
+                <div class="workbench-tool-bar">
+                    <button class="tool-tab-btn active" data-tool="hex_view">
+                        <span class="icon">👾</span> HexView
+                    </button>
+                    <button class="tool-tab-btn" data-tool="logic_scope">
+                        <span class="icon">⚡</span> LogicScope
+                    </button>
+                    <button class="tool-tab-btn" data-tool="packet_sniffer">
+                        <span class="icon">🌐</span> PacketSniffer
+                    </button>
+                    <button class="tool-tab-btn" data-tool="trace_dbg">
+                        <span class="icon">🛠️</span> TraceDbg
+                    </button>
+                    <button class="tool-tab-btn" data-tool="crypto_lab">
+                        <span class="icon">🔑</span> CryptoLab
+                    </button>
+                    <button class="tool-tab-btn" data-tool="kernel_inspector">
+                        <span class="icon">🧠</span> KernelInspector
+                    </button>
+                </div>
+
+                <div class="workbench-viewport" id="workbench-tool-mount">
+                    <!-- Tool instance renders here -->
+                </div>
+            </section>
+
+            <!-- PANE 3: CASE BRIEFING & VERDICT TERMINAL -->
+            <aside class="pane pane-briefing">
+                <div class="pane-header">
+                    <h3>📋 CASE BRIEFING</h3>
+                    <span class="badge highlight" id="case-number-badge">CASE #01</span>
+                </div>
+
+                <div class="briefing-content">
+                    <div class="case-meta-row">
+                        <span class="act-tag" id="case-act-badge">Act I: Foundations</span>
+                        <span class="diff-tag" id="case-difficulty">Beginner</span>
+                    </div>
+
+                    <h2 class="case-title" id="case-title">The Ransom Note on Paper Tape</h2>
+                    <p class="case-briefing-text" id="case-briefing-text">Loading case file...</p>
+
+                    <div class="evidence-artifact-card">
+                        <div class="card-header">
+                            <span class="icon">💾</span>
+                            <span class="evidence-name" id="evidence-name">tape_evidence_001.bin</span>
+                        </div>
+                        <p class="evidence-desc" id="evidence-desc">8-channel punched paper tape</p>
+                        <button class="manual-ref-btn" id="btn-open-case-manual">📖 Read Standard Spec</button>
+                    </div>
+
+                    <div class="case-task-box">
+                        <h4>🎯 FORENSIC OBJECTIVE</h4>
+                        <p id="case-question-text">Decode the hidden message.</p>
+                    </div>
+
+                    <!-- Interactive Verdict Console -->
+                    <div class="verdict-console">
+                        <div class="terminal-header">
+                            <span>💻 FORENSIC VERDICT TERMINAL</span>
+                        </div>
+                        <div class="terminal-input-row">
+                            <span class="terminal-prompt">&gt;</span>
+                            <input type="text" id="verdict-input" placeholder="Enter decoded plaintext, key, or hex..." autocomplete="off" spellcheck="false">
+                            <button class="terminal-submit-btn" id="btn-submit-verdict">SUBMIT</button>
+                        </div>
+                        <div class="terminal-actions-row">
+                            <button class="hint-btn" id="btn-show-hint">💡 INVESTIGATOR HINT</button>
+                        </div>
+                        <div class="terminal-output" id="terminal-feedback">
+                            <span class="text-muted">Awaiting diagnostic input...</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- ==========================================
+         TECHNICAL REFERENCE MANUAL MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="manual-modal">
+        <div class="modal-window">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-badge" id="manual-category">STANDARD SPECIFICATION</span>
+                    <h3 id="manual-title">RFC Document</h3>
+                </div>
+                <button class="modal-close-btn" title="Close Document">✕</button>
+            </div>
+            <div class="modal-body manual-article" id="manual-body">
+                <!-- Manual contents render here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================
+         CASE SOLVED VICTORY MODAL
+         ========================================== -->
+    <div class="modal-overlay" id="victory-modal">
+        <div class="modal-window victory-window">
+            <div class="modal-header victory-header">
+                <div class="victory-icon">🏆</div>
+                <h3 id="victory-title">CASE SOLVED!</h3>
+                <button class="modal-close-btn">✕</button>
+            </div>
+            <div class="modal-body victory-body">
+                <p id="victory-summary">Forensic evidence verified successfully.</p>
+                <div class="reward-box">
+                    <span>+250 FORENSIC REPUTATION PTS</span>
+                </div>
+                <div class="victory-actions">
+                    <button class="primary-btn" id="btn-next-case">NEXT CASE FILE ➔</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

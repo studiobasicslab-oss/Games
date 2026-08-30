@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRIPTO-CIPHER: Cold War Signal Interceptor & Cryptanalysis</title>
+    <meta name="description" content="Intercept encrypted radio transmissions across 15 Cold War espionage cases. Master frequency analysis, crack Caesar shifts, deduce Vigenère polyalphabetic keywords, and tune Enigma rotor machines.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="sigint-shell">
+        <!-- TOP NAVIGATION & HUD -->
+        <header class="sigint-header">
+            <div class="brand-section">
+                <div class="brand-icon">📻</div>
+                <div class="brand-title">
+                    <h1>CRIPTO-CIPHER</h1>
+                    <span class="brand-sub">COLD WAR SIGINT TELEPRINTER // CRYPTO-OS v5.0</span>
+                </div>
+            </div>
+
+            <div class="header-stats">
+                <div class="stat-chip">
+                    <span>INTERCEPTS:</span>
+                    <span class="val" id="hud-solved">0 / 15</span>
+                </div>
+                <div class="stat-chip">
+                    <span>SCORE:</span>
+                    <span class="val" id="hud-score">0 PTS</span>
+                </div>
+                <button class="header-btn" id="btn-field-manual" title="Open Cryptanalyst Field Manual">
+                    <span>📖</span>
+                    <span class="hidden sm:inline">FIELD MANUAL</span>
+                </button>
+                <button class="header-btn" id="btn-audio-toggle" title="Toggle Teletype Sound Synthesizer">
+                    <span>🔊</span>
+                    <span class="hidden sm:inline">SFX: ON</span>
+                </button>
+                <a href="../index.html" class="header-btn" title="Exit to Games Portal">
+                    <span>🏠</span>
+                    <span class="hidden sm:inline">ARCADE</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- MAIN 3-COLUMN WORKSPACE -->
+        <main class="sigint-grid">
+            <!-- COLUMN 1: INTERCEPT DOSSIERS -->
+            <aside class="sigint-panel col-left">
+                <div class="panel-title">
+                    <span>📁 SIGINT INTERCEPTS</span>
+                    <span class="text-xs text-emerald-400">15 DOSSIERS</span>
+                </div>
+                <div class="intercept-scroll-list" id="intercept-list">
+                    <!-- Populated dynamically via app.js -->
+                </div>
+            </aside>
+
+            <!-- COLUMN 2: TELEPRINTER CRT SCREENS & DECRYPTION WORKBENCH -->
+            <section class="sigint-panel col-middle">
+                <!-- INTERCEPT DOSSIER HEADER -->
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <div>
+                        <h2 class="text-xl font-bold text-white" id="intercept-title">Operation Rubicon</h2>
+                        <span class="text-xs text-slate-400 font-mono" id="intercept-origin">Checkpoint Charlie, Berlin // VHF Radio Band</span>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" id="intercept-badge">
+                        CASE #01
+                    </span>
+                </div>
+
+                <!-- DUAL CRT TELEPRINTER SCREENS -->
+                <div class="grid grid-cols-1 gap-3">
+                    <!-- 1. RAW CIPHERTEXT -->
+                    <div class="teletype-card">
+                        <div class="screen-label">📡 INTERCEPTED CIPHERTEXT FEED</div>
+                        <div class="teletype-text-box cyan" id="raw-ciphertext">
+                            PHHW PH DW WKH EUDQGHQEXUJ JDWH DW PLGQLJKW
+                        </div>
+                    </div>
+
+                    <!-- 2. LIVE DECODED PLAINTEXT -->
+                    <div class="teletype-card">
+                        <div class="screen-label">🔓 LIVE DECRYPTED TELEPRINTER OUTPUT</div>
+                        <div class="teletype-text-box green" id="live-plaintext">
+                            _ _ _ _   _ _   _ _   _ _ _   . . .
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FREQUENCY ANALYSIS HISTOGRAM -->
+                <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+                    <div class="flex justify-between items-center text-xs font-mono text-slate-400 mb-2">
+                        <span>📊 LETTER FREQUENCY SPECTRUM</span>
+                        <div class="flex gap-3">
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-slate-600 rounded-sm"></span> English Natural</span>
+                            <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-emerald-500 rounded-sm"></span> Ciphertext Spike</span>
+                        </div>
+                    </div>
+                    <div class="freq-chart-wrap" id="freq-chart-bars">
+                        <!-- Populated dynamically via app.js -->
+                    </div>
+                </div>
+
+                <!-- INTERACTIVE DECRYPTION CONTROLLERS -->
+                <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                    <div class="text-xs font-mono uppercase text-slate-400 mb-2" id="cipher-type-text">
+                        DECRYPTION MATRIX
+                    </div>
+
+                    <!-- 1. Caesar Shift Slider -->
+                    <div id="caesar-controls" class="hidden flex flex-col gap-2">
+                        <div class="flex justify-between text-xs font-mono">
+                            <span class="text-slate-300">ROT-N SHIFT OFFSET:</span>
+                            <span class="text-emerald-400 font-bold font-mono">SHIFT +<span id="caesar-shift-val">0</span></span>
+                        </div>
+                        <input type="range" id="caesar-shift-slider" min="0" max="25" value="0" class="w-full accent-emerald-500 cursor-pointer">
+                    </div>
+
+                    <!-- 2. Vigenere Keyword Input -->
+                    <div id="vigenere-controls" class="hidden flex flex-col gap-2">
+                        <label class="text-xs font-mono text-slate-400 uppercase">POLYALPHABETIC KEYWORD:</label>
+                        <input type="text" id="vigenere-input" placeholder="TYPE SECRET KEYWORD..." class="px-4 py-2 bg-slate-950 border border-slate-700 rounded-xl text-emerald-400 font-mono font-bold tracking-widest uppercase focus:outline-none focus:border-emerald-500">
+                    </div>
+
+                    <!-- 3. Enigma 3-Rotor Dials -->
+                    <div id="enigma-controls" class="hidden">
+                        <div class="text-xs font-mono text-slate-400 text-center mb-2">MECHANICAL ROTOR WHEELS (I - II - III)</div>
+                        <div class="rotors-container">
+                            <div class="rotor-box">
+                                <button class="rotor-step-btn" data-rotor="0" data-delta="1">▲</button>
+                                <div class="rotor-display" id="rotor-1-val">01</div>
+                                <button class="rotor-step-btn" data-rotor="0" data-delta="-1">▼</button>
+                            </div>
+                            <div class="rotor-box">
+                                <button class="rotor-step-btn" data-rotor="1" data-delta="1">▲</button>
+                                <div class="rotor-display" id="rotor-2-val">01</div>
+                                <button class="rotor-step-btn" data-rotor="1" data-delta="-1">▼</button>
+                            </div>
+                            <div class="rotor-box">
+                                <button class="rotor-step-btn" data-rotor="2" data-delta="1">▲</button>
+                                <div class="rotor-display" id="rotor-3-val">01</div>
+                                <button class="rotor-step-btn" data-rotor="2" data-delta="-1">▼</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Substitution Matrix & Keypad -->
+                    <div id="substitution-controls" class="hidden flex flex-col gap-3">
+                        <div class="subst-matrix-wrap" id="subst-grid">
+                            <!-- Populated dynamically via app.js -->
+                        </div>
+                        <div class="plain-picker-wrap" id="plain-char-picker">
+                            <!-- Populated dynamically via app.js -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- COLUMN 3: SIGNALS TELEMETRY & FIELD INTEL -->
+            <aside class="sigint-panel col-right">
+                <div class="panel-title">
+                    <span>⏱️ SIGINT TELEMETRY</span>
+                </div>
+
+                <!-- 2-TILE STATS -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                        <div class="text-[10px] font-mono text-slate-400 uppercase">FREQUENCY TIMEOUT</div>
+                        <div class="text-2xl font-black text-rose-400 font-mono my-1" id="timer-display">01:30</div>
+                        <div class="text-[10px] text-slate-500 font-mono">BEFORE FREQ HOP</div>
+                    </div>
+                    <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                        <div class="text-[10px] font-mono text-slate-400 uppercase">DECRYPTION ACCURACY</div>
+                        <div class="text-2xl font-black text-emerald-400 font-mono my-1" id="accuracy-text">0%</div>
+                        <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden mt-1">
+                            <div class="h-full bg-emerald-500 transition-all" id="accuracy-bar-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CRYPTANALYTIC HINT & ADVISORY -->
+                <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-xs text-slate-300 leading-relaxed mt-2">
+                    <strong class="text-amber-400 font-mono block mb-1">💡 CRYPTANALYTIC CRIB & HINT:</strong>
+                    <p id="intercept-hint">Classic shift cipher (ROT-N). Look at 3-letter word 'WKH' → 'THE' (shift = 3).</p>
+                </div>
+
+                <!-- FREQUENT N-GRAMS GUIDE -->
+                <div class="p-4 bg-slate-900/60 rounded-xl border border-slate-800 text-xs text-slate-300 leading-relaxed">
+                    <strong class="text-cyan-400 font-mono block mb-1">📜 COMMON ENGLISH N-GRAMS:</strong>
+                    <div class="font-mono text-slate-400 space-y-1">
+                        <div><strong>Top Digrams:</strong> TH, HE, IN, ER, AN, RE, ON</div>
+                        <div><strong>Top Trigrams:</strong> THE, AND, ING, ENT, ION</div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <!-- RESULT MODAL -->
+    <div class="modal-overlay hidden" id="modal-result">
+        <div class="modal-box text-center">
+            <span class="badge mb-3 inline-block" id="result-badge">INTEL RECOVERED</span>
+            <h2 class="text-3xl font-black text-white mb-2" id="result-title">SIGNAL DECRYPTED!</h2>
+            <div class="text-sm font-mono text-emerald-400 mb-4" id="result-bonus">+1000 PTS // CIPHER BROKEN</div>
+            
+            <div class="text-left bg-slate-900/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 leading-relaxed mb-6">
+                <div class="text-amber-400 font-bold font-mono mb-1">HISTORICAL CRYPTANALYSIS DEBRIEF:</div>
+                <p id="result-debrief">Caesar cipher shifts each letter by a fixed key. Since there are only 25 possible shifts, it is vulnerable to exhaustive brute force or checking the shift of 'THE'.</p>
+            </div>
+
+            <div class="flex justify-center gap-3">
+                <button class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-sm transition" id="btn-retry-intercept">
+                    🔄 RE-INTERCEPT SIGNAL
+                </button>
+                <button class="px-6 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black rounded-xl text-sm transition shadow-lg shadow-emerald-500/30" id="btn-next-intercept">
+                    NEXT INTERCEPT ➔
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIELD MANUAL MODAL -->
+    <div class="modal-overlay hidden" id="modal-manual">
+        <div class="modal-box large">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-xl font-bold text-white">📖 CRYPTANALYST'S FIELD MANUAL</h3>
+                    <p class="text-xs text-slate-400 font-mono">Cipher mechanics, frequency curves & historical decryption methods</p>
+                </div>
+                <button class="text-slate-400 hover:text-white text-2xl font-bold leading-none" id="btn-close-manual">&times;</button>
+            </div>
+
+            <div class="max-h-[60vh] overflow-y-auto pr-2 space-y-3">
+                <div class="manual-card">
+                    <h4 class="font-bold text-emerald-400 text-sm mb-1">1. Letter Frequency Analysis (Al-Kindi / 9th Century)</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        In natural English text, letters do not appear with equal probability. 'E' is the most frequent (~12.7%), followed by 'T', 'A', 'O', 'I', 'N'. In monoalphabetic substitution ciphers, the highest frequency ciphertext letter almost always corresponds to E or T.
+                    </p>
+                </div>
+                <div class="manual-card">
+                    <h4 class="font-bold text-emerald-400 text-sm mb-1">2. Polyalphabetic Vigenère Ciphers</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Uses a repeating keyword to shift each letter by a different amount: $C_i = (P_i + K_{i \pmod L}) \pmod{26}$. Broken using the Kasiski examination to find repeating distance multiples, revealing keyword length $L$.
+                    </p>
+                </div>
+                <div class="manual-card">
+                    <h4 class="font-bold text-emerald-400 text-sm mb-1">3. The Enigma Machine</h4>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        An electro-mechanical rotor cipher machine. Each keystroke advances the rightmost rotor by $1/26$th of a turn, constantly mutating the circuit pathway. Cracked by Marian Rejewski and Alan Turing's electromechanical 'Bombe' machines.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/data.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

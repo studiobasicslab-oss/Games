@@ -1,0 +1,429 @@
+/* TOKAMAK FORGE: Nuclear Physics & Stellar Nucleosynthesis Stylesheet */
+:root {
+    --bg-main: #05070d;
+    --panel-bg: rgba(13, 17, 26, 0.85);
+    --panel-border: rgba(30, 41, 59, 0.8);
+    --glow-cyan: rgba(6, 182, 212, 0.5);
+    --glow-purple: rgba(168, 85, 247, 0.5);
+    --glow-amber: rgba(245, 158, 11, 0.5);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: #e2e8f0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-image: 
+        radial-gradient(circle at 20% 15%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 80% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+}
+
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* Main Container Shell */
+.tokamak-shell {
+    max-width: 1560px;
+    margin: 0 auto;
+    padding: 16px 24px 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Header */
+.tokamak-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(16px);
+    border-radius: 20px;
+    padding: 12px 24px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.brand-section {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, #06b6d4, #a855f7);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 0 15px var(--glow-cyan);
+}
+
+.brand-title h1 {
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    background: linear-gradient(to right, #ffffff, #67e8f9, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.brand-sub {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.header-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.stat-chip {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(51, 65, 85, 0.8);
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.stat-chip .val {
+    font-weight: 700;
+    color: #38bdf8;
+}
+
+.header-btn {
+    padding: 8px 16px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #e2e8f0;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+
+.header-btn:hover {
+    background: #334155;
+    color: #ffffff;
+}
+
+/* 3-Column Grid */
+.tokamak-grid {
+    display: grid;
+    grid-template-columns: 280px 1fr 340px;
+    gap: 16px;
+    min-height: calc(100vh - 120px);
+}
+
+@media (max-width: 1280px) {
+    .tokamak-grid { grid-template-columns: 260px 1fr; }
+    .col-right { grid-column: span 2; }
+}
+
+@media (max-width: 900px) {
+    .tokamak-grid { grid-template-columns: 1fr; }
+    .col-right { grid-column: span 1; }
+}
+
+/* Panels */
+.tokamak-panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
+    backdrop-filter: blur(16px);
+    border-radius: 20px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+.panel-title {
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+    padding-bottom: 8px;
+}
+
+/* Left Column: Era Navigation */
+.era-scroll-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    max-height: 700px;
+    padding-right: 4px;
+}
+
+.era-nav-item {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(51, 65, 85, 0.5);
+    padding: 12px 14px;
+    border-radius: 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.era-nav-item:hover {
+    background: rgba(30, 41, 59, 0.8);
+    border-color: #64748b;
+    transform: translateX(3px);
+}
+
+.era-nav-item.active {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: #a855f7;
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
+}
+
+.era-nav-item.solved {
+    border-left: 4px solid #10b981;
+}
+
+.era-nav-header {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+.era-idx { color: #c084fc; font-weight: 700; }
+.era-status { color: #94a3b8; }
+.era-title-text { font-size: 13px; font-weight: 700; color: #f8fafc; margin-bottom: 2px; }
+.era-temp-text { font-size: 11px; color: #94a3b8; font-family: 'JetBrains Mono', monospace; }
+
+/* Middle Column: Torus Reactor Chamber */
+.reactor-card {
+    background: #05070d;
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    border-radius: 20px;
+    padding: 14px;
+    position: relative;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.9), 0 0 20px rgba(6, 182, 212, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.canvas-wrap {
+    width: 100%;
+    max-width: 480px;
+    height: 560px;
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #030408;
+    cursor: crosshair;
+}
+
+#tokamak-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+/* Reactor Controls Toolbar */
+.reactor-toolbar {
+    width: 100%;
+    max-width: 480px;
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.queue-preview-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(51, 65, 85, 0.8);
+    padding: 8px 14px;
+    border-radius: 12px;
+}
+
+.iso-bubble-preview {
+    font-size: 18px;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.btn-pinch {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #06b6d4, #a855f7);
+    color: #05070d;
+    border: none;
+    border-radius: 12px;
+    font-weight: 900;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.4);
+    transition: all 0.15s ease;
+}
+
+.btn-pinch:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(168, 85, 247, 0.6);
+}
+
+/* Right Column: Telemetry & Era Goal */
+.col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.telemetry-grid-tiles {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.tel-tile {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(51, 65, 85, 0.8);
+    border-radius: 14px;
+    padding: 12px;
+}
+
+.tel-tile.cyan { border-color: rgba(6, 182, 212, 0.4); }
+.tel-tile.purple { border-color: rgba(168, 85, 247, 0.4); }
+.tel-tile.amber { border-color: rgba(245, 158, 11, 0.4); }
+.tel-tile.green { border-color: rgba(16, 185, 129, 0.4); }
+
+.tel-label {
+    font-size: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.tel-val {
+    font-size: 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 800;
+    color: #f8fafc;
+    margin: 4px 0;
+}
+
+/* Era Goal Card */
+.era-briefing-card {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(51, 65, 85, 0.6);
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.era-briefing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.era-title-lg { font-size: 16px; font-weight: 800; color: #ffffff; }
+
+/* Progress Bar */
+.era-prog-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.era-prog-bar-bg {
+    width: 100%;
+    height: 8px;
+    background: #1e293b;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.era-prog-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #06b6d4, #a855f7);
+    transition: width 0.2s ease;
+}
+
+/* Modals */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+}
+
+.modal-overlay.hidden { display: none; }
+
+.modal-box {
+    background: #0d111a;
+    border: 1px solid #334155;
+    border-radius: 24px;
+    padding: 32px;
+    max-width: 600px;
+    width: 100%;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.modal-box.large {
+    max-width: 860px;
+}
+
+.nuclide-card {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid;
+    border-radius: 14px;
+    padding: 14px;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }

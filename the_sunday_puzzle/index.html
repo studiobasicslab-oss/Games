@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Sunday Puzzle — Weekly Broadsheet Edition</title>
+  <meta name="description" content="Every Sunday, a fresh little bundle of puzzles: Mini Crossword, Logic Deductions, Five Letters, Visual Spot-it, and The Sunday Mystery. Take a break. Solve a few things.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220%22%3E<text y=%2226%22 font-size=%2226%22>📰</text></svg>">
+</head>
+<body>
+
+  <!-- Decorative Coffee Ring & Pencil Smudges Flourish -->
+  <div class="newspaper-decorations" aria-hidden="true">
+    <div class="coffee-ring"></div>
+    <div class="coffee-drip"></div>
+    <div class="pencil-smudge"></div>
+  </div>
+
+  <!-- Broadsheet Newspaper Page -->
+  <main class="broadsheet-paper" id="newspaper-page">
+    
+    <!-- Top Utility & Edition Selector Bar -->
+    <header class="newspaper-toolbar" aria-label="Edition Controls">
+      <div class="toolbar-left">
+        <label for="edition-select" class="edition-select-label">Select Sunday Issue:</label>
+        <select id="edition-select" class="edition-dropdown" aria-label="Select Edition"></select>
+      </div>
+      <div class="toolbar-right">
+        <button type="button" class="tool-btn" id="audio-toggle-btn" aria-label="Toggle Audio">
+          ✏️ <span class="btn-label">Pencil Audio: ON</span>
+        </button>
+        <button type="button" class="tool-btn" id="print-edition-btn" title="Print this broadsheet on physical paper">
+          🖨️ <span class="btn-label">Print Edition</span>
+        </button>
+        <button type="button" class="tool-btn" id="reset-edition-btn" title="Erase pencil marks on this edition">
+          🧹 <span class="btn-label">Reset Page</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Broadsheet Masthead -->
+    <header class="newspaper-masthead">
+      <!-- Masthead Ears (Vintage Broadsheet Advert / Notice Boxes) -->
+      <div class="masthead-ear-left">
+        <span class="ear-title">WEEKEND EDITION</span>
+        <span>A quiet morning ritual for curious minds.</span>
+      </div>
+
+      <div class="masthead-ear-right">
+        <span class="ear-title">PUZZLER'S OATH</span>
+        <span>Solve in ink if bold, or pencil if prudent.</span>
+      </div>
+
+      <div class="masthead-meta-top">
+        <span class="meta-item">EST. 2026</span>
+        <span class="meta-item" id="edition-issue-no">ISSUE NO. 35</span>
+        <span class="meta-item" id="edition-date-text">SUNDAY, 30 AUGUST 2026</span>
+        <span class="meta-item">PRICE: FREE • COFFEE RECOMMENDED</span>
+      </div>
+
+      <div class="masthead-title-block">
+        <h1 class="masthead-title">THE SUNDAY PUZZLE</h1>
+        <div class="masthead-sub-banner">
+          <span class="banner-line"></span>
+          <p class="masthead-tagline" id="edition-subtitle-text">A small collection of things to make you think.</p>
+          <span class="banner-line"></span>
+        </div>
+      </div>
+
+      <div class="masthead-divider-heavy"></div>
+
+      <!-- Weather & Progress Status Bar -->
+      <div class="masthead-status-strip">
+        <div class="weather-box" id="weather-text"><span class="weather-icon">☕</span> Overcast with occasional tea breaks. Gentle breeze from the north.</div>
+        <div class="progress-counter-box" id="progress-meter-text" aria-live="polite">
+          <span class="progress-big">0 / 5</span> SOLVED
+        </div>
+        <div class="quote-box" id="editor-quote">“To solve a puzzle is to restore order to a tiny, quiet corner of the universe.”</div>
+      </div>
+
+      <!-- Rubber Stamp for Edition Complete -->
+      <div class="masthead-complete-stamp" id="masthead-complete-stamp" aria-hidden="true">
+        EDITION COMPLETE ★★★★★
+      </div>
+    </header>
+
+    <!-- Broadsheet Main Grid & Sidebar Layout -->
+    <div class="broadsheet-body-layout">
+      
+      <!-- Multi-Column Puzzles Grid -->
+      <section class="puzzles-masonry" id="puzzles-container" aria-label="Today's Puzzles">
+        <!-- Dynamically rendered by puzzles.js -->
+      </section>
+
+      <!-- Sunday Broadsheet Sidebar (Margins & Scratchpad) -->
+      <aside class="newspaper-sidebar" aria-label="Sunday Column & Margins">
+        
+        <!-- Interactive Margin Scratchpad -->
+        <div class="sidebar-box">
+          <h3 class="sidebar-title">MARGIN SCRATCHPAD</h3>
+          <textarea class="scratchpad-area" id="margin-scratchpad" placeholder="Jot anagrams, letter ideas, or deductions here..." spellcheck="false"></textarea>
+          <span class="scratchpad-hint">Pencil scribbles save automatically.</span>
+        </div>
+
+        <!-- Letters to the Puzzle Editor -->
+        <div class="sidebar-box">
+          <h3 class="sidebar-title">LETTERS TO THE EDITOR</h3>
+          <p class="sidebar-letter-text">
+            “Sir, in last Sunday’s crossword, 14 Down was notoriously devious. My toast went cold before I placed the final vowel.”
+          </p>
+          <span class="sidebar-signoff">— Lord Archibold, Kent</span>
+        </div>
+
+        <!-- Sunday Tidbits -->
+        <div class="sidebar-box">
+          <h3 class="sidebar-title">SUNDAY EPHEMERA</h3>
+          <ul class="tidbits-list">
+            <li><strong>☕ Recommended Brew:</strong> Dark Roast with cardamom & oat milk.</li>
+            <li><strong>🌅 Sunrise:</strong> 06:12 AM • <strong>Sunset:</strong> 07:44 PM</li>
+            <li><strong>💡 Solver’s Rule:</strong> Look at the crossings when a word seems stubborn.</li>
+          </ul>
+        </div>
+
+      </aside>
+
+    </div>
+
+    <!-- Classic Newspaper Upside-Down Inverted Answers Fold -->
+    <section class="inverted-answers-section" aria-label="Inverted Answers">
+      <div class="inverted-header-bar">
+        <span class="inverted-tag">❖ OFFICIAL SOLUTIONS (PRINTED UPSIDE DOWN) ❖</span>
+        <button type="button" class="tool-btn answers-toggle-btn" id="flip-answers-btn">
+          🔄 Turn Paper Upside Down
+        </button>
+      </div>
+      <div class="answers-inverted-content" id="answers-inverted-text">
+        <strong>Issue No. 35 Solutions:</strong><br>
+        [01 Crossword: PEACH, EARTH, APPLE, CHEER, HEART]<br>
+        [02 Logic: Barnaby the Postman brought the Blackberry Tart (cuff juice evidence)]<br>
+        [03 Five Letters: STONE → SHONE → SHINE → SHIRE → SHARE]<br>
+        [04 Visual Anomaly: Watch C displays 'XIII' at 10 o'clock]<br>
+        [05 Sunday Mystery: Edward the Nephew (wet muddy umbrella in vestibule)]
+      </div>
+    </section>
+
+    <!-- Broadsheet Colophon / Footer -->
+    <footer class="newspaper-footer">
+      <div class="colophon-rule">✦ ✦ ✦ ✦ ✦</div>
+      <p class="colophon-text">The Sunday Puzzle is published every Sunday morning. Grab a pencil, pour a fresh cup, and take your time.</p>
+      <p class="colophon-copyright">© 2026 The Sunday Puzzle • Printed on archival digital newsprint.</p>
+    </footer>
+
+  </main>
+
+  <!-- Celebration Modal (Edition Solved) -->
+  <aside class="modal-overlay" id="celebration-modal" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+    <div class="newspaper-clipping-modal">
+      <div class="modal-stamp">EDITION SOLVED!</div>
+      <h3 class="modal-headline" id="modal-headline">A SUNDAY WELL SPENT</h3>
+      <p class="modal-text">
+        You have successfully solved every puzzle in <strong id="modal-edition-name">ISSUE NO. 35</strong>!
+        Your pencil is sharp, your wits are restored, and order has returned to the morning.
+      </p>
+      <div class="modal-actions">
+        <button type="button" class="paper-btn" id="share-result-btn">📋 Copy Completion Clipping</button>
+        <button type="button" class="paper-btn-subtle" id="close-modal-btn">Return to Paper</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/editions.js"></script>
+  <script src="js/puzzles.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
