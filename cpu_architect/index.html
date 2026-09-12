@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CPU Architect</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>CPU ARCHITECT</h1>
+      <div id="level-selection">
+        <select id="level-select"></select>
+      </div>
+    </header>
+
+    <div class="game-grid">
+      <!-- Left Panel: Instructions & Code -->
+      <div class="panel code-panel">
+        <div class="panel-header">
+          <span>INSTRUCTION MEMORY (CPU 0)</span>
+          <span id="cycle-counter">CYCLES: 0</span>
+        </div>
+        <div class="code-area">
+          <div class="line-numbers" id="line-numbers"></div>
+          <textarea id="code-editor" spellcheck="false">MOV R1, 42
+MOV R2, R1</textarea>
+        </div>
+        <div class="controls">
+          <button id="btn-step">STEP</button>
+          <button id="btn-run">RUN</button>
+          <button id="btn-reset">RESET</button>
+        </div>
+        <div id="status-message" class="status">IDLE</div>
+      </div>
+
+      <!-- Right Panel: Hardware State -->
+      <div class="panel hardware-panel">
+        <div class="panel-header">REGISTERS</div>
+        <div class="registers-grid" id="registers-display">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="panel-header" style="margin-top: 20px;">LEVEL GOAL</div>
+        <div id="level-description" class="goal-box">
+          Load a level to see the goal.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/ui.js"></script>
+</body>
+</html>

@@ -55,11 +55,21 @@ class PuzzleManager {
       case 'word_ladder':
         this.controllers[puzzle.id] = new WordLadderController(puzzle, bodyEl, this);
         break;
-      case 'visual_anomaly':
-        this.controllers[puzzle.id] = new VisualController(puzzle, bodyEl, this);
+      case 'aptitude':
+      case 'math':
+        this.controllers[puzzle.id] = new AptitudeController(puzzle, bodyEl, this);
         break;
       case 'mystery':
         this.controllers[puzzle.id] = new MysteryController(puzzle, bodyEl, this);
+        break;
+      case 'trivia':
+        this.controllers[puzzle.id] = new TriviaController(puzzle, bodyEl, this);
+        break;
+      case 'sudoku':
+        this.controllers[puzzle.id] = new SudokuController(puzzle, bodyEl, this);
+        break;
+      case 'connections':
+        this.controllers[puzzle.id] = new ConnectionsController(puzzle, bodyEl, this);
         break;
     }
   }
@@ -97,7 +107,7 @@ class CrosswordController {
     this.container = container;
     this.manager = manager;
     this.grid = puzzle.perfectGrid?.solution || puzzle.cleanGrid?.solution || puzzle.solution;
-    this.clues = puzzle.perfectGrid?.clues || puzzle.cleanGrid?.clues || puzzle.clues;
+    this.clues = puzzle.perfectGrid?.clues || puzzle.cleanGrid?.clues || puzzle.clues || { across: [], down: [] };
     this.size = 5;
     this.cursor = { r: 0, c: 0, dir: 'across' }; // 'across' or 'down'
     this.userGrid = Array(5).fill(null).map(() => Array(5).fill(''));
@@ -663,9 +673,9 @@ class WordLadderController {
 }
 
 /* ==========================================================================
-   4. VISUAL ODD ONE OUT CONTROLLER
+   4. APTITUDE CONTROLLER
    ========================================================================== */
-class VisualController {
+class AptitudeController {
   constructor(puzzle, container, manager) {
     this.puzzle = puzzle;
     this.container = container;
@@ -677,21 +687,22 @@ class VisualController {
     const isSolved = this.manager.state[this.puzzle.id]?.solved;
 
     this.container.innerHTML = `
-      <div class="visual-wrapper">
-        <div class="visual-hint-banner">
-          <span>🔍 ${this.puzzle.hint}</span>
+      <div class="aptitude-wrapper">
+        <div class="aptitude-hint-banner">
+          <span>💡 Hint: ${this.puzzle.hint}</span>
         </div>
 
-        <div class="watches-display">
-          ${this.puzzle.watches.map((w, idx) => `
-            <div class="watch-card ${isSolved && w.flaw ? 'is-correct' : ''}" data-id="${w.id}">
-              <div class="watch-illustration">
-                ${this.generateWatchSvg(w, idx)}
-              </div>
-              <span class="watch-label">${w.label}</span>
-              ${w.flaw && isSolved ? `<p class="flaw-explanation">${w.flawText}</p>` : ''}
-            </div>
-          `).join('')}
+        <div class="aptitude-question-box">
+          <h4 class="aptitude-question">${this.puzzle.question}</h4>
+          
+          <div class="aptitude-input-group">
+            <input type="text" class="aptitude-input" id="aptitude-input-${this.puzzle.id}" placeholder="Your Answer" ${isSolved ? 'disabled value="' + this.puzzle.correctAnswer + '"' : ''}>
+            <button type="button" class="paper-btn check-aptitude-btn" ${isSolved ? 'style="display:none;"' : ''}>Verify</button>
+          </div>
+          
+          <div class="aptitude-explanation" id="aptitude-exp-${this.puzzle.id}" style="${isSolved ? 'display:block;' : 'display:none;'}">
+            <strong>Solution:</strong> ${this.puzzle.explanation}
+          </div>
         </div>
       </div>
     `;
@@ -699,72 +710,42 @@ class VisualController {
     this.bindEvents();
   }
 
-  generateWatchSvg(w, idx) {
-    // Generate clean vintage woodcut/ink style pocket watch
-    const numerals = w.numerals || ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"];
-    
-    return `
-      <svg class="watch-svg" viewBox="0 0 200 200" width="160" height="160">
-        <!-- Watch Ring & Crown -->
-        <circle cx="100" cy="18" r="14" fill="none" stroke="#2c2416" stroke-width="3"/>
-        <rect x="94" y="24" width="12" height="12" fill="#2c2416" rx="2"/>
-        
-        <!-- Outer Casing -->
-        <circle cx="100" cy="110" r="82" fill="#fdfbf7" stroke="#2c2416" stroke-width="4"/>
-        <circle cx="100" cy="110" r="76" fill="none" stroke="#6b5e4c" stroke-width="1" stroke-dasharray="2,3"/>
-        <circle cx="100" cy="110" r="70" fill="none" stroke="#2c2416" stroke-width="1.5"/>
-
-        <!-- Numerals -->
-        ${numerals.map((num, i) => {
-          const angle = (i * 30 - 90) * (Math.PI / 180);
-          const r = 54;
-          const x = 100 + r * Math.cos(angle);
-          const y = 114 + r * Math.sin(angle);
-          return `<text x="${x}" y="${y}" font-family="'Playfair Display', serif" font-size="11" font-weight="700" fill="#2c2416" text-anchor="middle">${num}</text>`;
-        }).join('')}
-
-        <!-- Minute ticks -->
-        ${Array(60).fill(0).map((_, i) => {
-          const angle = (i * 6 - 90) * (Math.PI / 180);
-          const r1 = 66;
-          const r2 = i % 5 === 0 ? 61 : 64;
-          const x1 = 100 + r1 * Math.cos(angle);
-          const y1 = 110 + r1 * Math.sin(angle);
-          const x2 = 100 + r2 * Math.cos(angle);
-          const y2 = 110 + r2 * Math.sin(angle);
-          return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#2c2416" stroke-width="${i % 5 === 0 ? '1.5' : '0.75'}"/>`;
-        }).join('')}
-
-        <!-- Hands -->
-        <line x1="100" y1="110" x2="100" y2="72" stroke="#2c2416" stroke-width="3" stroke-linecap="round"/>
-        <line x1="100" y1="110" x2="135" y2="110" stroke="#2c2416" stroke-width="2" stroke-linecap="round"/>
-        <circle cx="100" cy="110" r="5" fill="#2c2416"/>
-        <circle cx="100" cy="110" r="2" fill="#faf6ee"/>
-      </svg>
-    `;
-  }
-
   bindEvents() {
-    this.container.querySelectorAll('.watch-card').forEach(card => {
-      card.addEventListener('click', () => {
+    const btn = this.container.querySelector('.check-aptitude-btn');
+    const input = this.container.querySelector('.aptitude-input');
+    
+    if (btn && input) {
+      input.addEventListener('input', () => {
+         window.sundayAudio.playPencil(1.1);
+      });
+      
+      const checkAnswer = () => {
         if (this.manager.state[this.puzzle.id]?.solved) return;
-        const id = card.dataset.id;
-        if (id === this.puzzle.correctId) {
-          card.classList.add('is-correct');
-          const flawEl = document.createElement('p');
-          flawEl.className = 'flaw-explanation';
-          const match = this.puzzle.watches.find(w => w.id === id);
-          flawEl.textContent = match?.flawText || "Spot on! Anomaly identified.";
-          card.appendChild(flawEl);
+        const answer = (input.value || '').trim().toLowerCase();
+        const correct = this.puzzle.correctAnswer.toLowerCase();
+        
+        if (answer === correct) {
+          input.disabled = true;
+          input.classList.add('is-solved-input');
+          btn.style.display = 'none';
+          this.container.querySelector(`#aptitude-exp-${this.puzzle.id}`).style.display = 'block';
           this.manager.markSolved(this.puzzle.id);
         } else {
-          card.classList.add('is-wrong');
+          input.classList.add('is-wrong');
           window.sundayAudio.playEraser();
-          window.sundayApp.showToast("This watch is mechanically sound. Look at the numbers on the dials!");
-          setTimeout(() => card.classList.remove('is-wrong'), 800);
+          window.sundayApp.showToast("That doesn't seem right. Try again!");
+          setTimeout(() => input.classList.remove('is-wrong'), 800);
+        }
+      };
+
+      btn.addEventListener('click', checkAnswer);
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          checkAnswer();
         }
       });
-    });
+    }
   }
 }
 
@@ -856,6 +837,286 @@ class MysteryController {
         }
       });
     });
+  }
+}
+
+/* ==========================================================================
+   6. TRIVIA CONTROLLER
+   ========================================================================== */
+class TriviaController {
+  constructor(puzzle, container, manager) {
+    this.puzzle = puzzle;
+    this.container = container;
+    this.manager = manager;
+    this.render();
+  }
+
+  render() {
+    const isSolved = this.manager.state[this.puzzle.id]?.solved;
+    this.container.innerHTML = `
+      <div class="logic-wrapper">
+        <div class="deduction-verdict-box">
+          <p class="verdict-question">${this.puzzle.question}</p>
+          <div class="options-group">
+            ${this.puzzle.options.map(opt => `
+              <button type="button" class="paper-choice-btn ${isSolved && opt.id === this.puzzle.correctOptionId ? 'is-correct' : ''}" data-id="${opt.id}">
+                ${opt.text}
+              </button>
+            `).join('')}
+          </div>
+          <div class="logic-explanation" id="trivia-exp-${this.puzzle.id}" style="${isSolved ? 'display:block;' : 'display:none;'}">
+            <strong>Fact:</strong> ${this.puzzle.explanation}
+          </div>
+        </div>
+      </div>
+    `;
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    this.container.querySelectorAll('.paper-choice-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (this.manager.state[this.puzzle.id]?.solved) return;
+        const chosenId = btn.dataset.id;
+        if (chosenId === this.puzzle.correctOptionId) {
+          btn.classList.add('is-correct');
+          this.container.querySelector(`#trivia-exp-${this.puzzle.id}`).style.display = 'block';
+          this.manager.markSolved(this.puzzle.id);
+        } else {
+          btn.classList.add('is-wrong');
+          window.sundayAudio.playEraser();
+          window.sundayApp.showToast("Not quite! Try another answer.");
+          setTimeout(() => btn.classList.remove('is-wrong'), 1000);
+        }
+      });
+    });
+  }
+}
+
+/* ==========================================================================
+   8. SUDOKU CONTROLLER
+   ========================================================================== */
+class SudokuController {
+  constructor(puzzle, container, manager) {
+    this.puzzle = puzzle;
+    this.container = container;
+    this.manager = manager;
+    this.size = this.puzzle.grid.length;
+    this.userGrid = JSON.parse(JSON.stringify(this.puzzle.grid));
+    
+    // Restore saved
+    const saved = this.manager.state[this.puzzle.id]?.userGrid;
+    if (saved) this.userGrid = saved;
+
+    this.render();
+  }
+
+  render() {
+    const isSolved = this.manager.state[this.puzzle.id]?.solved;
+    let html = `<div class="sudoku-wrapper" style="display:flex; flex-direction:column; align-items:center;">
+        <div class="sudoku-grid" style="display:grid; grid-template-columns: repeat(${this.size}, 40px); gap: 2px; background:var(--ink-black); border:2px solid var(--ink-black);">`;
+        
+    for (let r = 0; r < this.size; r++) {
+      for (let c = 0; c < this.size; c++) {
+        const isFixed = this.puzzle.grid[r][c] !== 0;
+        const val = this.userGrid[r][c] !== 0 ? this.userGrid[r][c] : '';
+        html += `<input type="text" maxlength="1" class="sudoku-cell ${isFixed ? 'fixed' : ''}" data-r="${r}" data-c="${c}" value="${val}" ${isFixed || isSolved ? 'disabled' : ''} style="width:40px; height:40px; text-align:center; font-family:var(--font-news); font-size:18px; border:none; outline:none; background:var(--paper-sheet); ${isFixed ? 'font-weight:bold; background:var(--paper-card); color:var(--ink-black);' : 'color:var(--ink-blue);'}">`;
+      }
+    }
+    
+    html += `</div>
+        <button type="button" class="paper-btn verify-sudoku" style="margin-top:16px; ${isSolved ? 'display:none;' : ''}">Check Grid</button>
+      </div>`;
+      
+    this.container.innerHTML = html;
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    const inputs = this.container.querySelectorAll('.sudoku-cell:not(.fixed)');
+    const btn = this.container.querySelector('.verify-sudoku');
+
+    inputs.forEach(input => {
+      input.addEventListener('input', (e) => {
+        const r = parseInt(e.target.dataset.r);
+        const c = parseInt(e.target.dataset.c);
+        let val = parseInt(e.target.value.replace(/[^1-9]/g, ''));
+        if (isNaN(val)) val = 0;
+        e.target.value = val !== 0 ? val : '';
+        this.userGrid[r][c] = val;
+        
+        if (val !== 0) window.sundayAudio.playPencil(1.1);
+        
+        if (!this.manager.state[this.puzzle.id]) this.manager.state[this.puzzle.id] = {};
+        this.manager.state[this.puzzle.id].userGrid = this.userGrid;
+        if (window.sundayApp) window.sundayApp.saveState();
+      });
+    });
+
+    if (btn) {
+      btn.addEventListener('click', () => {
+        let isComplete = true;
+        let isCorrect = true;
+        for (let r = 0; r < this.size; r++) {
+          for (let c = 0; c < this.size; c++) {
+            if (this.userGrid[r][c] === 0) isComplete = false;
+            if (this.userGrid[r][c] !== this.puzzle.solution[r][c]) isCorrect = false;
+          }
+        }
+        
+        if (!isComplete) {
+          window.sundayApp.showToast("Fill out all empty cells first!");
+          return;
+        }
+        if (isCorrect) {
+          inputs.forEach(i => {
+            i.disabled = true;
+            i.style.color = "var(--stamp-green)";
+          });
+          btn.style.display = 'none';
+          this.manager.markSolved(this.puzzle.id);
+        } else {
+          window.sundayAudio.playEraser();
+          window.sundayApp.showToast("Some numbers are incorrect!");
+        }
+      });
+    }
+  }
+}
+
+/* ==========================================================================
+   4. CONNECTIONS CONTROLLER
+   ========================================================================== */
+class ConnectionsController {
+  constructor(puzzle, container, manager) {
+    this.puzzle = puzzle;
+    this.container = container;
+    this.manager = manager;
+    
+    let categoriesRaw = this.puzzle.categories;
+    if (typeof categoriesRaw === 'string') categoriesRaw = JSON.parse(categoriesRaw);
+    this.categories = categoriesRaw;
+    
+    this.state = this.manager.state[this.puzzle.id] || {};
+    
+    // Safety fallback: if user has old state from 'funfact' (e.g. { solved: true }), ensure arrays exist!
+    this.state.solvedGroups = this.state.solvedGroups || [];
+    this.state.mistakes = this.state.mistakes || 0;
+    this.state.selectedWords = this.state.selectedWords || [];
+    this.state.shuffledWords = this.state.shuffledWords || [];
+    
+    // If it was already solved by funfact accidentally, unsolve it so they can play
+    if (this.state.solved && this.state.solvedGroups.length < 4) {
+      this.state.solved = false; 
+    }
+    
+    if (!this.state.shuffledWords || this.state.shuffledWords.length === 0) {
+      let allWords = [];
+      this.categories.forEach(cat => allWords.push(...cat.words));
+      this.state.shuffledWords = allWords.sort(() => 0.5 - Math.random());
+      this.saveState();
+    }
+    
+    this.render();
+  }
+  
+  saveState() {
+    if (this.state.solvedGroups.length === this.categories.length) {
+      this.state.solved = true;
+    }
+    this.manager.updateState(this.puzzle.id, this.state);
+  }
+  
+  render() {
+    let html = `<div class="connections-wrapper" style="display:flex; flex-direction:column; gap:12px;">`;
+    
+    this.state.solvedGroups.forEach(groupName => {
+      const cat = this.categories.find(c => c.name === groupName);
+      html += `<div class="conn-solved-group" style="background:var(--paper-card); border: 2px solid var(--ink-black); padding: 12px; text-align:center;">
+        <h4 style="margin:0; font-family:var(--font-headline); letter-spacing:1px; color:var(--ink-black);">${cat.name}</h4>
+        <p style="margin:4px 0 0 0; font-family:var(--font-news); font-size:14px; text-transform:uppercase; color:var(--ink-black);">${cat.words.join(', ')}</p>
+      </div>`;
+    });
+    
+    const remainingWords = this.state.shuffledWords.filter(w => {
+      const cat = this.categories.find(c => c.words.includes(w));
+      return !this.state.solvedGroups.includes(cat.name);
+    });
+    
+    if (remainingWords.length > 0) {
+      html += `<div class="conn-grid" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;">`;
+      remainingWords.forEach(word => {
+        const isSelected = this.state.selectedWords.includes(word);
+        html += `<button class="conn-word-btn" data-word="${word}" style="padding:16px 4px; font-family:var(--font-news); font-weight:bold; font-size:12px; background:${isSelected ? 'var(--ink-black)' : 'var(--paper-sheet)'}; color:${isSelected ? 'var(--paper-sheet)' : 'var(--ink-black)'}; border:2px solid var(--ink-black); cursor:pointer; text-transform:uppercase; border-radius:4px; box-shadow: 2px 2px 0 var(--ink-black);">${word}</button>`;
+      });
+      html += `</div>`;
+      
+      html += `<div class="conn-controls" style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
+        <span style="font-family:var(--font-news); font-size:14px; font-weight:bold;">Mistakes: ${this.state.mistakes}</span>
+        <div>
+          <button type="button" class="paper-btn conn-shuffle-btn" style="margin-right:8px;">Shuffle</button>
+          <button type="button" class="paper-btn conn-submit-btn" ${this.state.selectedWords.length === 4 ? '' : 'disabled'}>Submit</button>
+        </div>
+      </div>`;
+    } else {
+      html += `<div style="text-align:center; padding:16px; font-family:var(--font-news); font-weight:bold; color:var(--ink-blue);">Perfect! All groups found.</div>`;
+    }
+    
+    html += `</div>`;
+    this.container.innerHTML = html;
+    this.bindEvents();
+  }
+  
+  bindEvents() {
+    const btns = this.container.querySelectorAll('.conn-word-btn');
+    btns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const word = btn.dataset.word;
+        if (this.state.selectedWords.includes(word)) {
+          this.state.selectedWords = this.state.selectedWords.filter(w => w !== word);
+        } else {
+          if (this.state.selectedWords.length < 4) {
+            this.state.selectedWords.push(word);
+          }
+        }
+        this.render();
+      });
+    });
+    
+    const shuffleBtn = this.container.querySelector('.conn-shuffle-btn');
+    if (shuffleBtn) {
+      shuffleBtn.addEventListener('click', () => {
+        this.state.shuffledWords.sort(() => 0.5 - Math.random());
+        this.render();
+      });
+    }
+    
+    const submitBtn = this.container.querySelector('.conn-submit-btn');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', () => {
+        this.checkSelection();
+      });
+    }
+  }
+  
+  checkSelection() {
+    if (this.state.selectedWords.length !== 4) return;
+    const selected = this.state.selectedWords;
+    const match = this.categories.find(cat => cat.words.every(w => selected.includes(w)));
+    
+    if (match) {
+      this.state.solvedGroups.push(match.name);
+      this.state.selectedWords = [];
+      this.saveState();
+      this.render();
+      if (this.state.solved) this.manager.checkAllSolved();
+    } else {
+      this.state.mistakes += 1;
+      this.state.selectedWords = [];
+      this.saveState();
+      this.render();
+      window.sundayApp.showToast("Incorrect grouping! Try again.");
+    }
   }
 }
 

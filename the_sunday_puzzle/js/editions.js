@@ -202,20 +202,16 @@ window.SUNDAY_EDITIONS = [
         ]
       },
       {
-        id: "p4_visual",
+        id: "p4_aptitude",
         num: "04",
-        name: "CAN YOU SPOT IT?",
-        type: "visual_anomaly",
-        stars: 1,
-        intro: "In the Sunday Curio Shop, four antique pocket watches are displayed in a velvet tray. One watchmaker made an unforgivable mechanical blunder. Tap the anomalous watch.",
-        hint: "Examine the Roman numerals around each watch dial with your magnifying glass.",
-        watches: [
-          { id: "w1", label: "Watch A (Silver Hunter)", numerals: ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"], hands: "10:10", flaw: false },
-          { id: "w2", label: "Watch B (Rose Gold)", numerals: ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"], hands: "03:00", flaw: false },
-          { id: "w3", label: "Watch C (Pocket Chrono)", numerals: ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "XIII", "XI"], hands: "06:30", flaw: true, flawText: "Notice the numeral at 10 o'clock: it reads 'XIII' (13) instead of 'X' (10)!" },
-          { id: "w4", label: "Watch D (Brass Skeleton)", numerals: ["XII", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI"], hands: "08:20", flaw: false }
-        ],
-        correctId: "w3"
+        name: "APTITUDE PUZZLE",
+        type: "aptitude",
+        stars: 3,
+        intro: "Find the missing number in the sequence.",
+        question: "2, 6, 12, 20, ?",
+        hint: "Look at the differences between the numbers.",
+        correctAnswer: "30",
+        explanation: "The differences are +4, +6, +8. The next difference is +10. So, 20 + 10 = 30."
       },
       {
         id: "p5_mystery",
@@ -392,20 +388,16 @@ window.SUNDAY_EDITIONS = [
         ]
       },
       {
-        id: "p4_visual",
+        id: "p4_aptitude",
         num: "04",
-        name: "CAN YOU SPOT IT?",
-        type: "visual_anomaly",
-        stars: 1,
-        intro: "Four maritime flags are hoisted on the harbor mast. Three represent valid standard international signal codes, but one flag design has an impossible inverted geometry. Click the odd flag.",
-        hint: "Look at the quadrant orientations on Flag #2.",
-        watches: [
-          { id: "w1", label: "Flag Alpha (Blue & White Swallowtail)", flaw: false },
-          { id: "w2", label: "Flag Bravo (Red Diamond Flaw)", flaw: true, flawText: "The inner diamond vertices do not align with the corners of the flag frame!" },
-          { id: "w3", label: "Flag Charlie (Blue/White/Red Stripes)", flaw: false },
-          { id: "w4", label: "Flag Delta (Yellow & Blue Bicolor)", flaw: false }
-        ],
-        correctId: "w2"
+        name: "APTITUDE PUZZLE",
+        type: "aptitude",
+        stars: 3,
+        intro: "Solve the letter sequence.",
+        question: "A, C, F, J, ?",
+        hint: "Count the steps in the alphabet.",
+        correctAnswer: "O",
+        explanation: "The steps are +2, +3, +4. The next step is +5. J + 5 = O."
       },
       {
         id: "p5_mystery",
@@ -535,20 +527,16 @@ window.SUNDAY_EDITIONS = [
         ]
       },
       {
-        id: "p4_visual",
+        id: "p4_aptitude",
         num: "04",
-        name: "CAN YOU SPOT IT?",
-        type: "visual_anomaly",
-        stars: 1,
-        intro: "Four botanical pressings of four-leaf clovers are catalogued. One pressing was forged by adding a fake leaflet with improper stem vein structure. Tap the forgery.",
-        hint: "Look closely at the vein patterns meeting the center on Clover #4.",
-        watches: [
-          { id: "w1", label: "Specimen Alpha (Meadow Clover)", flaw: false },
-          { id: "w2", label: "Specimen Beta (Forest Clover)", flaw: false },
-          { id: "w3", label: "Specimen Gamma (Highland Clover)", flaw: false },
-          { id: "w4", label: "Specimen Delta (Garden Clover - Forgery)", flaw: true, flawText: "The bottom-left leaflet vein flows away from the stem instead of toward it!" }
-        ],
-        correctId: "w4"
+        name: "APTITUDE PUZZLE",
+        type: "aptitude",
+        stars: 3,
+        intro: "A farmer has 17 sheep. All but 9 die. How many are left?",
+        question: "Enter the number:",
+        hint: "Read the words carefully.",
+        correctAnswer: "9",
+        explanation: "All but 9 died, meaning 9 survived."
       },
       {
         id: "p5_mystery",

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Seed Sunday Puzzles</title>
+</head>
+<body>
+  <h1>Seeding 52 Weeks...</h1>
+  <p>Check the console or wait for this to finish.</p>
+  <div id="status"></div>
+  <script type="module">
+    import { seed52Weeks } from './js/seed_puzzles.js';
+    
+    seed52Weeks().then(() => {
+      document.getElementById('status').innerText = "DONE! You can close this window now.";
+    }).catch(e => {
+      document.getElementById('status').innerText = "Error: " + e.message;
+    });
+  </script>
+</body>
+</html>

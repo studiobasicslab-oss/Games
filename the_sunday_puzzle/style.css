@@ -214,7 +214,7 @@ body {
 
 .masthead-ear-left, .masthead-ear-right {
   position: absolute;
-  top: 10px;
+  top: 45px;
   width: 140px;
   border: 1px solid var(--border-rule);
   padding: 6px;
@@ -973,15 +973,15 @@ body {
 }
 
 /* ==========================================================================
-   4. VISUAL ODD ONE OUT
+   4. APTITUDE PUZZLE
    ========================================================================== */
-.visual-wrapper {
+.aptitude-wrapper {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.visual-hint-banner {
+.aptitude-hint-banner {
   background: var(--paper-card);
   padding: 6px 10px;
   font-size: 13.5px;
@@ -989,48 +989,60 @@ body {
   border-left: 3px solid var(--border-rule);
 }
 
-.watches-display {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.watch-card {
+.aptitude-question-box {
   background: var(--paper-card);
   border: 1px solid var(--border-rule);
-  padding: 10px;
+  padding: 14px;
+}
+
+.aptitude-question {
+  font-family: var(--font-masthead);
+  font-size: 20px;
   text-align: center;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  position: relative;
-}
-.watch-card:hover {
-  background: var(--paper-sheet);
-  border-color: var(--ink-black);
-  transform: translateY(-2px);
-}
-.watch-card.is-correct {
-  border: 2px solid var(--stamp-green);
-  background: #f0f7f2;
-}
-.watch-card.is-wrong {
-  animation: shake 0.3s ease;
-  border: 2px solid var(--stamp-red);
+  margin-bottom: 16px;
+  letter-spacing: 2px;
 }
 
-.watch-label {
-  display: block;
+.aptitude-input-group {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.aptitude-input {
+  background: transparent;
+  border: 1px solid var(--border-rule);
+  border-bottom: 2px solid var(--ink-black);
   font-family: var(--font-news);
-  font-size: 12px;
+  font-size: 16px;
+  padding: 6px 10px;
+  text-align: center;
+  width: 140px;
+  outline: none;
+}
+.aptitude-input:focus {
+  background: var(--paper-sheet);
+  border-bottom-color: var(--pencil-grey);
+}
+.aptitude-input.is-wrong {
+  animation: shake 0.3s ease;
+  border-bottom-color: var(--stamp-red);
+  color: var(--stamp-red);
+}
+.aptitude-input.is-solved-input {
+  background: transparent;
+  border-bottom-color: var(--stamp-green);
+  color: var(--stamp-green);
   font-weight: 700;
-  margin-top: 6px;
 }
 
-.flaw-explanation {
-  margin-top: 6px;
-  font-size: 12.5px;
+.aptitude-explanation {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-rule);
+  font-size: 14px;
   color: var(--stamp-green);
-  font-weight: 600;
 }
 
 /* ==========================================================================

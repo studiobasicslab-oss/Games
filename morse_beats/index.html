@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morse Beats</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        
+        <!-- Main Menu -->
+        <div id="main-menu">
+            <h1>MORSE BEATS</h1>
+            <button class="menu-btn" onclick="startGame('learn')">LEARN MODE</button>
+            <button class="menu-btn" onclick="startGame('time_attack')">TIME ATTACK</button>
+            <button class="menu-btn" onclick="startGame('endless')">ENDLESS RHYTHM</button>
+        </div>
+
+        <!-- Game UI (Hidden initially) -->
+        <div id="game-ui" class="hidden">
+            <header>
+                <div id="mode-display">Mode</div>
+                <div id="timer-display" class="hidden">Time: <span id="time">60</span></div>
+                <div id="score-display">Score: <span id="score">0</span></div>
+                <div id="combo-display">Combo: <span id="combo">0</span>x</div>
+                <button id="exit-btn" onclick="exitGame()">X</button>
+            </header>
+            
+            <div id="target-area">
+                <div id="target-letter-display">A</div>
+                <div id="hint-display"></div>
+            </div>
+
+            <div id="track-container">
+                <div id="hit-zone"></div>
+                <div id="notes-track"></div>
+            </div>
+
+            <div id="feedback-display"></div>
+
+            <div class="instructions">
+                <p>Tap <strong>Spacebar</strong> quickly for DOT (&middot;) | Hold <strong>Spacebar</strong> for DASH (&minus;)</p>
+            </div>
+        </div>
+
+        <!-- Game Over Screen (Hidden initially) -->
+        <div id="game-over-screen" class="hidden">
+            <h2>GAME OVER</h2>
+            <p>Final Score: <span id="final-score">0</span></p>
+            <button class="menu-btn" onclick="returnToMenu()">MAIN MENU</button>
+        </div>
+        
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>

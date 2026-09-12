@@ -1,0 +1,218 @@
+:root {
+    --bg-color: #0d0e15;
+    --primary-color: #00f3ff;
+    --secondary-color: #ff00ea;
+    --hit-zone-color: rgba(255, 255, 255, 0.1);
+    --text-color: #ffffff;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Orbitron', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#game-container {
+    width: 800px;
+    height: 600px;
+    background: linear-gradient(180deg, rgba(13,14,21,1) 0%, rgba(32,10,48,1) 100%);
+    border: 2px solid var(--primary-color);
+    border-radius: 15px;
+    box-shadow: 0 0 20px var(--primary-color);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Main Menu */
+#main-menu, #game-over-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+}
+
+#main-menu h1 {
+    font-size: 3em;
+    margin-bottom: 40px;
+    color: var(--primary-color);
+    text-shadow: 0 0 15px var(--primary-color);
+}
+
+.menu-btn {
+    background: transparent;
+    border: 2px solid var(--secondary-color);
+    color: var(--secondary-color);
+    padding: 15px 40px;
+    margin: 10px;
+    font-size: 1.2em;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.3s;
+    text-shadow: 0 0 5px var(--secondary-color);
+    box-shadow: 0 0 10px rgba(255, 0, 234, 0.2);
+}
+
+.menu-btn:hover {
+    background: var(--secondary-color);
+    color: var(--bg-color);
+    box-shadow: 0 0 20px var(--secondary-color);
+}
+
+/* Game UI */
+#game-ui {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+header {
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    text-shadow: 0 0 10px var(--primary-color);
+    font-size: 1.2em;
+}
+
+#exit-btn {
+    background: transparent;
+    border: 1px solid red;
+    color: red;
+    font-family: 'Orbitron', sans-serif;
+    cursor: pointer;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+}
+
+#target-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 120px;
+    margin-bottom: 20px;
+}
+
+#target-letter-display {
+    font-size: 5em;
+    font-weight: bold;
+    text-shadow: 0 0 15px var(--secondary-color);
+    color: var(--secondary-color);
+}
+
+#hint-display {
+    font-size: 2em;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 10px;
+    height: 40px;
+}
+
+#track-container {
+    position: relative;
+    width: 600px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+#hit-zone {
+    position: absolute;
+    left: 50px;
+    top: 0;
+    width: 60px;
+    height: 100%;
+    background: var(--hit-zone-color);
+    border-left: 2px solid var(--primary-color);
+    border-right: 2px solid var(--primary-color);
+    box-shadow: 0 0 10px var(--primary-color);
+    z-index: 10;
+}
+
+.hit-zone-active {
+    background: rgba(0, 243, 255, 0.4) !important;
+}
+
+#notes-track {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+}
+
+.visual-note {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: var(--secondary-color);
+    border-radius: 5px;
+    box-shadow: 0 0 10px var(--secondary-color);
+    transition: left 0.1s linear; /* Smooth movement */
+}
+
+.visual-note.dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.visual-note.dash {
+    width: 60px;
+    height: 20px;
+}
+
+.visual-note.hit {
+    background-color: #00ff00;
+    box-shadow: 0 0 15px #00ff00;
+    opacity: 0.5;
+}
+
+#feedback-display {
+    font-size: 1.5em;
+    height: 30px;
+    font-weight: bold;
+    text-shadow: 0 0 5px white;
+}
+
+.instructions {
+    position: absolute;
+    bottom: 20px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9em;
+}
+
+/* Game Over */
+#game-over-screen h2 {
+    font-size: 3em;
+    color: red;
+    text-shadow: 0 0 15px red;
+}
+#game-over-screen p {
+    font-size: 2em;
+    margin-bottom: 30px;
+}

@@ -4,19 +4,78 @@
  * newspaper animations, margin scratchpad, and inverted answers fold.
  */
 
+import { db } from '../firebase_setup.js';
+import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
 class SundayApp {
   constructor() {
-    this.editions = window.SUNDAY_EDITIONS || [];
-    this.currentEditionId = this.loadCurrentEditionId();
+    this.editions = [];
+    this.currentEditionId = null;
     this.storageKey = 'sunday_puzzle_save_v2';
     this.savedData = this.loadState();
     this.puzzleManager = null;
     
-    this.init();
+    this.initAsync();
+  }
+
+  async initAsync() {
+    await this.fetchEditions();
+    this.currentEditionId = this.loadCurrentEditionId();
+    
+    this.bindHeaderControls();
+    this.bindScratchpad();
+    this.bindInvertedAnswers();
+    if (this.editions.length > 0) {
+      this.loadEdition(this.currentEditionId);
+    }
+    this.bindModalEvents();
+  }
+
+  async fetchEditions() {
+    try {
+      const q = query(collection(db, "sunday_puzzles"), orderBy("issueNumber", "asc"));
+      const snapshot = await getDocs(q);
+      const fetched = [];
+      snapshot.forEach(doc => {
+        let data = doc.data();
+        if (data.puzzles) {
+          data.puzzles = data.puzzles.map(p => {
+            if (p.grid && typeof p.grid === 'string') p.grid = JSON.parse(p.grid);
+            if (p.solution && typeof p.solution === 'string') p.solution = JSON.parse(p.solution);
+            if (p.perfectGrid && typeof p.perfectGrid === 'string') p.perfectGrid = JSON.parse(p.perfectGrid);
+            return p;
+          });
+        }
+        fetched.push(data);
+      });
+      if (fetched.length > 0) {
+        this.editions = fetched;
+      } else {
+        this.editions = window.SUNDAY_EDITIONS || [];
+      }
+    } catch (e) {
+      console.error("Error fetching editions:", e);
+      this.editions = window.SUNDAY_EDITIONS || [];
+    }
   }
 
   loadCurrentEditionId() {
-    return localStorage.getItem('sunday_current_edition') || this.editions[0]?.id || 'issue_35';
+    let saved = localStorage.getItem('sunday_current_edition');
+    
+    const unlocked = this.editions.filter(ed => !ed.unlockDate || new Date() >= new Date(ed.unlockDate));
+    
+    if (saved) {
+      const ed = this.editions.find(e => e.id === saved);
+      if (ed && (!ed.unlockDate || new Date() >= new Date(ed.unlockDate))) {
+        return saved;
+      }
+    }
+    
+    if (unlocked.length > 0) {
+      return unlocked[unlocked.length - 1].id;
+    }
+    
+    return this.editions[0]?.id;
   }
 
   loadState() {
@@ -49,23 +108,20 @@ class SundayApp {
     return this.savedData[editionId];
   }
 
-  init() {
-    this.bindHeaderControls();
-    this.bindScratchpad();
-    this.bindInvertedAnswers();
-    this.loadEdition(this.currentEditionId);
-    this.bindModalEvents();
-  }
+
 
   bindHeaderControls() {
     // Edition selector dropdown
     const select = document.getElementById('edition-select');
     if (select) {
-      select.innerHTML = this.editions.map(ed => `
-        <option value="${ed.id}" ${ed.id === this.currentEditionId ? 'selected' : ''}>
-          Issue No. ${ed.issueNumber} — ${ed.dateFormatted.split(',')[1]?.trim() || ed.dateFormatted}
-        </option>
-      `).join('');
+      select.innerHTML = this.editions.map(ed => {
+        const isLocked = ed.unlockDate && new Date() < new Date(ed.unlockDate);
+        return `
+          <option value="${ed.id}" ${ed.id === this.currentEditionId ? 'selected' : ''} ${isLocked ? 'disabled' : ''}>
+            Issue No. ${ed.issueNumber} — ${ed.dateFormatted.split(',')[1]?.trim() || ed.dateFormatted} ${isLocked ? '(Locked)' : ''}
+          </option>
+        `;
+      }).join('');
 
       select.addEventListener('change', (e) => {
         window.sundayAudio.playPaperFlip();
