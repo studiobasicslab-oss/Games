@@ -57,19 +57,43 @@ class PuzzleManager {
         break;
       case 'aptitude':
       case 'math':
+      case 'cipher':
+      case 'anagram':
+      case 'cryptogram':
+      case 'word_scramble':
+      case 'word_association':
+      case 'sequence':
+      case 'missing_letters':
         this.controllers[puzzle.id] = new AptitudeController(puzzle, bodyEl, this);
         break;
       case 'mystery':
+      case 'who_stole_it':
+      case 'case_file':
         this.controllers[puzzle.id] = new MysteryController(puzzle, bodyEl, this);
         break;
       case 'trivia':
+      case 'knights_knaves':
+      case 'who_is_lying':
+      case 'age_puzzle':
         this.controllers[puzzle.id] = new TriviaController(puzzle, bodyEl, this);
+        break;
+      case 'logic':
+      case 'zebra':
+      case 'einstein':
+        this.controllers[puzzle.id] = new LogicController(puzzle, bodyEl, this);
         break;
       case 'sudoku':
         this.controllers[puzzle.id] = new SudokuController(puzzle, bodyEl, this);
         break;
-      case 'connections':
-        this.controllers[puzzle.id] = new ConnectionsController(puzzle, bodyEl, this);
+      case 'timeline':
+      case 'ordering':
+      case 'scheduling':
+        this.controllers[puzzle.id] = new OrderEngineController(puzzle, bodyEl, this);
+        break;
+      case 'minesweeper':
+      case 'lights_out':
+      case 'nonogram':
+        this.controllers[puzzle.id] = new ToggleGridController(puzzle, bodyEl, this);
         break;
     }
   }
@@ -109,7 +133,8 @@ class CrosswordController {
     this.grid = puzzle.perfectGrid?.solution || puzzle.cleanGrid?.solution || puzzle.solution;
     this.clues = puzzle.perfectGrid?.clues || puzzle.cleanGrid?.clues || puzzle.clues || { across: [], down: [] };
     this.size = 5;
-    this.cursor = { r: 0, c: 0, dir: 'across' }; // 'across' or 'down'
+    this.clueMode = Math.random() > 0.5 ? 'across' : 'down'; // Randomly pick which clue to show
+    this.cursor = { r: 0, c: 0, dir: this.clueMode }; // 'across' or 'down'
     this.userGrid = Array(5).fill(null).map(() => Array(5).fill(''));
 
     // Restore saved inputs if any
@@ -139,7 +164,8 @@ class CrosswordController {
         </div>
 
         <div class="crossword-clues">
-          <div class="clue-column">
+          ${this.clueMode === 'across' ? `
+          <div class="clue-column" style="width: 100%;">
             <h4 class="clue-heading">ACROSS</h4>
             <ul class="clue-list" id="across-clues-${this.puzzle.id}">
               ${this.clues.across.map(c => `
@@ -149,7 +175,8 @@ class CrosswordController {
               `).join('')}
             </ul>
           </div>
-          <div class="clue-column">
+          ` : `
+          <div class="clue-column" style="width: 100%;">
             <h4 class="clue-heading">DOWN</h4>
             <ul class="clue-list" id="down-clues-${this.puzzle.id}">
               ${this.clues.down.map(c => `
@@ -159,6 +186,7 @@ class CrosswordController {
               `).join('')}
             </ul>
           </div>
+          `}
         </div>
       </div>
     `;
@@ -688,9 +716,12 @@ class AptitudeController {
 
     this.container.innerHTML = `
       <div class="aptitude-wrapper">
-        <div class="aptitude-hint-banner">
-          <span>💡 Hint: ${this.puzzle.hint}</span>
+        ${this.puzzle.hint ? `
+        <div class="aptitude-hint-banner" style="cursor: pointer; user-select: none;" onclick="this.querySelector('span').style.filter='none'; this.querySelector('.hint-click-text').style.display='none';">
+          <span style="filter: blur(4px); transition: filter 0.3s;">💡 Hint: ${this.puzzle.hint}</span>
+          <div class="hint-click-text" style="font-size: 0.8em; color: #666; margin-top: 4px;">(Click to reveal hint)</div>
         </div>
+        ` : ''}
 
         <div class="aptitude-question-box">
           <h4 class="aptitude-question">${this.puzzle.question}</h4>
@@ -894,6 +925,270 @@ class TriviaController {
 }
 
 /* ==========================================================================
+   7. SORTING & ORDERING CONTROLLER (Timeline, Ranking, etc)
+   ========================================================================== */
+class OrderEngineController {
+  constructor(puzzle, container, manager) {
+    this.puzzle = puzzle;
+    this.container = container;
+    this.manager = manager;
+    
+    // items should be an array of objects: { id, text }
+    // We shuffle initially, or load saved order
+    this.currentOrder = [...puzzle.items];
+    const saved = this.manager.state[puzzle.id]?.order;
+    if (saved && Array.isArray(saved)) {
+      this.currentOrder = saved;
+    } else {
+      this.currentOrder.sort(() => 0.5 - Math.random());
+    }
+    
+    this.draggedIndex = null;
+    this.render();
+  }
+
+  render() {
+    const isSolved = this.manager.state[this.puzzle.id]?.solved;
+    
+    let html = `
+      <div class="order-engine-wrapper">
+        <p class="order-question" style="font-weight: bold; margin-bottom: 12px;">${this.puzzle.question}</p>
+        <div class="order-list" style="display: flex; flex-direction: column; gap: 8px;">
+          ${this.currentOrder.map((item, index) => `
+            <div class="order-item ${isSolved ? 'is-solved' : ''}" data-index="${index}" draggable="${!isSolved}" style="padding: 12px; background: #fff; border: 1px solid #ddd; border-radius: 4px; cursor: ${isSolved ? 'default' : 'grab'}; display: flex; align-items: center;">
+              <span style="color: #999; margin-right: 12px; font-weight: bold;">${index + 1}</span>
+              <span>${item.text}</span>
+              ${!isSolved ? '<span style="margin-left:auto; color:#ccc;">☰</span>' : ''}
+            </div>
+          `).join('')}
+        </div>
+        <div class="order-actions" style="margin-top: 16px; text-align: center;">
+          <button type="button" class="paper-btn check-order-btn" ${isSolved ? 'style="display:none;"' : ''}>Verify Order</button>
+        </div>
+        <div class="logic-explanation" id="order-exp-${this.puzzle.id}" style="${isSolved ? 'display:block;' : 'display:none;'}">
+          <strong>Solution:</strong> ${this.puzzle.explanation}
+        </div>
+      </div>
+    `;
+    
+    this.container.innerHTML = html;
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    if (this.manager.state[this.puzzle.id]?.solved) return;
+
+    const items = this.container.querySelectorAll('.order-item');
+    const list = this.container.querySelector('.order-list');
+
+    items.forEach(item => {
+      item.addEventListener('dragstart', (e) => {
+        this.draggedIndex = parseInt(item.dataset.index);
+        item.style.opacity = '0.5';
+        e.dataTransfer.effectAllowed = 'move';
+      });
+
+      item.addEventListener('dragend', () => {
+        item.style.opacity = '1';
+        items.forEach(i => i.style.borderTop = '1px solid #ddd');
+        items.forEach(i => i.style.borderBottom = '1px solid #ddd');
+      });
+
+      item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        
+        // Visual feedback
+        const rect = item.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        if (e.clientY < midY) {
+          item.style.borderTop = '2px solid #333';
+          item.style.borderBottom = '1px solid #ddd';
+        } else {
+          item.style.borderBottom = '2px solid #333';
+          item.style.borderTop = '1px solid #ddd';
+        }
+      });
+
+      item.addEventListener('dragleave', () => {
+        item.style.borderTop = '1px solid #ddd';
+        item.style.borderBottom = '1px solid #ddd';
+      });
+
+      item.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const targetIndex = parseInt(item.dataset.index);
+        if (this.draggedIndex === targetIndex || this.draggedIndex === null) return;
+
+        const rect = item.getBoundingClientRect();
+        const midY = rect.top + rect.height / 2;
+        let finalIndex = targetIndex;
+        if (this.draggedIndex < targetIndex && e.clientY < midY) finalIndex--;
+        if (this.draggedIndex > targetIndex && e.clientY > midY) finalIndex++;
+
+        // Reorder array
+        const [movedItem] = this.currentOrder.splice(this.draggedIndex, 1);
+        this.currentOrder.splice(finalIndex, 0, movedItem);
+
+        window.sundayAudio.playPencil(1.1);
+        
+        // Save state and re-render
+        this.manager.state[this.puzzle.id] = { order: this.currentOrder };
+        this.manager.saveState();
+        this.render();
+      });
+    });
+
+    const checkBtn = this.container.querySelector('.check-order-btn');
+    if (checkBtn) {
+      checkBtn.addEventListener('click', () => {
+        this.validate();
+      });
+    }
+  }
+
+  validate() {
+    let allCorrect = true;
+    for (let i = 0; i < this.currentOrder.length; i++) {
+      if (this.currentOrder[i].id !== this.puzzle.solutionOrder[i]) {
+        allCorrect = false;
+        break;
+      }
+    }
+    
+    if (allCorrect) {
+      this.manager.markSolved(this.puzzle.id);
+      this.render(); // Re-render to show solved state
+    } else {
+      window.sundayAudio.playEraser();
+      window.sundayApp.showToast("The order is not quite right.");
+    }
+  }
+}
+
+/* ==========================================================================
+   8. TOGGLE GRID CONTROLLER (Minesweeper, Nonogram, Lights Out, etc)
+   ========================================================================== */
+class ToggleGridController {
+  constructor(puzzle, container, manager) {
+    this.puzzle = puzzle;
+    this.container = container;
+    this.manager = manager;
+    this.rows = puzzle.rows || 5;
+    this.cols = puzzle.cols || 5;
+    
+    // Initialize or load user grid
+    this.userGrid = Array(this.rows).fill(null).map(() => Array(this.cols).fill(0));
+    const saved = this.manager.state[puzzle.id]?.userGrid;
+    if (saved && Array.isArray(saved)) {
+      this.userGrid = saved;
+    }
+    
+    this.render();
+  }
+
+  render() {
+    const isSolved = this.manager.state[this.puzzle.id]?.solved;
+    const hasRowClues = !!this.puzzle.rowClues;
+    const hasColClues = !!this.puzzle.colClues;
+    
+    let html = `<div class="toggle-grid-wrapper">
+      <div class="toggle-grid-container" style="display: grid; gap: 4px; grid-template-columns: ${hasRowClues ? 'auto ' : ''}repeat(${this.cols}, 40px);">`;
+    
+    // Top headers for col clues
+    if (hasColClues) {
+      if (hasRowClues) html += `<div></div>`; // empty top-left corner
+      for (let c = 0; c < this.cols; c++) {
+        html += `<div class="col-clue" style="text-align: center; align-self: end; font-size: 0.8em; font-weight: bold;">${this.puzzle.colClues[c] || ''}</div>`;
+      }
+    }
+
+    // Grid cells
+    for (let r = 0; r < this.rows; r++) {
+      if (hasRowClues) {
+        html += `<div class="row-clue" style="text-align: right; align-self: center; padding-right: 8px; font-size: 0.8em; font-weight: bold;">${this.puzzle.rowClues[r] || ''}</div>`;
+      }
+      for (let c = 0; c < this.cols; c++) {
+        const state = this.userGrid[r][c];
+        const label = (this.puzzle.cellLabels && this.puzzle.cellLabels[r]) ? this.puzzle.cellLabels[r][c] : '';
+        html += `<div class="tg-cell state-${state} ${isSolved ? 'solved-tg-cell' : ''}" data-row="${r}" data-col="${c}" style="width: 40px; height: 40px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; background: ${state === 1 ? '#333' : state === 2 ? '#ff9999' : '#fff'}; color: ${state === 1 ? '#fff' : '#000'}">
+          ${label}
+        </div>`;
+      }
+    }
+    html += `</div>
+      <div class="toggle-grid-actions" style="margin-top: 16px; text-align: center;">
+        <button type="button" class="paper-btn check-tg-btn" ${isSolved ? 'style="display:none;"' : ''}>Verify</button>
+      </div>
+      <div class="logic-explanation" id="tg-exp-${this.puzzle.id}" style="${isSolved ? 'display:block;' : 'display:none;'}">
+        <strong>Solution:</strong> ${this.puzzle.explanation}
+      </div>
+    </div>`;
+    
+    this.container.innerHTML = html;
+    this.bindEvents();
+  }
+
+  bindEvents() {
+    const cells = this.container.querySelectorAll('.tg-cell');
+    cells.forEach(cell => {
+      cell.addEventListener('click', (e) => {
+        if (this.manager.state[this.puzzle.id]?.solved) return;
+        const r = parseInt(cell.dataset.row);
+        const c = parseInt(cell.dataset.col);
+        const maxStates = this.puzzle.toggleModes || 2; // Default binary toggle (0, 1)
+        
+        // Cycle state
+        this.userGrid[r][c] = (this.userGrid[r][c] + 1) % maxStates;
+        
+        // Update DOM visually
+        const state = this.userGrid[r][c];
+        cell.className = `tg-cell state-${state}`;
+        cell.style.background = state === 1 ? '#333' : state === 2 ? '#ff9999' : '#fff';
+        cell.style.color = state === 1 ? '#fff' : '#000';
+        
+        window.sundayAudio.playPencil(1.1);
+        
+        // Save progress to app state
+        this.manager.state[this.puzzle.id] = { userGrid: this.userGrid };
+        this.manager.saveState();
+      });
+    });
+
+    const checkBtn = this.container.querySelector('.check-tg-btn');
+    if (checkBtn) {
+      checkBtn.addEventListener('click', () => {
+        this.validate();
+      });
+    }
+  }
+
+  validate() {
+    let allCorrect = true;
+    for (let r = 0; r < this.rows; r++) {
+      for (let c = 0; c < this.cols; c++) {
+        // Assume solutionGrid only cares about state 1 (e.g. filled)
+        // If the expected solution is 1, user state must be 1.
+        // If expected is 0, user state must be anything other than 1.
+        const expected = this.puzzle.solutionGrid[r][c];
+        const userState = this.userGrid[r][c];
+        if (expected === 1 && userState !== 1) allCorrect = false;
+        if (expected === 0 && userState === 1) allCorrect = false;
+      }
+    }
+    
+    if (allCorrect) {
+      this.manager.markSolved(this.puzzle.id);
+      this.container.querySelector('.check-tg-btn').style.display = 'none';
+      this.container.querySelector(`#tg-exp-${this.puzzle.id}`).style.display = 'block';
+    } else {
+      window.sundayAudio.playEraser();
+      window.sundayApp.showToast("Hmm, something is incorrect.");
+    }
+  }
+}
+
+/* ==========================================================================
    8. SUDOKU CONTROLLER
    ========================================================================== */
 class SudokuController {
@@ -920,7 +1215,9 @@ class SudokuController {
       for (let c = 0; c < this.size; c++) {
         const isFixed = this.puzzle.grid[r][c] !== 0;
         const val = this.userGrid[r][c] !== 0 ? this.userGrid[r][c] : '';
-        html += `<input type="text" maxlength="1" class="sudoku-cell ${isFixed ? 'fixed' : ''}" data-r="${r}" data-c="${c}" value="${val}" ${isFixed || isSolved ? 'disabled' : ''} style="width:40px; height:40px; text-align:center; font-family:var(--font-news); font-size:18px; border:none; outline:none; background:var(--paper-sheet); ${isFixed ? 'font-weight:bold; background:var(--paper-card); color:var(--ink-black);' : 'color:var(--ink-blue);'}">`;
+        let fontSize = val.toString().length > 1 ? '12px' : '18px';
+        let letterSpc = val.toString().length > 1 ? '1px' : 'normal';
+        html += `<input type="text" maxlength="9" class="sudoku-cell ${isFixed ? 'fixed' : ''}" data-r="${r}" data-c="${c}" value="${val}" ${isFixed || isSolved ? 'disabled' : ''} style="width:40px; height:40px; text-align:center; font-family:var(--font-news); font-size:${fontSize}; letter-spacing:${letterSpc}; border:none; outline:none; background:var(--paper-sheet); ${isFixed ? 'font-weight:bold; background:var(--paper-card); color:var(--ink-black);' : 'color:var(--ink-blue);'}">`;
       }
     }
     
@@ -940,12 +1237,20 @@ class SudokuController {
       input.addEventListener('input', (e) => {
         const r = parseInt(e.target.dataset.r);
         const c = parseInt(e.target.dataset.c);
-        let val = parseInt(e.target.value.replace(/[^1-9]/g, ''));
-        if (isNaN(val)) val = 0;
-        e.target.value = val !== 0 ? val : '';
-        this.userGrid[r][c] = val;
+        let rawVal = e.target.value.replace(/[^1-9]/g, '');
+        let valStr = Array.from(new Set(rawVal.split(''))).sort().join('');
+        e.target.value = valStr;
         
-        if (val !== 0) window.sundayAudio.playPencil(1.1);
+        if (valStr.length > 1) {
+          e.target.style.fontSize = '12px';
+          e.target.style.letterSpacing = '1px';
+        } else {
+          e.target.style.fontSize = '18px';
+          e.target.style.letterSpacing = 'normal';
+        }
+        
+        this.userGrid[r][c] = valStr || 0;
+        if (valStr.length > 0) window.sundayAudio.playPencil(1.1);
         
         if (!this.manager.state[this.puzzle.id]) this.manager.state[this.puzzle.id] = {};
         this.manager.state[this.puzzle.id].userGrid = this.userGrid;
@@ -959,8 +1264,12 @@ class SudokuController {
         let isCorrect = true;
         for (let r = 0; r < this.size; r++) {
           for (let c = 0; c < this.size; c++) {
-            if (this.userGrid[r][c] === 0) isComplete = false;
-            if (this.userGrid[r][c] !== this.puzzle.solution[r][c]) isCorrect = false;
+            let userVal = parseInt(this.userGrid[r][c]);
+            if (isNaN(userVal) || userVal === 0 || this.userGrid[r][c].toString().length > 1) {
+              isComplete = false;
+            } else if (userVal !== this.puzzle.solution[r][c]) {
+              isCorrect = false;
+            }
           }
         }
         
@@ -984,140 +1293,6 @@ class SudokuController {
   }
 }
 
-/* ==========================================================================
-   4. CONNECTIONS CONTROLLER
-   ========================================================================== */
-class ConnectionsController {
-  constructor(puzzle, container, manager) {
-    this.puzzle = puzzle;
-    this.container = container;
-    this.manager = manager;
-    
-    let categoriesRaw = this.puzzle.categories;
-    if (typeof categoriesRaw === 'string') categoriesRaw = JSON.parse(categoriesRaw);
-    this.categories = categoriesRaw;
-    
-    this.state = this.manager.state[this.puzzle.id] || {};
-    
-    // Safety fallback: if user has old state from 'funfact' (e.g. { solved: true }), ensure arrays exist!
-    this.state.solvedGroups = this.state.solvedGroups || [];
-    this.state.mistakes = this.state.mistakes || 0;
-    this.state.selectedWords = this.state.selectedWords || [];
-    this.state.shuffledWords = this.state.shuffledWords || [];
-    
-    // If it was already solved by funfact accidentally, unsolve it so they can play
-    if (this.state.solved && this.state.solvedGroups.length < 4) {
-      this.state.solved = false; 
-    }
-    
-    if (!this.state.shuffledWords || this.state.shuffledWords.length === 0) {
-      let allWords = [];
-      this.categories.forEach(cat => allWords.push(...cat.words));
-      this.state.shuffledWords = allWords.sort(() => 0.5 - Math.random());
-      this.saveState();
-    }
-    
-    this.render();
-  }
-  
-  saveState() {
-    if (this.state.solvedGroups.length === this.categories.length) {
-      this.state.solved = true;
-    }
-    this.manager.updateState(this.puzzle.id, this.state);
-  }
-  
-  render() {
-    let html = `<div class="connections-wrapper" style="display:flex; flex-direction:column; gap:12px;">`;
-    
-    this.state.solvedGroups.forEach(groupName => {
-      const cat = this.categories.find(c => c.name === groupName);
-      html += `<div class="conn-solved-group" style="background:var(--paper-card); border: 2px solid var(--ink-black); padding: 12px; text-align:center;">
-        <h4 style="margin:0; font-family:var(--font-headline); letter-spacing:1px; color:var(--ink-black);">${cat.name}</h4>
-        <p style="margin:4px 0 0 0; font-family:var(--font-news); font-size:14px; text-transform:uppercase; color:var(--ink-black);">${cat.words.join(', ')}</p>
-      </div>`;
-    });
-    
-    const remainingWords = this.state.shuffledWords.filter(w => {
-      const cat = this.categories.find(c => c.words.includes(w));
-      return !this.state.solvedGroups.includes(cat.name);
-    });
-    
-    if (remainingWords.length > 0) {
-      html += `<div class="conn-grid" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px;">`;
-      remainingWords.forEach(word => {
-        const isSelected = this.state.selectedWords.includes(word);
-        html += `<button class="conn-word-btn" data-word="${word}" style="padding:16px 4px; font-family:var(--font-news); font-weight:bold; font-size:12px; background:${isSelected ? 'var(--ink-black)' : 'var(--paper-sheet)'}; color:${isSelected ? 'var(--paper-sheet)' : 'var(--ink-black)'}; border:2px solid var(--ink-black); cursor:pointer; text-transform:uppercase; border-radius:4px; box-shadow: 2px 2px 0 var(--ink-black);">${word}</button>`;
-      });
-      html += `</div>`;
-      
-      html += `<div class="conn-controls" style="display:flex; justify-content:space-between; align-items:center; margin-top:16px;">
-        <span style="font-family:var(--font-news); font-size:14px; font-weight:bold;">Mistakes: ${this.state.mistakes}</span>
-        <div>
-          <button type="button" class="paper-btn conn-shuffle-btn" style="margin-right:8px;">Shuffle</button>
-          <button type="button" class="paper-btn conn-submit-btn" ${this.state.selectedWords.length === 4 ? '' : 'disabled'}>Submit</button>
-        </div>
-      </div>`;
-    } else {
-      html += `<div style="text-align:center; padding:16px; font-family:var(--font-news); font-weight:bold; color:var(--ink-blue);">Perfect! All groups found.</div>`;
-    }
-    
-    html += `</div>`;
-    this.container.innerHTML = html;
-    this.bindEvents();
-  }
-  
-  bindEvents() {
-    const btns = this.container.querySelectorAll('.conn-word-btn');
-    btns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const word = btn.dataset.word;
-        if (this.state.selectedWords.includes(word)) {
-          this.state.selectedWords = this.state.selectedWords.filter(w => w !== word);
-        } else {
-          if (this.state.selectedWords.length < 4) {
-            this.state.selectedWords.push(word);
-          }
-        }
-        this.render();
-      });
-    });
-    
-    const shuffleBtn = this.container.querySelector('.conn-shuffle-btn');
-    if (shuffleBtn) {
-      shuffleBtn.addEventListener('click', () => {
-        this.state.shuffledWords.sort(() => 0.5 - Math.random());
-        this.render();
-      });
-    }
-    
-    const submitBtn = this.container.querySelector('.conn-submit-btn');
-    if (submitBtn) {
-      submitBtn.addEventListener('click', () => {
-        this.checkSelection();
-      });
-    }
-  }
-  
-  checkSelection() {
-    if (this.state.selectedWords.length !== 4) return;
-    const selected = this.state.selectedWords;
-    const match = this.categories.find(cat => cat.words.every(w => selected.includes(w)));
-    
-    if (match) {
-      this.state.solvedGroups.push(match.name);
-      this.state.selectedWords = [];
-      this.saveState();
-      this.render();
-      if (this.state.solved) this.manager.checkAllSolved();
-    } else {
-      this.state.mistakes += 1;
-      this.state.selectedWords = [];
-      this.saveState();
-      this.render();
-      window.sundayApp.showToast("Incorrect grouping! Try again.");
-    }
-  }
-}
+
 
 window.PuzzleManager = PuzzleManager;

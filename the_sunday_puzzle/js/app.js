@@ -207,6 +207,25 @@ class SundayApp {
     const weatherEl = document.getElementById('weather-text');
     if (weatherEl) weatherEl.innerHTML = `<span class="weather-icon">☕</span> ${edition.weatherNote}`;
 
+    // Update Ephemera
+    const brews = [
+      "Dark Roast with cardamom & oat milk.",
+      "Light Roast pour-over with a hint of honey.",
+      "Earl Grey tea with a slice of lemon.",
+      "Espresso with a dash of cinnamon.",
+      "Matcha latte with almond milk.",
+      "Chamomile tea to soothe the morning."
+    ];
+    const brewRec = brews[(edition.issueNumber || 0) % brews.length];
+    const ephemeraList = document.querySelector('.tidbits-list');
+    if (ephemeraList) {
+      ephemeraList.innerHTML = `
+        <li><strong>☕ Recommended Brew:</strong> ${brewRec}</li>
+        <li><strong>🌅 Sunrise:</strong> 06:12 AM • <strong>Sunset:</strong> 07:44 PM</li>
+        <li><strong>💡 Solver’s Rule:</strong> Look at the crossings when a word seems stubborn.</li>
+      `;
+    }
+
     const quoteEl = document.getElementById('editor-quote');
     if (quoteEl) quoteEl.textContent = edition.editorQuote;
 
@@ -253,12 +272,25 @@ class SundayApp {
       } else if (p.type === 'word_ladder') {
         const steps = [p.startWord, ...p.steps.map(s => s.solution), p.goalWord].join(' → ');
         lines.push(`[${p.num} Five Letters: ${steps}]`);
+      } else if (['aptitude', 'math', 'cipher', 'anagram', 'cryptogram', 'word_scramble', 'word_association', 'sequence', 'missing_letters'].includes(p.type)) {
+        lines.push(`[${p.num} ${p.name}: ${p.correctAnswer}. ${p.explanation || ''}]`);
       } else if (p.type === 'visual_anomaly') {
         const correct = p.watches?.find(w => w.flaw)?.label || p.correctId;
         lines.push(`[${p.num} Visual: ${correct}]`);
-      } else if (p.type === 'mystery') {
+      } else if (['mystery', 'who_stole_it', 'case_file'].includes(p.type)) {
         const suspect = p.suspects?.find(s => s.id === p.correctSuspectId)?.name || p.correctSuspectId;
         lines.push(`[${p.num} Mystery: ${suspect}]`);
+      } else if (['trivia', 'knights_knaves', 'who_is_lying', 'age_puzzle'].includes(p.type)) {
+        const correct = p.options?.find(o => o.id === p.correctOptionId)?.text || p.correctOptionId;
+        lines.push(`[${p.num} ${p.name}: ${correct}]`);
+      } else if (['logic', 'zebra', 'einstein'].includes(p.type)) {
+        const correct = p.options?.find(o => o.id === p.correctOptionId)?.text || p.correctOptionId;
+        lines.push(`[${p.num} Deduction: ${correct}]`);
+      } else if (['timeline', 'ordering', 'scheduling'].includes(p.type)) {
+        const orderedTexts = p.solutionOrder?.map(id => p.items?.find(i => i.id === id)?.text || id).join(' -> ');
+        lines.push(`[${p.num} Ordered: ${orderedTexts}]`);
+      } else if (['minesweeper', 'lights_out', 'nonogram'].includes(p.type)) {
+        lines.push(`[${p.num} Grid Puzzle: ${p.explanation || 'See solution grid'}]`);
       }
     });
 

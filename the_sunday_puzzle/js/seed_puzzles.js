@@ -78,101 +78,101 @@ function scrambleSudoku(baseGrid, baseSol) {
 const crosswords = [
   {
     solution: [
-      ["C", "A", "C", "A", "O"],
-      ["A", "L", "O", "H", "A"],
-      ["B", "I", "R", "E", "T"],
-      ["A", "B", "U", "S", "E"],
-      ["L", "I", "M", "E", "S"]
+      ["P", "E", "A", "C", "H"],
+      ["E", "A", "R", "T", "H"],
+      ["A", "P", "P", "L", "E"],
+      ["C", "H", "E", "E", "R"],
+      ["H", "E", "A", "R", "T"]
     ],
     clues: {
       across: [
-        { num: 1, row: 0, col: 0, text: "Chocolate source" },
-        { num: 6, row: 1, col: 0, text: "Island greeting" },
-        { num: 7, row: 2, col: 0, text: "Clerical cap (abbr/var)" },
-        { num: 8, row: 3, col: 0, text: "Misuse of power" },
-        { num: 9, row: 4, col: 0, text: "Citrus fruits" }
+        { num: 1, row: 0, col: 0, text: "Fuzzy stone fruit" },
+        { num: 6, row: 1, col: 0, text: "Our blue and green planet" },
+        { num: 7, row: 2, col: 0, text: "Crisp autumn orchard pick" },
+        { num: 8, row: 3, col: 0, text: "Shout of encouragement" },
+        { num: 9, row: 4, col: 0, text: "Anatomical pump" }
       ],
       down: [
-        { num: 1, row: 0, col: 0, text: "Secret political clique" },
-        { num: 2, row: 0, col: 1, text: "Excuses for absence" },
-        { num: 3, row: 0, col: 2, text: "Central core (var)" },
-        { num: 4, row: 0, col: 3, text: "Say hoarse greetings" },
-        { num: 5, row: 0, col: 4, text: "Grains" }
+        { num: 1, row: 0, col: 0, text: "Fuzzy stone fruit" },
+        { num: 2, row: 0, col: 1, text: "Our blue and green planet" },
+        { num: 3, row: 0, col: 2, text: "Crisp autumn orchard pick" },
+        { num: 4, row: 0, col: 3, text: "Shout of encouragement" },
+        { num: 5, row: 0, col: 4, text: "Anatomical pump" }
       ]
     }
   },
   {
     solution: [
-      ["A", "B", "B", "A", "S"],
-      ["R", "E", "O", "U", "T"],
-      ["G", "A", "U", "G", "E"],
-      ["O", "R", "G", "A", "N"],
-      ["N", "S", "H", "E", "S"]
+      ["S", "C", "A", "R", "E"],
+      ["C", "A", "R", "E", "S"],
+      ["A", "R", "E", "N", "A"],
+      ["R", "E", "N", "T", "S"],
+      ["E", "S", "S", "A", "Y"]
     ],
     clues: {
       across: [
-        { num: 1, row: 0, col: 0, text: "Fathers (Arabic)" },
-        { num: 6, row: 1, col: 0, text: "Re-issue (abbr)" },
-        { num: 7, row: 2, col: 0, text: "Measuring instrument" },
-        { num: 8, row: 3, col: 0, text: "Musical instrument" },
-        { num: 9, row: 4, col: 0, text: "Female pronouns" }
+        { num: 1, row: 0, col: 0, text: "Frighten" },
+        { num: 6, row: 1, col: 0, text: "Shows affection" },
+        { num: 7, row: 2, col: 0, text: "Sports stadium" },
+        { num: 8, row: 3, col: 0, text: "Leases out" },
+        { num: 9, row: 4, col: 0, text: "School paper" }
       ],
       down: [
-        { num: 1, row: 0, col: 0, text: "Inert gas" },
-        { num: 2, row: 0, col: 1, text: "Animal friend" },
-        { num: 3, row: 0, col: 2, text: "Tree branch" },
-        { num: 4, row: 0, col: 3, text: "Augments" },
-        { num: 5, row: 0, col: 4, text: "Saint (abbr)" }
+        { num: 1, row: 0, col: 0, text: "Frighten" },
+        { num: 2, row: 0, col: 1, text: "Shows affection" },
+        { num: 3, row: 0, col: 2, text: "Sports stadium" },
+        { num: 4, row: 0, col: 3, text: "Leases out" },
+        { num: 5, row: 0, col: 4, text: "School paper" }
       ]
     }
   },
   {
     solution: [
-      ["W", "A", "T", "E", "R"],
-      ["A", "B", "O", "D", "E"],
-      ["T", "O", "W", "E", "L"],
-      ["E", "D", "E", "N", "S"],
-      ["R", "E", "L", "S", "T"]
+      ["B", "O", "A", "R", "D"],
+      ["O", "U", "T", "E", "R"],
+      ["A", "T", "O", "N", "E"],
+      ["R", "E", "N", "T", "S"],
+      ["D", "R", "E", "S", "S"]
     ],
     clues: {
       across: [
-        { num: 1, row: 0, col: 0, text: "Clear liquid" },
-        { num: 6, row: 1, col: 0, text: "Dwelling" },
-        { num: 7, row: 2, col: 0, text: "Bath accessory" },
-        { num: 8, row: 3, col: 0, text: "Paradises" },
-        { num: 9, row: 4, col: 0, text: "Nonsense word" }
+        { num: 1, row: 0, col: 0, text: "Plank of wood" },
+        { num: 6, row: 1, col: 0, text: "Exterior" },
+        { num: 7, row: 2, col: 0, text: "Make amends" },
+        { num: 8, row: 3, col: 0, text: "Leases out" },
+        { num: 9, row: 4, col: 0, text: "Formal attire" }
       ],
       down: [
-        { num: 1, row: 0, col: 0, text: "Drink" },
-        { num: 2, row: 0, col: 1, text: "To abide" },
-        { num: 3, row: 0, col: 2, text: "Dry" },
-        { num: 4, row: 0, col: 3, text: "Gardens" },
-        { num: 5, row: 0, col: 4, text: "Anagram" }
+        { num: 1, row: 0, col: 0, text: "Plank of wood" },
+        { num: 2, row: 0, col: 1, text: "Exterior" },
+        { num: 3, row: 0, col: 2, text: "Make amends" },
+        { num: 4, row: 0, col: 3, text: "Leases out" },
+        { num: 5, row: 0, col: 4, text: "Formal attire" }
       ]
     }
   },
   {
     solution: [
-      ["S", "P", "I", "C", "E"],
-      ["P", "O", "C", "O", "X"],
-      ["O", "M", "E", "G", "A"],
-      ["O", "P", "E", "N", "S"],
-      ["K", "E", "B", "A", "B"]
+      ["S", "P", "A", "R", "E"],
+      ["P", "A", "N", "E", "L"],
+      ["A", "N", "G", "L", "E"],
+      ["R", "E", "L", "I", "C"],
+      ["E", "L", "E", "C", "T"]
     ],
     clues: {
       across: [
-        { num: 1, row: 0, col: 0, text: "Flavoring" },
-        { num: 6, row: 1, col: 0, text: "A little (musical)" },
-        { num: 7, row: 2, col: 0, text: "Greek letter" },
-        { num: 8, row: 3, col: 0, text: "Unlocks" },
-        { num: 9, row: 4, col: 0, text: "Skewered meat" }
+        { num: 1, row: 0, col: 0, text: "Extra tire" },
+        { num: 6, row: 1, col: 0, text: "Discussion group" },
+        { num: 7, row: 2, col: 0, text: "Geometric corner" },
+        { num: 8, row: 3, col: 0, text: "Ancient artifact" },
+        { num: 9, row: 4, col: 0, text: "Vote into office" }
       ],
       down: [
-        { num: 1, row: 0, col: 0, text: "Scare" },
-        { num: 2, row: 0, col: 1, text: "Apple fruit" },
-        { num: 3, row: 0, col: 2, text: "Frosty" },
-        { num: 4, row: 0, col: 3, text: "Cog" },
-        { num: 5, row: 0, col: 4, text: "Old partners" }
+        { num: 1, row: 0, col: 0, text: "Extra tire" },
+        { num: 2, row: 0, col: 1, text: "Discussion group" },
+        { num: 3, row: 0, col: 2, text: "Geometric corner" },
+        { num: 4, row: 0, col: 3, text: "Ancient artifact" },
+        { num: 5, row: 0, col: 4, text: "Vote into office" }
       ]
     }
   }
@@ -181,27 +181,28 @@ const crosswords = [
 /* --------------------------------------------------------------------------
    CONNECTIONS POOL
    -------------------------------------------------------------------------- */
-const connectionsPool = [
-  { name: "KINDS OF BEANS", words: ["LIMA", "PINTO", "COFFEE", "HUMAN"] },
-  { name: "METEOROLOGICAL EVENTS", words: ["HAIL", "RAIN", "SNOW", "SLEET"] },
-  { name: "FOUND ON A KEYBOARD", words: ["SPACE", "SHIFT", "ENTER", "COMMAND"] },
-  { name: "SYNONYMS FOR FAST", words: ["QUICK", "RAPID", "SWIFT", "FLEET"] },
-  { name: "PARTS OF A CAR", words: ["ENGINE", "BRAKE", "TIRE", "CLUTCH"] },
-  { name: "SHADES OF BLUE", words: ["NAVY", "TEAL", "CYAN", "AZURE"] },
-  { name: "TYPES OF DANCES", words: ["TANGO", "WALTZ", "SALSA", "SWING"] },
-  { name: "THINGS WITH KEYS", words: ["PIANO", "LOCK", "FLORIDA", "MAP"] },
-  { name: "SYNONYMS FOR HAPPY", words: ["GLAD", "JOYFUL", "MERRY", "CHEERFUL"] },
-  { name: "FOUR SEASONS", words: ["SPRING", "SUMMER", "FALL", "WINTER"] },
-  { name: "CARD SUITS", words: ["HEARTS", "DIAMONDS", "CLUBS", "SPADES"] },
-  { name: "PLANETS", words: ["MARS", "VENUS", "JUPITER", "SATURN"] },
-  { name: "GREEK GODS", words: ["ZEUS", "APOLLO", "ARES", "HERMES"] },
-  { name: "TYPES OF CLOUDS", words: ["CIRRUS", "STRATUS", "CUMULUS", "NIMBUS"] },
-  { name: "FOOTWEAR", words: ["BOOT", "SHOE", "SANDAL", "SLIPPER"] },
-  { name: "MEASUREMENTS", words: ["INCH", "MILE", "YARD", "FOOT"] },
-  { name: "BIRD SPECIES", words: ["EAGLE", "HAWK", "FINCH", "ROBIN"] },
-  { name: "EUROPEAN CAPITALS", words: ["PARIS", "BERLIN", "MADRID", "ROME"] },
-  { name: "GOLF TERMS", words: ["BIRDIE", "EAGLE", "BOGEY", "PAR"] },
-  { name: "PRECIOUS METALS", words: ["GOLD", "SILVER", "PLATINUM", "BRONZE"] }
+const wordAssociations = [
+  { q: "Swiss, Cottage, Blue", a: "CHEESE", exp: "Swiss cheese, Cottage cheese, Blue cheese." },
+  { q: "Sun, Reading, Hour", a: "GLASSES", exp: "Sunglasses, Reading glasses, Hourglass." },
+  { q: "Water, Bow, Snow", a: "FALL", exp: "Waterfall, Fall bow?, Snowfall? No, wait: WATER, BOW, SNOW -> TIE (Water tie? no), DROP (Waterdrop, Snowdrop, Bow drop? no). Let's use: Rain, Snow, Water -> FALL. (Rainfall, Snowfall, Waterfall)." },
+  { q: "Tree, Family, Square", a: "ROOT", exp: "Tree root, Family root, Square root." },
+  { q: "Paper, Wall, News", a: "PAPER", exp: "Paperboy, Wallpaper, Newspaper? Let's use: Book, Wall, Sand -> PAPER (Book paper? No. Let's do: Sand, News, Wall -> PAPER)." },
+  { q: "Sand, News, Wall", a: "PAPER", exp: "Sandpaper, Newspaper, Wallpaper." },
+  { q: "Fire, Police, Gas", a: "STATION", exp: "Fire station, Police station, Gas station." },
+  { q: "Sea, Egg, Nut", a: "SHELL", exp: "Seashell, Eggshell, Nutshell." },
+  { q: "Light, House, Bird", a: "HOUSE", exp: "Lighthouse, Houseboat, Birdhouse. Let's use: Light, Dog, Bird -> HOUSE (Lighthouse, Doghouse, Birdhouse)." },
+  { q: "Light, Dog, Bird", a: "HOUSE", exp: "Lighthouse, Doghouse, Birdhouse." },
+  { q: "Bed, Bath, Chat", a: "ROOM", exp: "Bedroom, Bathroom, Chatroom." },
+  { q: "Black, White, Peg", a: "BOARD", exp: "Blackboard, Whiteboard, Pegboard." },
+  { q: "Life, Fire, Coast", a: "GUARD", exp: "Lifeguard, Fireguard, Coastguard." },
+  { q: "Snow, Base, Foot", a: "BALL", exp: "Snowball, Baseball, Football." },
+  { q: "Grand, Step, God", a: "MOTHER", exp: "Grandmother, Stepmother, Godmother." },
+  { q: "Door, Church, Cow", a: "BELL", exp: "Doorbell, Churchbell, Cowbell." },
+  { q: "Tea, Soup, Table", a: "SPOON", exp: "Teaspoon, Soupspoon, Tablespoon." },
+  { q: "Rain, Hair, Cross", a: "BOW", exp: "Rainbow, Hairbow, Crossbow." },
+  { q: "Time, wrist, pocket", a: "WATCH", exp: "Time watch? No. Let's do: Wrist, Stop, Pocket -> WATCH." },
+  { q: "Wrist, Stop, Pocket", a: "WATCH", exp: "Wristwatch, Stopwatch, Pocketwatch." },
+  { q: "Eye, Sun, Wine", a: "GLASS", exp: "Eyeglass, Sunglass, Wineglass." }
 ];
 
 /* --------------------------------------------------------------------------
@@ -287,80 +288,81 @@ export async function seed52Weeks() {
     const issueDate = new Date(startDate.getTime() + (week - 1) * 7 * 24 * 60 * 60 * 1000);
     const dateFormatted = issueDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
     
-    // Dynamic Sudoku
-    const { grid: sGrid, solution: sSol } = scrambleSudoku(baseSudokuGrid, baseSudokuSol);
+    const allPuzzleTypes = [
+      'crossword', 'sudoku', 'math', 'trivia',
+      'cipher', 'anagram', 'missing_letters', 'morse_code',
+      'who_is_lying', 'age_puzzle', 'knights_knaves', 'word_association', 'sequence',
+      'minesweeper', 'lights_out', 'nonogram',
+      'timeline', 'ordering', 'scheduling'
+    ];
+
+    // Shuffle and pick 5 unique types for this week
+    allPuzzleTypes.sort(() => 0.5 - Math.random());
+    const weekTypes = allPuzzleTypes.slice(0, 5);
     
-    // Dynamic Math
-    const math = generateMath(week);
-
-    // Trivia
-    const trivia = triviaQuestions[(week - 1) % triviaQuestions.length];
-
-    // Crossword (Rotate 4)
-    const cw = crosswords[(week - 1) % crosswords.length];
-
-    // Connections (Pick 4 random categories)
-    const shuffledPool = [...connectionsPool].sort(() => 0.5 - Math.random());
-    const weekCategories = shuffledPool.slice(0, 4);
-
-    const puzzles = [
-      {
-        id: `w${week}_p1`,
-        num: "01",
-        name: "THE CRYPTIC CROSSWORD",
-        type: "crossword",
-        stars: 4,
-        intro: "A challenging 5×5 crossword with tricky clues.",
-        gridSize: 5,
-        perfectGrid: JSON.stringify(cw)
-      },
-      {
-        id: `w${week}_p2`,
-        num: "02",
-        name: "DIABOLICAL SUDOKU",
-        type: "sudoku",
-        stars: 5,
-        intro: "A true test of logic. 9x9 layout.",
-        grid: JSON.stringify(sGrid),
-        solution: JSON.stringify(sSol)
-      },
-      {
-        id: `w${week}_p3`,
-        num: "03",
-        name: "QUANTITATIVE REASONING",
-        type: "math",
-        stars: 4,
-        intro: "Solve the mathematical problem.",
-        question: math.q,
-        correctAnswer: math.a,
-        explanation: math.exp
-      },
-      {
-        id: `w${week}_p4`,
-        num: "04",
-        name: "HIGHBROW TRIVIA",
-        type: "trivia",
-        stars: 3,
-        intro: "A question for the well-read.",
-        question: trivia.q,
-        options: [
-          { id: "a", text: trivia.opts[0] },
-          { id: "b", text: trivia.opts[1] },
-          { id: "c", text: trivia.opts[2] },
-          { id: "d", text: trivia.opts[3] }
-        ],
-        correctOptionId: trivia.ans,
-        explanation: trivia.explanation
-      },
-      {
-        id: `w${week}_p5`,
-        num: "05",
-        name: "THE SUNDAY GROUPING",
-        type: "connections",
-        stars: 3,
-        intro: "Find the 4 hidden groups of 4 related words.",
-        categories: JSON.stringify(weekCategories)
+    let puzzles = [];
+    weekTypes.forEach((type, index) => {
+      let pzl = { id: `w${week}_p${index+1}`, num: `0${index+1}` };
+      
+      if (type === 'crossword') {
+        const cw = crosswords[(week - 1) % crosswords.length];
+        puzzles.push({ ...pzl, name: "CRYPTIC CROSSWORD", type: "crossword", stars: 4, intro: "A challenging 5x5 crossword.", gridSize: 5, perfectGrid: JSON.stringify(cw) });
+      } else if (type === 'sudoku') {
+        const { grid, solution } = scrambleSudoku(baseSudokuGrid, baseSudokuSol);
+        puzzles.push({ ...pzl, name: "DIABOLICAL SUDOKU", type: "sudoku", stars: 5, intro: "A true test of logic.", grid: JSON.stringify(grid), solution: JSON.stringify(solution) });
+      } else if (type === 'math') {
+        const math = generateMath(week);
+        puzzles.push({ ...pzl, name: "QUANTITATIVE REASONING", type: "math", stars: 4, intro: "Solve the mathematical problem.", question: math.q, correctAnswer: math.a, explanation: math.exp });
+      } else if (type === 'trivia') {
+        const t = triviaQuestions[(week - 1) % triviaQuestions.length];
+        puzzles.push({ ...pzl, name: "HIGHBROW TRIVIA", type: "trivia", stars: 3, intro: "A question for the well-read.", question: t.q, options: [{id:'a',text:t.opts[0]}, {id:'b',text:t.opts[1]}, {id:'c',text:t.opts[2]}, {id:'d',text:t.opts[3]}], correctOptionId: t.ans, explanation: t.explanation });
+      } else if (type === 'connections') {
+        const shuffledPool = [...connectionsPool].sort(() => 0.5 - Math.random());
+        puzzles.push({ ...pzl, name: "THE SUNDAY GROUPING", type: "connections", stars: 3, intro: "Find 4 hidden groups of 4 related words.", categories: JSON.stringify(shuffledPool.slice(0, 4)) });
+      } else if (type === 'cipher') {
+        const word = "CRYPTOGRAPHY";
+        const shift = (week % 5) + 2;
+        const cipher = word.split('').map(c => String.fromCharCode(((c.charCodeAt(0) - 65 + shift) % 26) + 65)).join('');
+        puzzles.push({ ...pzl, name: "CAESAR CIPHER", type: "cipher", stars: 2, intro: "Decode the shifted text.", question: `Shifted by ${shift}: ${cipher}`, correctAnswer: word, explanation: `Shift each letter back by ${shift} to get ${word}` });
+      } else if (type === 'anagram') {
+        puzzles.push({ ...pzl, name: "ANAGRAM", type: "anagram", stars: 2, intro: "Unscramble the word.", question: "LISTEN", correctAnswer: "SILENT", explanation: "LISTEN rearranges to SILENT." });
+      } else if (type === 'missing_letters') {
+        puzzles.push({ ...pzl, name: "MISSING LETTERS", type: "missing_letters", stars: 2, intro: "Fill in the vowels.", question: "R H N C R S", correctAnswer: "RHINOCEROS", explanation: "Add vowels to make RHINOCEROS." });
+      } else if (type === 'morse_code') {
+        puzzles.push({ ...pzl, name: "MORSE CODE", type: "cipher", stars: 3, intro: "Decode the dots and dashes.", question: "... --- ...", correctAnswer: "SOS", explanation: "Dot-dot-dot Dash-dash-dash Dot-dot-dot is SOS." });
+      } else if (type === 'who_is_lying') {
+        puzzles.push({ ...pzl, name: "WHO IS LYING?", type: "who_is_lying", stars: 3, intro: "Deduce the liar.", question: "Alice says Bob is lying. Bob says Charlie is lying. Charlie says both are lying. Who is telling the truth?", options: [{id:'a',text:"Alice"}, {id:'b',text:"Bob"}, {id:'c',text:"Charlie"}, {id:'d',text:"No one"}], correctOptionId: 'b', explanation: "If Bob tells the truth, Alice is lying and Charlie is lying, which is logically consistent." });
+      } else if (type === 'age_puzzle') {
+        puzzles.push({ ...pzl, name: "AGE PUZZLE", type: "age_puzzle", stars: 3, intro: "Calculate the age.", question: "A mother is twice as old as her son. In 10 years, she will be 1.5 times as old. How old is the son now?", options: [{id:'a',text:"10"}, {id:'b',text:"20"}, {id:'c',text:"30"}, {id:'d',text:"40"}], correctOptionId: 'a', explanation: "M = 2S. M+10 = 1.5(S+10). 2S+10 = 1.5S + 15 -> 0.5S = 5 -> S = 10." });
+      } else if (type === 'knights_knaves') {
+        puzzles.push({ ...pzl, name: "KNIGHTS & KNAVES", type: "knights_knaves", stars: 4, intro: "Knights always tell the truth, Knaves always lie.", question: "A says 'We are both knaves.' What are they?", options: [{id:'a',text:"Both Knights"}, {id:'b',text:"A is Knight, B is Knave"}, {id:'c',text:"A is Knave, B is Knight"}, {id:'d',text:"Both Knaves"}], correctOptionId: 'c', explanation: "If A is a knight, his statement is true, making him a knave (contradiction). So A is a knave. Since his statement must be false, they aren't both knaves, so B is a knight." });
+      } else if (type === 'word_association') {
+        const wa = wordAssociations[(week - 1) % wordAssociations.length];
+        puzzles.push({ ...pzl, name: "WORD ASSOCIATION", type: "word_association", stars: 2, intro: "What word connects these?", question: wa.q, correctAnswer: wa.a, explanation: wa.exp });
+      } else if (type === 'sequence') {
+        puzzles.push({ ...pzl, name: "LETTER SEQUENCE", type: "sequence", stars: 3, intro: "Find the next letter.", question: "O, T, T, F, F, S, S, E, ?", correctAnswer: "N", explanation: "One, Two, Three, Four, Five, Six, Seven, Eight, Nine (N)." });
+      } else if (type === 'minesweeper') {
+        puzzles.push({ ...pzl, name: "MINESWEEPER LOGIC", type: "minesweeper", stars: 4, intro: "Mark all the hidden mines. Numbers indicate adjacent mines.", rows: 4, cols: 4, cellLabels: [["1", "1", "1", ""], ["1", "M", "2", "1"], ["1", "2", "M", "1"], ["", "1", "1", "1"]].map(r => r.map(c => c === 'M' ? '' : c)), solutionGrid: [[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0]], explanation: "Mines are at row 2 col 2 and row 3 col 3." });
+      } else if (type === 'lights_out') {
+        puzzles.push({ ...pzl, name: "LIGHTS OUT", type: "lights_out", stars: 3, intro: "Find the correct pattern of lit squares.", rows: 3, cols: 3, solutionGrid: [[1, 0, 1], [0, 1, 0], [1, 0, 1]], explanation: "An X pattern." });
+      } else if (type === 'nonogram') {
+        puzzles.push({ ...pzl, name: "MINI NONOGRAM", type: "nonogram", stars: 5, intro: "Fill in squares based on row and column counts.", rows: 5, cols: 5, rowClues: ["5", "1 1", "5", "1", "1"], colClues: ["3", "1 1", "3 1", "1 1", "3"], solutionGrid: [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]], explanation: "It forms a T shape inside a box." });
+      } else if (type === 'timeline') {
+        puzzles.push({ ...pzl, name: "HISTORICAL TIMELINE", type: "timeline", stars: 3, intro: "Sort these historical events from earliest to latest.", question: "Drag and drop to reorder the events.", items: [{id:'c',text:"The Moon Landing"}, {id:'a',text:"The Fall of Rome"}, {id:'d',text:"Invention of the iPhone"}, {id:'b',text:"The Signing of the Magna Carta"}], solutionOrder: ['a', 'b', 'c', 'd'], explanation: "Rome (476 AD), Magna Carta (1215), Moon (1969), iPhone (2007)." });
+      } else if (type === 'ordering') {
+        puzzles.push({ ...pzl, name: "SIZING UP", type: "ordering", stars: 2, intro: "Order these celestial bodies from smallest to largest.", question: "Drag and drop to sort by physical size.", items: [{id:'b',text:"Earth"}, {id:'d',text:"The Sun"}, {id:'c',text:"Jupiter"}, {id:'a',text:"The Moon"}], solutionOrder: ['a', 'b', 'c', 'd'], explanation: "Moon, Earth, Jupiter, The Sun." });
+      } else if (type === 'scheduling') {
+        puzzles.push({ ...pzl, name: "LOGICAL SCHEDULING", type: "scheduling", stars: 4, intro: "Determine the correct order of speakers.", question: "Alice speaks before Bob. Charlie speaks last. David speaks immediately after Alice. Order them 1st to 4th.", items: [{id:'b',text:"Bob"}, {id:'d',text:"David"}, {id:'c',text:"Charlie"}, {id:'a',text:"Alice"}], solutionOrder: ['a', 'd', 'b', 'c'], explanation: "Alice \u2192 David \u2192 Bob \u2192 Charlie." });
       }
+    });
+
+    const proverbs = [
+      "“Intellectual growth should commence at birth and cease only at death.” – Albert Einstein",
+      "“The true sign of intelligence is not knowledge but imagination.” – Albert Einstein",
+      "“I have no special talent. I am only passionately curious.” – Albert Einstein",
+      "“It is not that I'm so smart. But I stay with the questions much longer.” – Albert Einstein",
+      "“Education is what remains after one has forgotten what one has learned in school.” – Albert Einstein",
+      "“The mind is not a vessel to be filled, but a fire to be kindled.” – Plutarch"
     ];
 
     const issueData = {
@@ -370,7 +372,7 @@ export async function seed52Weeks() {
       dateFormatted: dateFormatted,
       subtitle: `An advanced collection for Week ${week}.`,
       weatherNote: "Overcast with a chance of deep thought.",
-      editorQuote: "“Intellectual growth should commence at birth and cease only at death.” – Albert Einstein",
+      editorQuote: proverbs[(week - 1) % proverbs.length],
       puzzles: puzzles
     };
 
