@@ -64,35 +64,62 @@ class PuzzleManager {
       case 'word_association':
       case 'sequence':
       case 'missing_letters':
+      case 'number_sequence':
+      case 'missing_number':
+      case 'calcudoku':
+      case 'hidden_words':
+      case 'synonym_chain':
+      case 'antonym_chain':
+      case 'compound_word':
+      case 'rebus':
+      case 'before_after':
+      case 'homophone':
         this.controllers[puzzle.id] = new AptitudeController(puzzle, bodyEl, this);
         break;
       case 'mystery':
       case 'who_stole_it':
       case 'case_file':
+      case 'escape_room':
+      case 'alibi_puzzle':
+      case 'mystery_clues':
         this.controllers[puzzle.id] = new MysteryController(puzzle, bodyEl, this);
         break;
       case 'trivia':
       case 'knights_knaves':
       case 'who_is_lying':
       case 'age_puzzle':
+      case 'truth_lie':
+      case 'odd_one_out':
+      case 'family_relationship':
+      case 'odd_word_out':
         this.controllers[puzzle.id] = new TriviaController(puzzle, bodyEl, this);
         break;
       case 'logic':
       case 'zebra':
       case 'einstein':
+      case 'who_owns_the_cat':
+      case 'deduction_grid':
         this.controllers[puzzle.id] = new LogicController(puzzle, bodyEl, this);
         break;
       case 'sudoku':
+      case 'killer_sudoku':
+      case 'wordoku':
+      case 'magic_square':
         this.controllers[puzzle.id] = new SudokuController(puzzle, bodyEl, this);
         break;
       case 'timeline':
       case 'ordering':
       case 'scheduling':
+      case 'matching':
+      case 'who_sits_where':
         this.controllers[puzzle.id] = new OrderEngineController(puzzle, bodyEl, this);
         break;
       case 'minesweeper':
       case 'lights_out':
       case 'nonogram':
+      case 'picross':
+      case 'hitori':
+      case 'nurikabe':
         this.controllers[puzzle.id] = new ToggleGridController(puzzle, bodyEl, this);
         break;
     }

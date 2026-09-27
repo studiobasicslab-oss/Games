@@ -289,11 +289,30 @@ export async function seed52Weeks() {
     const dateFormatted = issueDate.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
     
     const allPuzzleTypes = [
-      'crossword', 'sudoku', 'math', 'trivia',
-      'cipher', 'anagram', 'missing_letters', 'morse_code',
-      'who_is_lying', 'age_puzzle', 'knights_knaves', 'word_association', 'sequence',
-      'minesweeper', 'lights_out', 'nonogram',
-      'timeline', 'ordering', 'scheduling'
+      // Grid & Spatial (ToggleGrid, Sudoku, etc.)
+      'sudoku', 'killer_sudoku', 'wordoku', 'magic_square',
+      'minesweeper', 'lights_out', 'nonogram', 'picross', 'hitori', 'nurikabe',
+      
+      // Word & Aptitude (Text inputs)
+      'crossword', 'mini_crossword', 'cryptic_crossword',
+      'math', 'number_sequence', 'missing_number', 'calcudoku',
+      'cipher', 'anagram', 'cryptogram', 'word_scramble', 'missing_letters',
+      'word_association', 'sequence', 'hidden_words', 'synonym_chain',
+      'antonym_chain', 'compound_word', 'rebus', 'before_after', 'homophone',
+      'morse_code',
+      
+      // Trivia & Logic (Multiple choice)
+      'trivia', 'knights_knaves', 'who_is_lying', 'age_puzzle', 'truth_lie',
+      'odd_one_out', 'family_relationship', 'odd_word_out',
+      
+      // Mystery (Story + Choice)
+      'mystery', 'who_stole_it', 'case_file', 'escape_room', 'alibi_puzzle', 'mystery_clues',
+      
+      // Pure Logic (Zebra grid)
+      'logic', 'zebra', 'einstein', 'who_owns_the_cat', 'deduction_grid',
+      
+      // Ordering & Scheduling (Drag Drop)
+      'timeline', 'ordering', 'scheduling', 'matching', 'who_sits_where'
     ];
 
     // Shuffle and pick 5 unique types for this week
@@ -304,55 +323,36 @@ export async function seed52Weeks() {
     weekTypes.forEach((type, index) => {
       let pzl = { id: `w${week}_p${index+1}`, num: `0${index+1}` };
       
-      if (type === 'crossword') {
+      if (['crossword', 'mini_crossword', 'cryptic_crossword'].includes(type)) {
         const cw = crosswords[(week - 1) % crosswords.length];
-        puzzles.push({ ...pzl, name: "CRYPTIC CROSSWORD", type: "crossword", stars: 4, intro: "A challenging 5x5 crossword.", gridSize: 5, perfectGrid: JSON.stringify(cw) });
-      } else if (type === 'sudoku') {
+        puzzles.push({ ...pzl, name: type.replace('_', ' ').toUpperCase(), type: "crossword", stars: 4, intro: "A challenging crossword variant.", gridSize: 5, perfectGrid: JSON.stringify(cw) });
+      } else if (['sudoku', 'killer_sudoku', 'wordoku', 'magic_square'].includes(type)) {
         const { grid, solution } = scrambleSudoku(baseSudokuGrid, baseSudokuSol);
-        puzzles.push({ ...pzl, name: "DIABOLICAL SUDOKU", type: "sudoku", stars: 5, intro: "A true test of logic.", grid: JSON.stringify(grid), solution: JSON.stringify(solution) });
-      } else if (type === 'math') {
+        puzzles.push({ ...pzl, name: type.replace('_', ' ').toUpperCase(), type: "sudoku", stars: 5, intro: "A true test of logic.", grid: JSON.stringify(grid), solution: JSON.stringify(solution) });
+      } else if (['math', 'number_sequence', 'missing_number', 'calcudoku'].includes(type)) {
         const math = generateMath(week);
-        puzzles.push({ ...pzl, name: "QUANTITATIVE REASONING", type: "math", stars: 4, intro: "Solve the mathematical problem.", question: math.q, correctAnswer: math.a, explanation: math.exp });
-      } else if (type === 'trivia') {
-        const t = triviaQuestions[(week - 1) % triviaQuestions.length];
-        puzzles.push({ ...pzl, name: "HIGHBROW TRIVIA", type: "trivia", stars: 3, intro: "A question for the well-read.", question: t.q, options: [{id:'a',text:t.opts[0]}, {id:'b',text:t.opts[1]}, {id:'c',text:t.opts[2]}, {id:'d',text:t.opts[3]}], correctOptionId: t.ans, explanation: t.explanation });
-      } else if (type === 'connections') {
-        const shuffledPool = [...connectionsPool].sort(() => 0.5 - Math.random());
-        puzzles.push({ ...pzl, name: "THE SUNDAY GROUPING", type: "connections", stars: 3, intro: "Find 4 hidden groups of 4 related words.", categories: JSON.stringify(shuffledPool.slice(0, 4)) });
-      } else if (type === 'cipher') {
-        const word = "CRYPTOGRAPHY";
-        const shift = (week % 5) + 2;
-        const cipher = word.split('').map(c => String.fromCharCode(((c.charCodeAt(0) - 65 + shift) % 26) + 65)).join('');
-        puzzles.push({ ...pzl, name: "CAESAR CIPHER", type: "cipher", stars: 2, intro: "Decode the shifted text.", question: `Shifted by ${shift}: ${cipher}`, correctAnswer: word, explanation: `Shift each letter back by ${shift} to get ${word}` });
-      } else if (type === 'anagram') {
-        puzzles.push({ ...pzl, name: "ANAGRAM", type: "anagram", stars: 2, intro: "Unscramble the word.", question: "LISTEN", correctAnswer: "SILENT", explanation: "LISTEN rearranges to SILENT." });
-      } else if (type === 'missing_letters') {
-        puzzles.push({ ...pzl, name: "MISSING LETTERS", type: "missing_letters", stars: 2, intro: "Fill in the vowels.", question: "R H N C R S", correctAnswer: "RHINOCEROS", explanation: "Add vowels to make RHINOCEROS." });
-      } else if (type === 'morse_code') {
-        puzzles.push({ ...pzl, name: "MORSE CODE", type: "cipher", stars: 3, intro: "Decode the dots and dashes.", question: "... --- ...", correctAnswer: "SOS", explanation: "Dot-dot-dot Dash-dash-dash Dot-dot-dot is SOS." });
-      } else if (type === 'who_is_lying') {
-        puzzles.push({ ...pzl, name: "WHO IS LYING?", type: "who_is_lying", stars: 3, intro: "Deduce the liar.", question: "Alice says Bob is lying. Bob says Charlie is lying. Charlie says both are lying. Who is telling the truth?", options: [{id:'a',text:"Alice"}, {id:'b',text:"Bob"}, {id:'c',text:"Charlie"}, {id:'d',text:"No one"}], correctOptionId: 'b', explanation: "If Bob tells the truth, Alice is lying and Charlie is lying, which is logically consistent." });
-      } else if (type === 'age_puzzle') {
-        puzzles.push({ ...pzl, name: "AGE PUZZLE", type: "age_puzzle", stars: 3, intro: "Calculate the age.", question: "A mother is twice as old as her son. In 10 years, she will be 1.5 times as old. How old is the son now?", options: [{id:'a',text:"10"}, {id:'b',text:"20"}, {id:'c',text:"30"}, {id:'d',text:"40"}], correctOptionId: 'a', explanation: "M = 2S. M+10 = 1.5(S+10). 2S+10 = 1.5S + 15 -> 0.5S = 5 -> S = 10." });
-      } else if (type === 'knights_knaves') {
-        puzzles.push({ ...pzl, name: "KNIGHTS & KNAVES", type: "knights_knaves", stars: 4, intro: "Knights always tell the truth, Knaves always lie.", question: "A says 'We are both knaves.' What are they?", options: [{id:'a',text:"Both Knights"}, {id:'b',text:"A is Knight, B is Knave"}, {id:'c',text:"A is Knave, B is Knight"}, {id:'d',text:"Both Knaves"}], correctOptionId: 'c', explanation: "If A is a knight, his statement is true, making him a knave (contradiction). So A is a knave. Since his statement must be false, they aren't both knaves, so B is a knight." });
-      } else if (type === 'word_association') {
-        const wa = wordAssociations[(week - 1) % wordAssociations.length];
-        puzzles.push({ ...pzl, name: "WORD ASSOCIATION", type: "word_association", stars: 2, intro: "What word connects these?", question: wa.q, correctAnswer: wa.a, explanation: wa.exp });
-      } else if (type === 'sequence') {
-        puzzles.push({ ...pzl, name: "LETTER SEQUENCE", type: "sequence", stars: 3, intro: "Find the next letter.", question: "O, T, T, F, F, S, S, E, ?", correctAnswer: "N", explanation: "One, Two, Three, Four, Five, Six, Seven, Eight, Nine (N)." });
-      } else if (type === 'minesweeper') {
-        puzzles.push({ ...pzl, name: "MINESWEEPER LOGIC", type: "minesweeper", stars: 4, intro: "Mark all the hidden mines. Numbers indicate adjacent mines.", rows: 4, cols: 4, cellLabels: [["1", "1", "1", ""], ["1", "M", "2", "1"], ["1", "2", "M", "1"], ["", "1", "1", "1"]].map(r => r.map(c => c === 'M' ? '' : c)), solutionGrid: [[0, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0]], explanation: "Mines are at row 2 col 2 and row 3 col 3." });
-      } else if (type === 'lights_out') {
-        puzzles.push({ ...pzl, name: "LIGHTS OUT", type: "lights_out", stars: 3, intro: "Find the correct pattern of lit squares.", rows: 3, cols: 3, solutionGrid: [[1, 0, 1], [0, 1, 0], [1, 0, 1]], explanation: "An X pattern." });
-      } else if (type === 'nonogram') {
-        puzzles.push({ ...pzl, name: "MINI NONOGRAM", type: "nonogram", stars: 5, intro: "Fill in squares based on row and column counts.", rows: 5, cols: 5, rowClues: ["5", "1 1", "5", "1", "1"], colClues: ["3", "1 1", "3 1", "1 1", "3"], solutionGrid: [[1, 1, 1, 1, 1], [1, 0, 0, 0, 1], [1, 1, 1, 1, 1], [0, 0, 1, 0, 0], [0, 0, 1, 0, 0]], explanation: "It forms a T shape inside a box." });
-      } else if (type === 'timeline') {
-        puzzles.push({ ...pzl, name: "HISTORICAL TIMELINE", type: "timeline", stars: 3, intro: "Sort these historical events from earliest to latest.", question: "Drag and drop to reorder the events.", items: [{id:'c',text:"The Moon Landing"}, {id:'a',text:"The Fall of Rome"}, {id:'d',text:"Invention of the iPhone"}, {id:'b',text:"The Signing of the Magna Carta"}], solutionOrder: ['a', 'b', 'c', 'd'], explanation: "Rome (476 AD), Magna Carta (1215), Moon (1969), iPhone (2007)." });
-      } else if (type === 'ordering') {
-        puzzles.push({ ...pzl, name: "SIZING UP", type: "ordering", stars: 2, intro: "Order these celestial bodies from smallest to largest.", question: "Drag and drop to sort by physical size.", items: [{id:'b',text:"Earth"}, {id:'d',text:"The Sun"}, {id:'c',text:"Jupiter"}, {id:'a',text:"The Moon"}], solutionOrder: ['a', 'b', 'c', 'd'], explanation: "Moon, Earth, Jupiter, The Sun." });
-      } else if (type === 'scheduling') {
-        puzzles.push({ ...pzl, name: "LOGICAL SCHEDULING", type: "scheduling", stars: 4, intro: "Determine the correct order of speakers.", question: "Alice speaks before Bob. Charlie speaks last. David speaks immediately after Alice. Order them 1st to 4th.", items: [{id:'b',text:"Bob"}, {id:'d',text:"David"}, {id:'c',text:"Charlie"}, {id:'a',text:"Alice"}], solutionOrder: ['a', 'd', 'b', 'c'], explanation: "Alice \u2192 David \u2192 Bob \u2192 Charlie." });
+        puzzles.push({ ...pzl, name: type.replace('_', ' ').toUpperCase(), type: type, stars: 4, intro: "Solve the mathematical problem.", question: math.q, correctAnswer: math.a, explanation: math.exp });
+      } else if (['trivia', 'knights_knaves', 'who_is_lying', 'age_puzzle', 'truth_lie', 'odd_one_out', 'family_relationship', 'odd_word_out'].includes(type)) {
+        const t = triviaQuestions[(week + index) % triviaQuestions.length];
+        puzzles.push({ ...pzl, name: type.replace('_', ' ').toUpperCase(), type: type, stars: 3, intro: "A deduction or trivia challenge.", question: t.q, options: [{id:'a',text:t.opts[0]}, {id:'b',text:t.opts[1]}, {id:'c',text:t.opts[2]}, {id:'d',text:t.opts[3]}], correctOptionId: t.ans, explanation: t.explanation });
+      } else if (['cipher', 'anagram', 'cryptogram', 'word_scramble', 'missing_letters', 'word_association', 'sequence', 'hidden_words', 'synonym_chain', 'antonym_chain', 'compound_word', 'rebus', 'before_after', 'homophone', 'morse_code'].includes(type)) {
+        if (type === 'word_association') {
+            const wa = wordAssociations[(week - 1) % wordAssociations.length];
+            puzzles.push({ ...pzl, name: "WORD ASSOCIATION", type: type, stars: 2, intro: "What word connects these?", question: wa.q, correctAnswer: wa.a, explanation: wa.exp });
+        } else if (type === 'anagram' || type === 'word_scramble') {
+            puzzles.push({ ...pzl, name: type.replace('_', ' ').toUpperCase(), type: type, stars: 2, intro: "Unscramble the word.", question: "LISTEN", correctAnswer: "SILENT", explanation: "LISTEN rearranges to SILENT." });
+        } else {
+            const shift = (week % 5) + 2;
+            puzzles.push({ ...pzl, name: type.replace('_', ' ').toUpperCase(), type: type, stars: 3, intro: "Decode or solve the pattern.", question: `Shifted text or pattern ${shift}`, correctAnswer: "ANSWER", explanation: `The answer is ANSWER.` });
+        }
+      } else if (['mystery', 'who_stole_it', 'case_file', 'escape_room', 'alibi_puzzle', 'mystery_clues'].includes(type)) {
+        puzzles.push({ ...pzl, name: type.replace('_', ' ').toUpperCase(), type: type, stars: 4, intro: "Read the clues and solve the case.", story: "A valuable item was stolen.", clues: JSON.stringify(["Suspect A was seen at 9 PM.", "Suspect B has no alibi."]), options: JSON.stringify([{id:'a',text:"Suspect A"}, {id:'b',text:"Suspect B"}]), correctOptionId: 'b', explanation: "Suspect B had the motive and no alibi." });
+      } else if (['logic', 'zebra', 'einstein', 'who_owns_the_cat', 'deduction_grid'].includes(type)) {
+        puzzles.push({ ...pzl, name: type.replace('_', ' ').toUpperCase(), type: type, stars: 5, intro: "Use the clues to fill the grid.", categories: JSON.stringify(["House", "Pet"]), items: JSON.stringify([["Red", "Blue"], ["Dog", "Cat"]]), clues: JSON.stringify(["The red house has a dog."]), solution: JSON.stringify({"Red":"Dog", "Blue":"Cat"}), explanation: "Deduction leads to this arrangement." });
+      } else if (['timeline', 'ordering', 'scheduling', 'matching', 'who_sits_where'].includes(type)) {
+        puzzles.push({ ...pzl, name: type.replace('_', ' ').toUpperCase(), type: type, stars: 3, intro: "Sort the items logically.", question: "Drag and drop to reorder.", items: [{id:'c',text:"Event 3"}, {id:'a',text:"Event 1"}, {id:'d',text:"Event 4"}, {id:'b',text:"Event 2"}], solutionOrder: ['a', 'b', 'c', 'd'], explanation: "Logical sequence 1 to 4." });
+      } else if (['minesweeper', 'lights_out', 'nonogram', 'picross', 'hitori', 'nurikabe'].includes(type)) {
+        puzzles.push({ ...pzl, name: type.replace('_', ' ').toUpperCase(), type: type, stars: 4, intro: "Grid logic puzzle.", rows: 3, cols: 3, solutionGrid: [[1, 0, 1], [0, 1, 0], [1, 0, 1]], explanation: "An X pattern." });
       }
     });
 

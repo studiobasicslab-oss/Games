@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rubik's Rings — 2D Cube Puzzle</title>
+  <meta name="description" content="Solve a Rubik's Cube by rotating overlapping 2D rings. A unique visual puzzle where concentric circles map to cube face rotations.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22><text y=%2226%22 font-size=%2226%22>🔮</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-shell" id="game-container">
+
+    <!-- Ambient Background Particles -->
+    <div class="ambient-bg" aria-hidden="true">
+      <div class="ambient-orb orb-1"></div>
+      <div class="ambient-orb orb-2"></div>
+      <div class="ambient-orb orb-3"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-brand">
+        <span class="brand-icon">🔮</span>
+        <h1 class="brand-title">Rubik's Rings</h1>
+      </div>
+      <p class="brand-subtitle">Map the cube onto circles. Rotate rings. Solve the puzzle.</p>
+    </header>
+
+    <!-- Main Game Area -->
+    <main class="game-layout">
+
+      <!-- 2D Rings Panel -->
+      <section class="rings-panel" aria-label="2D Ring Puzzle">
+        <div class="panel-header">
+          <h2 class="panel-title">Ring Interface</h2>
+          <span class="panel-hint">Drag inside a ring circle to rotate</span>
+        </div>
+        <div class="rings-canvas-wrapper">
+          <canvas id="rings-canvas"></canvas>
+        </div>
+      </section>
+
+      <!-- Controls & Status -->
+      <aside class="controls-panel" aria-label="Game Controls">
+
+        <!-- Status Card -->
+        <div class="status-card glass-card">
+          <div class="stat-row">
+            <span class="stat-label">Time</span>
+            <span class="stat-value" id="timer-display" style="font-family: var(--font-mono);">00:00</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Moves</span>
+            <span class="stat-value" id="move-count">0</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Status</span>
+            <span class="stat-value status-text" id="status-text">Ready</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+          <button class="btn btn-primary" id="btn-scramble">
+            <span class="btn-icon">🎲</span> Scramble
+          </button>
+          <button class="btn btn-secondary" id="btn-reset">
+            <span class="btn-icon">↻</span> Reset
+          </button>
+          <button class="btn btn-secondary" id="btn-undo" title="Undo (Z)">
+            <span class="btn-icon">↶</span> Undo
+          </button>
+          <button class="btn btn-secondary" id="btn-redo" title="Redo (Y)">
+            <span class="btn-icon">↷</span> Redo
+          </button>
+        </div>
+
+        <!-- Move Buttons Grid -->
+        <div class="move-controls glass-card">
+          <h3 class="controls-title">Face Moves</h3>
+          <div class="move-grid">
+            <button class="btn btn-move" data-move="U" title="U (clockwise)">U</button>
+            <button class="btn btn-move btn-prime" data-move="U'" title="U' (counter-clockwise)">U'</button>
+            <button class="btn btn-move" data-move="D" title="D (clockwise)">D</button>
+            <button class="btn btn-move btn-prime" data-move="D'" title="D' (counter-clockwise)">D'</button>
+            <button class="btn btn-move" data-move="F" title="F (clockwise)">F</button>
+            <button class="btn btn-move btn-prime" data-move="F'" title="F' (counter-clockwise)">F'</button>
+            <button class="btn btn-move" data-move="B" title="B (clockwise)">B</button>
+            <button class="btn btn-move btn-prime" data-move="B'" title="B' (counter-clockwise)">B'</button>
+            <button class="btn btn-move" data-move="R" title="R (clockwise)">R</button>
+            <button class="btn btn-move btn-prime" data-move="R'" title="R' (counter-clockwise)">R'</button>
+            <button class="btn btn-move" data-move="L" title="L (clockwise)">L</button>
+            <button class="btn btn-move btn-prime" data-move="L'" title="L' (counter-clockwise)">L'</button>
+          </div>
+          <h3 class="controls-title" style="margin-top:12px">Slice Moves</h3>
+          <div class="move-grid" style="grid-template-columns: repeat(6, 1fr)">
+            <button class="btn btn-move btn-slice" data-move="M" title="M slice">M</button>
+            <button class="btn btn-move btn-slice btn-prime" data-move="M'" title="M' slice">M'</button>
+            <button class="btn btn-move btn-slice" data-move="E" title="E slice">E</button>
+            <button class="btn btn-move btn-slice btn-prime" data-move="E'" title="E' slice">E'</button>
+            <button class="btn btn-move btn-slice" data-move="S" title="S slice">S</button>
+            <button class="btn btn-move btn-slice btn-prime" data-move="S'" title="S' slice">S'</button>
+          </div>
+        </div>
+
+        <!-- 3D Cube Preview -->
+        <div class="cube-preview glass-card">
+          <h3 class="controls-title">3D Cube</h3>
+          <div id="cube3d-container" class="cube3d-viewport"></div>
+        </div>
+
+      </aside>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Drag inside any ring set to rotate it • Each ring maps to a cube face</p>
+    </footer>
+
+  </div>
+
+  <!-- Scripts (order matters) -->
+  <script src="js/cube_state.js"></script>
+  <script src="js/rings_ui.js"></script>
+  <script src="js/cube_3d.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
