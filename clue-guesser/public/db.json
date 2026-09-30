@@ -1,0 +1,1654 @@
+{
+  "puzzles": [
+    {
+      "day": 1,
+      "words": [
+        {
+          "word": "GUITAR",
+          "clues": [
+            "strings",
+            "music",
+            "pick",
+            "acoustic",
+            "fret"
+          ]
+        },
+        {
+          "word": "DIAMOND",
+          "clues": [
+            "ring",
+            "gem",
+            "sparkle",
+            "hard",
+            "expensive"
+          ]
+        },
+        {
+          "word": "AIRPLANE",
+          "clues": [
+            "fly",
+            "sky",
+            "wings",
+            "pilot",
+            "airport"
+          ]
+        },
+        {
+          "word": "TELESCOPE",
+          "clues": [
+            "stars",
+            "look",
+            "space",
+            "sky",
+            "lens"
+          ]
+        },
+        {
+          "word": "PIZZA",
+          "clues": [
+            "cheese",
+            "Italy",
+            "slice",
+            "dough",
+            "delivery"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 2,
+      "words": [
+        {
+          "word": "ASTRONAUT",
+          "clues": [
+            "space",
+            "rocket",
+            "suit",
+            "moon",
+            "gravity"
+          ]
+        },
+        {
+          "word": "KANGAROO",
+          "clues": [
+            "jump",
+            "pouch",
+            "Australia",
+            "tail",
+            "joey"
+          ]
+        },
+        {
+          "word": "DENTIST",
+          "clues": [
+            "teeth",
+            "doctor",
+            "drill",
+            "cavity",
+            "chair"
+          ]
+        },
+        {
+          "word": "VOLCANO",
+          "clues": [
+            "mountain",
+            "lava",
+            "eruption",
+            "magma",
+            "ash"
+          ]
+        },
+        {
+          "word": "HOSPITAL",
+          "clues": [
+            "sick",
+            "nurse",
+            "doctor",
+            "bed",
+            "medicine"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 3,
+      "words": [
+        {
+          "word": "GIRAFFE",
+          "clues": [
+            "neck",
+            "tall",
+            "Africa",
+            "leaves",
+            "spots"
+          ]
+        },
+        {
+          "word": "VOLCANO",
+          "clues": [
+            "mountain",
+            "lava",
+            "eruption",
+            "magma",
+            "ash"
+          ]
+        },
+        {
+          "word": "BUTTERFLY",
+          "clues": [
+            "wings",
+            "caterpillar",
+            "fly",
+            "colorful",
+            "insect"
+          ]
+        },
+        {
+          "word": "BICYCLE",
+          "clues": [
+            "pedal",
+            "wheels",
+            "ride",
+            "chain",
+            "helmet"
+          ]
+        },
+        {
+          "word": "PENGUIN",
+          "clues": [
+            "bird",
+            "ice",
+            "waddle",
+            "black",
+            "white"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 4,
+      "words": [
+        {
+          "word": "AIRPLANE",
+          "clues": [
+            "fly",
+            "sky",
+            "wings",
+            "pilot",
+            "airport"
+          ]
+        },
+        {
+          "word": "TELESCOPE",
+          "clues": [
+            "stars",
+            "look",
+            "space",
+            "sky",
+            "lens"
+          ]
+        },
+        {
+          "word": "GUITAR",
+          "clues": [
+            "strings",
+            "music",
+            "pick",
+            "acoustic",
+            "fret"
+          ]
+        },
+        {
+          "word": "CALENDAR",
+          "clues": [
+            "days",
+            "months",
+            "year",
+            "date",
+            "paper"
+          ]
+        },
+        {
+          "word": "SPIDER",
+          "clues": [
+            "web",
+            "eight",
+            "legs",
+            "insect",
+            "bite"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 5,
+      "words": [
+        {
+          "word": "OCEAN",
+          "clues": [
+            "water",
+            "salt",
+            "waves",
+            "blue",
+            "fish"
+          ]
+        },
+        {
+          "word": "BUTTERFLY",
+          "clues": [
+            "wings",
+            "caterpillar",
+            "fly",
+            "colorful",
+            "insect"
+          ]
+        },
+        {
+          "word": "ASTRONAUT",
+          "clues": [
+            "space",
+            "rocket",
+            "suit",
+            "moon",
+            "gravity"
+          ]
+        },
+        {
+          "word": "ELEPHANT",
+          "clues": [
+            "trunk",
+            "tusks",
+            "big",
+            "grey",
+            "Africa"
+          ]
+        },
+        {
+          "word": "GIRAFFE",
+          "clues": [
+            "neck",
+            "tall",
+            "Africa",
+            "leaves",
+            "spots"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 6,
+      "words": [
+        {
+          "word": "OCEAN",
+          "clues": [
+            "water",
+            "salt",
+            "waves",
+            "blue",
+            "fish"
+          ]
+        },
+        {
+          "word": "BUTTERFLY",
+          "clues": [
+            "wings",
+            "caterpillar",
+            "fly",
+            "colorful",
+            "insect"
+          ]
+        },
+        {
+          "word": "BATTERY",
+          "clues": [
+            "power",
+            "charge",
+            "energy",
+            "plus",
+            "minus"
+          ]
+        },
+        {
+          "word": "CAMERA",
+          "clues": [
+            "photo",
+            "lens",
+            "flash",
+            "picture",
+            "click"
+          ]
+        },
+        {
+          "word": "VOLCANO",
+          "clues": [
+            "mountain",
+            "lava",
+            "eruption",
+            "magma",
+            "ash"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 7,
+      "words": [
+        {
+          "word": "CAMERA",
+          "clues": [
+            "photo",
+            "lens",
+            "flash",
+            "picture",
+            "click"
+          ]
+        },
+        {
+          "word": "PYRAMID",
+          "clues": [
+            "Egypt",
+            "triangle",
+            "desert",
+            "tomb",
+            "pharaoh"
+          ]
+        },
+        {
+          "word": "CASTLE",
+          "clues": [
+            "king",
+            "queen",
+            "moat",
+            "stone",
+            "knight"
+          ]
+        },
+        {
+          "word": "ASTRONAUT",
+          "clues": [
+            "space",
+            "rocket",
+            "suit",
+            "moon",
+            "gravity"
+          ]
+        },
+        {
+          "word": "BICYCLE",
+          "clues": [
+            "pedal",
+            "wheels",
+            "ride",
+            "chain",
+            "helmet"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 8,
+      "words": [
+        {
+          "word": "PIZZA",
+          "clues": [
+            "cheese",
+            "Italy",
+            "slice",
+            "dough",
+            "delivery"
+          ]
+        },
+        {
+          "word": "GIRAFFE",
+          "clues": [
+            "neck",
+            "tall",
+            "Africa",
+            "leaves",
+            "spots"
+          ]
+        },
+        {
+          "word": "CALENDAR",
+          "clues": [
+            "days",
+            "months",
+            "year",
+            "date",
+            "paper"
+          ]
+        },
+        {
+          "word": "DIAMOND",
+          "clues": [
+            "ring",
+            "gem",
+            "sparkle",
+            "hard",
+            "expensive"
+          ]
+        },
+        {
+          "word": "DENTIST",
+          "clues": [
+            "teeth",
+            "doctor",
+            "drill",
+            "cavity",
+            "chair"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 9,
+      "words": [
+        {
+          "word": "PIZZA",
+          "clues": [
+            "cheese",
+            "Italy",
+            "slice",
+            "dough",
+            "delivery"
+          ]
+        },
+        {
+          "word": "BUTTERFLY",
+          "clues": [
+            "wings",
+            "caterpillar",
+            "fly",
+            "colorful",
+            "insect"
+          ]
+        },
+        {
+          "word": "PYRAMID",
+          "clues": [
+            "Egypt",
+            "triangle",
+            "desert",
+            "tomb",
+            "pharaoh"
+          ]
+        },
+        {
+          "word": "SPIDER",
+          "clues": [
+            "web",
+            "eight",
+            "legs",
+            "insect",
+            "bite"
+          ]
+        },
+        {
+          "word": "TELESCOPE",
+          "clues": [
+            "stars",
+            "look",
+            "space",
+            "sky",
+            "lens"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 10,
+      "words": [
+        {
+          "word": "OCEAN",
+          "clues": [
+            "water",
+            "salt",
+            "waves",
+            "blue",
+            "fish"
+          ]
+        },
+        {
+          "word": "UMBRELLA",
+          "clues": [
+            "rain",
+            "open",
+            "handle",
+            "dry",
+            "weather"
+          ]
+        },
+        {
+          "word": "CAMERA",
+          "clues": [
+            "photo",
+            "lens",
+            "flash",
+            "picture",
+            "click"
+          ]
+        },
+        {
+          "word": "MIRROR",
+          "clues": [
+            "glass",
+            "look",
+            "reflection",
+            "see",
+            "wall"
+          ]
+        },
+        {
+          "word": "TELEPHONE",
+          "clues": [
+            "call",
+            "ring",
+            "speak",
+            "dial",
+            "listen"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 11,
+      "words": [
+        {
+          "word": "DENTIST",
+          "clues": [
+            "teeth",
+            "doctor",
+            "drill",
+            "cavity",
+            "chair"
+          ]
+        },
+        {
+          "word": "BUTTERFLY",
+          "clues": [
+            "wings",
+            "caterpillar",
+            "fly",
+            "colorful",
+            "insect"
+          ]
+        },
+        {
+          "word": "MIRROR",
+          "clues": [
+            "glass",
+            "look",
+            "reflection",
+            "see",
+            "wall"
+          ]
+        },
+        {
+          "word": "AIRPLANE",
+          "clues": [
+            "fly",
+            "sky",
+            "wings",
+            "pilot",
+            "airport"
+          ]
+        },
+        {
+          "word": "XRAY",
+          "clues": [
+            "bones",
+            "see",
+            "doctor",
+            "hospital",
+            "skeleton"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 12,
+      "words": [
+        {
+          "word": "GIRAFFE",
+          "clues": [
+            "neck",
+            "tall",
+            "Africa",
+            "leaves",
+            "spots"
+          ]
+        },
+        {
+          "word": "BATTERY",
+          "clues": [
+            "power",
+            "charge",
+            "energy",
+            "plus",
+            "minus"
+          ]
+        },
+        {
+          "word": "GUITAR",
+          "clues": [
+            "strings",
+            "music",
+            "pick",
+            "acoustic",
+            "fret"
+          ]
+        },
+        {
+          "word": "WHALE",
+          "clues": [
+            "ocean",
+            "big",
+            "swim",
+            "blowhole",
+            "mammal"
+          ]
+        },
+        {
+          "word": "BICYCLE",
+          "clues": [
+            "pedal",
+            "wheels",
+            "ride",
+            "chain",
+            "helmet"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 13,
+      "words": [
+        {
+          "word": "KANGAROO",
+          "clues": [
+            "jump",
+            "pouch",
+            "Australia",
+            "tail",
+            "joey"
+          ]
+        },
+        {
+          "word": "GUITAR",
+          "clues": [
+            "strings",
+            "music",
+            "pick",
+            "acoustic",
+            "fret"
+          ]
+        },
+        {
+          "word": "PIZZA",
+          "clues": [
+            "cheese",
+            "Italy",
+            "slice",
+            "dough",
+            "delivery"
+          ]
+        },
+        {
+          "word": "UMBRELLA",
+          "clues": [
+            "rain",
+            "open",
+            "handle",
+            "dry",
+            "weather"
+          ]
+        },
+        {
+          "word": "PYRAMID",
+          "clues": [
+            "Egypt",
+            "triangle",
+            "desert",
+            "tomb",
+            "pharaoh"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 14,
+      "words": [
+        {
+          "word": "LIBRARY",
+          "clues": [
+            "books",
+            "quiet",
+            "read",
+            "shelves",
+            "checkout"
+          ]
+        },
+        {
+          "word": "GUITAR",
+          "clues": [
+            "strings",
+            "music",
+            "pick",
+            "acoustic",
+            "fret"
+          ]
+        },
+        {
+          "word": "SPIDER",
+          "clues": [
+            "web",
+            "eight",
+            "legs",
+            "insect",
+            "bite"
+          ]
+        },
+        {
+          "word": "DIAMOND",
+          "clues": [
+            "ring",
+            "gem",
+            "sparkle",
+            "hard",
+            "expensive"
+          ]
+        },
+        {
+          "word": "TELEPHONE",
+          "clues": [
+            "call",
+            "ring",
+            "speak",
+            "dial",
+            "listen"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 15,
+      "words": [
+        {
+          "word": "OCEAN",
+          "clues": [
+            "water",
+            "salt",
+            "waves",
+            "blue",
+            "fish"
+          ]
+        },
+        {
+          "word": "CAMERA",
+          "clues": [
+            "photo",
+            "lens",
+            "flash",
+            "picture",
+            "click"
+          ]
+        },
+        {
+          "word": "ELEPHANT",
+          "clues": [
+            "trunk",
+            "tusks",
+            "big",
+            "grey",
+            "Africa"
+          ]
+        },
+        {
+          "word": "LIBRARY",
+          "clues": [
+            "books",
+            "quiet",
+            "read",
+            "shelves",
+            "checkout"
+          ]
+        },
+        {
+          "word": "DIAMOND",
+          "clues": [
+            "ring",
+            "gem",
+            "sparkle",
+            "hard",
+            "expensive"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 16,
+      "words": [
+        {
+          "word": "UMBRELLA",
+          "clues": [
+            "rain",
+            "open",
+            "handle",
+            "dry",
+            "weather"
+          ]
+        },
+        {
+          "word": "BATTERY",
+          "clues": [
+            "power",
+            "charge",
+            "energy",
+            "plus",
+            "minus"
+          ]
+        },
+        {
+          "word": "PIZZA",
+          "clues": [
+            "cheese",
+            "Italy",
+            "slice",
+            "dough",
+            "delivery"
+          ]
+        },
+        {
+          "word": "PYRAMID",
+          "clues": [
+            "Egypt",
+            "triangle",
+            "desert",
+            "tomb",
+            "pharaoh"
+          ]
+        },
+        {
+          "word": "MIRROR",
+          "clues": [
+            "glass",
+            "look",
+            "reflection",
+            "see",
+            "wall"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 17,
+      "words": [
+        {
+          "word": "CALENDAR",
+          "clues": [
+            "days",
+            "months",
+            "year",
+            "date",
+            "paper"
+          ]
+        },
+        {
+          "word": "OCEAN",
+          "clues": [
+            "water",
+            "salt",
+            "waves",
+            "blue",
+            "fish"
+          ]
+        },
+        {
+          "word": "CASTLE",
+          "clues": [
+            "king",
+            "queen",
+            "moat",
+            "stone",
+            "knight"
+          ]
+        },
+        {
+          "word": "UMBRELLA",
+          "clues": [
+            "rain",
+            "open",
+            "handle",
+            "dry",
+            "weather"
+          ]
+        },
+        {
+          "word": "DENTIST",
+          "clues": [
+            "teeth",
+            "doctor",
+            "drill",
+            "cavity",
+            "chair"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 18,
+      "words": [
+        {
+          "word": "OCEAN",
+          "clues": [
+            "water",
+            "salt",
+            "waves",
+            "blue",
+            "fish"
+          ]
+        },
+        {
+          "word": "GUITAR",
+          "clues": [
+            "strings",
+            "music",
+            "pick",
+            "acoustic",
+            "fret"
+          ]
+        },
+        {
+          "word": "DENTIST",
+          "clues": [
+            "teeth",
+            "doctor",
+            "drill",
+            "cavity",
+            "chair"
+          ]
+        },
+        {
+          "word": "XRAY",
+          "clues": [
+            "bones",
+            "see",
+            "doctor",
+            "hospital",
+            "skeleton"
+          ]
+        },
+        {
+          "word": "SPIDER",
+          "clues": [
+            "web",
+            "eight",
+            "legs",
+            "insect",
+            "bite"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 19,
+      "words": [
+        {
+          "word": "HOSPITAL",
+          "clues": [
+            "sick",
+            "nurse",
+            "doctor",
+            "bed",
+            "medicine"
+          ]
+        },
+        {
+          "word": "TELEPHONE",
+          "clues": [
+            "call",
+            "ring",
+            "speak",
+            "dial",
+            "listen"
+          ]
+        },
+        {
+          "word": "DENTIST",
+          "clues": [
+            "teeth",
+            "doctor",
+            "drill",
+            "cavity",
+            "chair"
+          ]
+        },
+        {
+          "word": "TELESCOPE",
+          "clues": [
+            "stars",
+            "look",
+            "space",
+            "sky",
+            "lens"
+          ]
+        },
+        {
+          "word": "SPIDER",
+          "clues": [
+            "web",
+            "eight",
+            "legs",
+            "insect",
+            "bite"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 20,
+      "words": [
+        {
+          "word": "XRAY",
+          "clues": [
+            "bones",
+            "see",
+            "doctor",
+            "hospital",
+            "skeleton"
+          ]
+        },
+        {
+          "word": "CASTLE",
+          "clues": [
+            "king",
+            "queen",
+            "moat",
+            "stone",
+            "knight"
+          ]
+        },
+        {
+          "word": "ELEPHANT",
+          "clues": [
+            "trunk",
+            "tusks",
+            "big",
+            "grey",
+            "Africa"
+          ]
+        },
+        {
+          "word": "PENGUIN",
+          "clues": [
+            "bird",
+            "ice",
+            "waddle",
+            "black",
+            "white"
+          ]
+        },
+        {
+          "word": "TELEPHONE",
+          "clues": [
+            "call",
+            "ring",
+            "speak",
+            "dial",
+            "listen"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 21,
+      "words": [
+        {
+          "word": "OCEAN",
+          "clues": [
+            "water",
+            "salt",
+            "waves",
+            "blue",
+            "fish"
+          ]
+        },
+        {
+          "word": "LIBRARY",
+          "clues": [
+            "books",
+            "quiet",
+            "read",
+            "shelves",
+            "checkout"
+          ]
+        },
+        {
+          "word": "WHALE",
+          "clues": [
+            "ocean",
+            "big",
+            "swim",
+            "blowhole",
+            "mammal"
+          ]
+        },
+        {
+          "word": "ELEPHANT",
+          "clues": [
+            "trunk",
+            "tusks",
+            "big",
+            "grey",
+            "Africa"
+          ]
+        },
+        {
+          "word": "CASTLE",
+          "clues": [
+            "king",
+            "queen",
+            "moat",
+            "stone",
+            "knight"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 22,
+      "words": [
+        {
+          "word": "PENGUIN",
+          "clues": [
+            "bird",
+            "ice",
+            "waddle",
+            "black",
+            "white"
+          ]
+        },
+        {
+          "word": "AIRPLANE",
+          "clues": [
+            "fly",
+            "sky",
+            "wings",
+            "pilot",
+            "airport"
+          ]
+        },
+        {
+          "word": "LIBRARY",
+          "clues": [
+            "books",
+            "quiet",
+            "read",
+            "shelves",
+            "checkout"
+          ]
+        },
+        {
+          "word": "GUITAR",
+          "clues": [
+            "strings",
+            "music",
+            "pick",
+            "acoustic",
+            "fret"
+          ]
+        },
+        {
+          "word": "HOSPITAL",
+          "clues": [
+            "sick",
+            "nurse",
+            "doctor",
+            "bed",
+            "medicine"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 23,
+      "words": [
+        {
+          "word": "VOLIN",
+          "clues": [
+            "strings",
+            "bow",
+            "music",
+            "play",
+            "instrument"
+          ]
+        },
+        {
+          "word": "VOLCANO",
+          "clues": [
+            "mountain",
+            "lava",
+            "eruption",
+            "magma",
+            "ash"
+          ]
+        },
+        {
+          "word": "MIRROR",
+          "clues": [
+            "glass",
+            "look",
+            "reflection",
+            "see",
+            "wall"
+          ]
+        },
+        {
+          "word": "PIZZA",
+          "clues": [
+            "cheese",
+            "Italy",
+            "slice",
+            "dough",
+            "delivery"
+          ]
+        },
+        {
+          "word": "GUITAR",
+          "clues": [
+            "strings",
+            "music",
+            "pick",
+            "acoustic",
+            "fret"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 24,
+      "words": [
+        {
+          "word": "AIRPLANE",
+          "clues": [
+            "fly",
+            "sky",
+            "wings",
+            "pilot",
+            "airport"
+          ]
+        },
+        {
+          "word": "SPIDER",
+          "clues": [
+            "web",
+            "eight",
+            "legs",
+            "insect",
+            "bite"
+          ]
+        },
+        {
+          "word": "MIRROR",
+          "clues": [
+            "glass",
+            "look",
+            "reflection",
+            "see",
+            "wall"
+          ]
+        },
+        {
+          "word": "SCHOOL",
+          "clues": [
+            "learn",
+            "teacher",
+            "students",
+            "books",
+            "class"
+          ]
+        },
+        {
+          "word": "ELEPHANT",
+          "clues": [
+            "trunk",
+            "tusks",
+            "big",
+            "grey",
+            "Africa"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 25,
+      "words": [
+        {
+          "word": "PIZZA",
+          "clues": [
+            "cheese",
+            "Italy",
+            "slice",
+            "dough",
+            "delivery"
+          ]
+        },
+        {
+          "word": "OCEAN",
+          "clues": [
+            "water",
+            "salt",
+            "waves",
+            "blue",
+            "fish"
+          ]
+        },
+        {
+          "word": "ELEPHANT",
+          "clues": [
+            "trunk",
+            "tusks",
+            "big",
+            "grey",
+            "Africa"
+          ]
+        },
+        {
+          "word": "PENGUIN",
+          "clues": [
+            "bird",
+            "ice",
+            "waddle",
+            "black",
+            "white"
+          ]
+        },
+        {
+          "word": "BUTTERFLY",
+          "clues": [
+            "wings",
+            "caterpillar",
+            "fly",
+            "colorful",
+            "insect"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 26,
+      "words": [
+        {
+          "word": "WHALE",
+          "clues": [
+            "ocean",
+            "big",
+            "swim",
+            "blowhole",
+            "mammal"
+          ]
+        },
+        {
+          "word": "BUTTERFLY",
+          "clues": [
+            "wings",
+            "caterpillar",
+            "fly",
+            "colorful",
+            "insect"
+          ]
+        },
+        {
+          "word": "MIRROR",
+          "clues": [
+            "glass",
+            "look",
+            "reflection",
+            "see",
+            "wall"
+          ]
+        },
+        {
+          "word": "LIBRARY",
+          "clues": [
+            "books",
+            "quiet",
+            "read",
+            "shelves",
+            "checkout"
+          ]
+        },
+        {
+          "word": "CAMERA",
+          "clues": [
+            "photo",
+            "lens",
+            "flash",
+            "picture",
+            "click"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 27,
+      "words": [
+        {
+          "word": "BICYCLE",
+          "clues": [
+            "pedal",
+            "wheels",
+            "ride",
+            "chain",
+            "helmet"
+          ]
+        },
+        {
+          "word": "VOLIN",
+          "clues": [
+            "strings",
+            "bow",
+            "music",
+            "play",
+            "instrument"
+          ]
+        },
+        {
+          "word": "DENTIST",
+          "clues": [
+            "teeth",
+            "doctor",
+            "drill",
+            "cavity",
+            "chair"
+          ]
+        },
+        {
+          "word": "GIRAFFE",
+          "clues": [
+            "neck",
+            "tall",
+            "Africa",
+            "leaves",
+            "spots"
+          ]
+        },
+        {
+          "word": "ELEPHANT",
+          "clues": [
+            "trunk",
+            "tusks",
+            "big",
+            "grey",
+            "Africa"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 28,
+      "words": [
+        {
+          "word": "CASTLE",
+          "clues": [
+            "king",
+            "queen",
+            "moat",
+            "stone",
+            "knight"
+          ]
+        },
+        {
+          "word": "MIRROR",
+          "clues": [
+            "glass",
+            "look",
+            "reflection",
+            "see",
+            "wall"
+          ]
+        },
+        {
+          "word": "VOLCANO",
+          "clues": [
+            "mountain",
+            "lava",
+            "eruption",
+            "magma",
+            "ash"
+          ]
+        },
+        {
+          "word": "ELEPHANT",
+          "clues": [
+            "trunk",
+            "tusks",
+            "big",
+            "grey",
+            "Africa"
+          ]
+        },
+        {
+          "word": "TELEPHONE",
+          "clues": [
+            "call",
+            "ring",
+            "speak",
+            "dial",
+            "listen"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 29,
+      "words": [
+        {
+          "word": "DENTIST",
+          "clues": [
+            "teeth",
+            "doctor",
+            "drill",
+            "cavity",
+            "chair"
+          ]
+        },
+        {
+          "word": "VOLCANO",
+          "clues": [
+            "mountain",
+            "lava",
+            "eruption",
+            "magma",
+            "ash"
+          ]
+        },
+        {
+          "word": "PENGUIN",
+          "clues": [
+            "bird",
+            "ice",
+            "waddle",
+            "black",
+            "white"
+          ]
+        },
+        {
+          "word": "SPIDER",
+          "clues": [
+            "web",
+            "eight",
+            "legs",
+            "insect",
+            "bite"
+          ]
+        },
+        {
+          "word": "BUTTERFLY",
+          "clues": [
+            "wings",
+            "caterpillar",
+            "fly",
+            "colorful",
+            "insect"
+          ]
+        }
+      ]
+    },
+    {
+      "day": 30,
+      "words": [
+        {
+          "word": "GUITAR",
+          "clues": [
+            "strings",
+            "music",
+            "pick",
+            "acoustic",
+            "fret"
+          ]
+        },
+        {
+          "word": "DENTIST",
+          "clues": [
+            "teeth",
+            "doctor",
+            "drill",
+            "cavity",
+            "chair"
+          ]
+        },
+        {
+          "word": "AIRPLANE",
+          "clues": [
+            "fly",
+            "sky",
+            "wings",
+            "pilot",
+            "airport"
+          ]
+        },
+        {
+          "word": "UMBRELLA",
+          "clues": [
+            "rain",
+            "open",
+            "handle",
+            "dry",
+            "weather"
+          ]
+        },
+        {
+          "word": "TELEPHONE",
+          "clues": [
+            "call",
+            "ring",
+            "speak",
+            "dial",
+            "listen"
+          ]
+        }
+      ]
+    }
+  ]
+}

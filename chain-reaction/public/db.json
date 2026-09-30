@@ -1,0 +1,334 @@
+{
+  "puzzles": [
+    {
+      "day": 1,
+      "chain": [
+        "FIRE",
+        "MAN",
+        "UP",
+        "HILL",
+        "SIDE",
+        "KICK"
+      ]
+    },
+    {
+      "day": 2,
+      "chain": [
+        "WATER",
+        "FALL",
+        "OUT",
+        "BACK",
+        "PACK",
+        "ANIMAL"
+      ]
+    },
+    {
+      "day": 3,
+      "chain": [
+        "SUN",
+        "LIGHT",
+        "HOUSE",
+        "WORK",
+        "OUT",
+        "FIT"
+      ]
+    },
+    {
+      "day": 4,
+      "chain": [
+        "SNOW",
+        "BALL",
+        "PARK",
+        "WAY",
+        "SIDE",
+        "WALK"
+      ]
+    },
+    {
+      "day": 5,
+      "chain": [
+        "NIGHT",
+        "TIME",
+        "LINE",
+        "UP",
+        "BEAT",
+        "BOX"
+      ]
+    },
+    {
+      "day": 6,
+      "chain": [
+        "RAIN",
+        "BOW",
+        "TIE",
+        "BREAK",
+        "FAST",
+        "FOOD"
+      ]
+    },
+    {
+      "day": 7,
+      "chain": [
+        "BLACK",
+        "BIRD",
+        "WATCH",
+        "DOG",
+        "HOUSE",
+        "PARTY"
+      ]
+    },
+    {
+      "day": 8,
+      "chain": [
+        "BLUE",
+        "BERRY",
+        "FARM",
+        "LAND",
+        "MARK",
+        "DOWN"
+      ]
+    },
+    {
+      "day": 9,
+      "chain": [
+        "GOLD",
+        "RUSH",
+        "HOUR",
+        "GLASS",
+        "DOOR",
+        "BELL"
+      ]
+    },
+    {
+      "day": 10,
+      "chain": [
+        "SILVER",
+        "LINING",
+        "UP",
+        "START",
+        "OVER",
+        "TIME"
+      ]
+    },
+    {
+      "day": 11,
+      "chain": [
+        "GREEN",
+        "HOUSE",
+        "FLY",
+        "WHEEL",
+        "CHAIR",
+        "LIFT"
+      ]
+    },
+    {
+      "day": 12,
+      "chain": [
+        "RED",
+        "HOT",
+        "DOG",
+        "WOOD",
+        "WORK",
+        "SHOP"
+      ]
+    },
+    {
+      "day": 13,
+      "chain": [
+        "WHITE",
+        "BOARD",
+        "GAME",
+        "PLAN",
+        "AHEAD",
+        "TIME"
+      ]
+    },
+    {
+      "day": 14,
+      "chain": [
+        "ICE",
+        "CREAM",
+        "PUFF",
+        "PIECE",
+        "WORK",
+        "MAN"
+      ]
+    },
+    {
+      "day": 15,
+      "chain": [
+        "COLD",
+        "SHOULDER",
+        "PAD",
+        "LOCK",
+        "SMITH",
+        "SON"
+      ]
+    },
+    {
+      "day": 16,
+      "chain": [
+        "HOT",
+        "CAKE",
+        "WALK",
+        "OUT",
+        "DOOR",
+        "STEP"
+      ]
+    },
+    {
+      "day": 17,
+      "chain": [
+        "SWEET",
+        "HEART",
+        "BEAT",
+        "DOWN",
+        "TOWN",
+        "SQUARE"
+      ]
+    },
+    {
+      "day": 18,
+      "chain": [
+        "SOUR",
+        "DOUGH",
+        "NUT",
+        "SHELL",
+        "SHOCK",
+        "WAVE"
+      ]
+    },
+    {
+      "day": 19,
+      "chain": [
+        "BITTER",
+        "SWEET",
+        "TOOTH",
+        "PICK",
+        "POCKET",
+        "BOOK"
+      ]
+    },
+    {
+      "day": 20,
+      "chain": [
+        "SALTY",
+        "DOG",
+        "EAR",
+        "RING",
+        "LEADER",
+        "SHIP"
+      ]
+    },
+    {
+      "day": 21,
+      "chain": [
+        "FAST",
+        "TRACK",
+        "RECORD",
+        "PLAYER",
+        "PIANO",
+        "KEY"
+      ]
+    },
+    {
+      "day": 22,
+      "chain": [
+        "SLOW",
+        "DOWN",
+        "FALL",
+        "OUT",
+        "CAST",
+        "AWAY"
+      ]
+    },
+    {
+      "day": 23,
+      "chain": [
+        "HIGH",
+        "WAY",
+        "WARD",
+        "ROBE",
+        "HOOK",
+        "UP"
+      ]
+    },
+    {
+      "day": 24,
+      "chain": [
+        "LOW",
+        "KEY",
+        "HOLE",
+        "PUNCH",
+        "LINE",
+        "DANCE"
+      ]
+    },
+    {
+      "day": 25,
+      "chain": [
+        "BIG",
+        "TIME",
+        "TABLE",
+        "SPOON",
+        "FEED",
+        "BACK"
+      ]
+    },
+    {
+      "day": 26,
+      "chain": [
+        "SMALL",
+        "TALK",
+        "SHOW",
+        "CASE",
+        "STUDY",
+        "HALL"
+      ]
+    },
+    {
+      "day": 27,
+      "chain": [
+        "GOOD",
+        "NIGHT",
+        "CLUB",
+        "HOUSE",
+        "WIFE",
+        "LIFE"
+      ]
+    },
+    {
+      "day": 28,
+      "chain": [
+        "BAD",
+        "GUY",
+        "WIRE",
+        "TAP",
+        "WATER",
+        "FALL"
+      ]
+    },
+    {
+      "day": 29,
+      "chain": [
+        "NEW",
+        "YEAR",
+        "BOOK",
+        "MARK",
+        "TIME",
+        "OUT"
+      ]
+    },
+    {
+      "day": 30,
+      "chain": [
+        "OLD",
+        "SCHOOL",
+        "YARD",
+        "STICK",
+        "PIN",
+        "WHEEL"
+      ]
+    }
+  ]
+}
